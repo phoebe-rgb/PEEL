@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<!--
+  Google Search Ad preview template (Search ad / RSA).
+  Fill in the {{PLACEHOLDERS}}. Duplicate/remove sitelink blocks as needed.
+  For an RSA, put the 3 chosen headlines and 2 chosen descriptions in the slots.
+  Colors and layout mirror Google's modern "Sponsored" format — do not restyle.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{BUSINESS_NAME}} — Google Ads Preview</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    margin: 0; padding: 40px;
+    background: #f1f3f4;
+    font-family: arial, sans-serif;
+    color: #202124;
+  }
+  .page-title { font-size: 15px; color: #5f6368; margin: 0 0 24px; }
+  .previews { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
+
+  /* ---- device frames ---- */
+  .device { }
+  .device-label {
+    font-size: 12px; font-weight: bold; letter-spacing: .04em;
+    text-transform: uppercase; color: #5f6368; margin-bottom: 10px;
+  }
+  .surface {
+    background: #fff; border: 1px solid #dadce0; border-radius: 12px;
+    padding: 20px 24px; box-shadow: 0 1px 3px rgba(60,64,67,.15);
+  }
+  .desktop .surface { width: 600px; }
+  .mobile  .surface { width: 360px; padding: 16px 16px; border-radius: 24px; }
+
+  /* ---- the ad ---- */
+  .ad { }
+  .sponsored { font-size: 14px; font-weight: 700; color: #202124; margin-bottom: 6px; }
+  .brand-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .favicon {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: #e8f0fe; color: #1a73e8;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex: 0 0 auto;
+  }
+  .brand-meta { line-height: 1.2; }
+  .brand-name { font-size: 14px; color: #202124; }
+  .display-url { font-size: 14px; color: #4d5156; }
+  .headline {
+    color: #1a0dab; font-size: 20px; line-height: 1.3; font-weight: 400;
+    margin: 6px 0 3px; cursor: pointer;
+  }
+  .mobile .headline { font-size: 18px; }
+  .headline:hover { text-decoration: underline; }
+  .description { color: #4d5156; font-size: 14px; line-height: 1.45; }
+
+  /* sitelinks */
+  .sitelinks-desktop {
+    display: flex; gap: 28px; margin-top: 12px; flex-wrap: wrap;
+  }
+  .sitelinks-desktop a { color: #1a0dab; font-size: 14px; text-decoration: none; }
+  .sitelinks-desktop a:hover { text-decoration: underline; }
+  .sitelinks-mobile { margin-top: 10px; }
+  .sitelinks-mobile a {
+    display: block; color: #1a0dab; font-size: 15px; text-decoration: none;
+    padding: 11px 0; border-top: 1px solid #ebebeb;
+  }
+</style>
+</head>
+<body>
+  <p class="page-title">Google Ads preview — {{BUSINESS_NAME}}</p>
+  <div class="previews">
+
+    <!-- ================= DESKTOP ================= -->
+    <div class="device desktop">
+      <div class="device-label">Desktop · Google Search</div>
+      <div class="surface">
+        <div class="ad">
+          <div class="sponsored">Sponsored</div>
+          <div class="brand-row">
+            <div class="favicon">{{FAVICON_LETTER}}</div>
+            <div class="brand-meta">
+              <div class="brand-name">{{BUSINESS_NAME}}</div>
+              <div class="display-url">{{DISPLAY_URL}}</div>
+            </div>
+          </div>
+          <div class="headline">{{HEADLINE_1}} ‑ {{HEADLINE_2}} ‑ {{HEADLINE_3}}</div>
+          <div class="description">{{DESCRIPTION_1}} {{DESCRIPTION_2}}</div>
+          <!-- Remove this block if no sitelinks -->
+          <div class="sitelinks-desktop">
+            <a href="#">{{SITELINK_1}}</a>
+            <a href="#">{{SITELINK_2}}</a>
+            <a href="#">{{SITELINK_3}}</a>
+            <a href="#">{{SITELINK_4}}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= MOBILE ================= -->
+    <div class="device mobile">
+      <div class="device-label">Mobile · Google Search</div>
+      <div class="surface">
+        <div class="ad">
+          <div class="sponsored">Sponsored</div>
+          <div class="brand-row">
+            <div class="favicon">{{FAVICON_LETTER}}</div>
+            <div class="brand-meta">
+              <div class="brand-name">{{BUSINESS_NAME}}</div>
+              <div class="display-url">{{DISPLAY_URL}}</div>
+            </div>
+          </div>
+          <div class="headline">{{HEADLINE_1}} ‑ {{HEADLINE_2}}</div>
+          <div class="description">{{DESCRIPTION_1}}</div>
+          <!-- Remove this block if no sitelinks -->
+          <div class="sitelinks-mobile">
+            <a href="#">{{SITELINK_1}}</a>
+            <a href="#">{{SITELINK_2}}</a>
+            <a href="#">{{SITELINK_3}}</a>
+            <a href="#">{{SITELINK_4}}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
