@@ -25,10 +25,13 @@ Region code is **`ALL`**. General shape:
 
 ### Worked example — SHMS Luxury Webinar (global)
 - Campaign → `PL_SHMS_FB_CONV_ALL_ALL_ALL_ALL_LuxuryWebinar-26Aug26`
-- Ad set 1 → `ALL_ALL_ALL_ALL_WEB_Top25WebVisitors-180days`
-- Ad set 2 → `ALL_ALL_ALL_ALL_CL_QualifiedLeads_Sep22-Oct25`
+- Ad set 1 → `ALL_ALL_ALL_ALL_WEB_WebVisitors-180days`
+- Ad set 2 → `ALL_ALL_ALL_ALL_CL_QualifiedLeads`
 - Ads → `ALL_LuxuryWebinar-26Aug26_IMG_EN_{Speaker|CampusSunset}_{1|2}`
   (variant `1` = copy V1, `2` = copy V2; `Speaker`/`CampusSunset` = the image)
+
+> The ad-set audience segments are **inherited unchanged from the duplicated source campaign** — the
+> names just mirror the source's own segments. When duplicating, don't create new audiences.
 
 ### UTM template (creative `url_tags`, top-level field)
 ```
@@ -40,8 +43,8 @@ finalize the naming BEFORE building creatives — a name change later means rebu
 ## Pre-build checklist
 - [ ] Ad account id, Page id, IG account id (if IG), Threads id (if Threads) confirmed
 - [ ] Pixel + custom_event_type confirmed (for OFFSITE_CONVERSIONS optimization)
-- [ ] Included + excluded custom audience ids listed
-- [ ] Geo decided (explicit country list vs. UI worldwide — see gotchas)
+- [ ] Audiences confirmed — when duplicating, reuse the source campaign's audiences unchanged (no new segments)
+- [ ] Geo decided (worldwide = leave location empty; or an explicit country list for a subset)
 - [ ] Names generated for campaign + every ad set + every ad
 - [ ] Feed 1:1 and story 9:16 images public + Meta-fetchable
 - [ ] Copy (body/headline/description), link, CTA type confirmed

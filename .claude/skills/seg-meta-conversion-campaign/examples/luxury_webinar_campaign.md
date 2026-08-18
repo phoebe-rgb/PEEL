@@ -10,14 +10,14 @@ PAUSED. (IDs are illustrative of the real build; use the current account's IDs w
 
 ## 2. Ad sets (2), both PAUSED
 Both: REACH/IMPRESSIONS billing, manual FB+IG+Threads placements, `advantage_audience=0`,
-targeting_relaxation lookalike/custom=0, **`is_dynamic_creative=false`**, age 20–65 (age_min 20
-because Thailand + custom audience forces it).
-- **Ad set 1** `ALL_ALL_ALL_ALL_WEB_Top25WebVisitors-180days` — daily CHF3.
-- **Ad set 2** `ALL_ALL_ALL_ALL_CL_QualifiedLeads_Sep22-Oct25` — daily CHF2.
-- **Audiences (both):** 5 included custom audiences, 2 excluded.
-- **Geo:** top-22 historical-origin countries (explicit list; NOT literal worldwide — the worldwide
-  Universal-Ads declaration write returns INTERNAL via the API). Excludes Taiwan + Singapore
-  (declaration triggers) and Russia (no delivery).
+targeting_relaxation lookalike/custom=0, **`is_dynamic_creative=false`**, age 18–65.
+- **Ad set 1** — daily CHF3.
+- **Ad set 2** — daily CHF2.
+- **Audiences (both): reuse the duplicated source campaign's audiences unchanged** — the exact same
+  included custom audiences and the same exclusions the source Open Day campaign already had. Do NOT
+  add new audiences (no "top 25%" segment, no new lookalikes).
+- **Geo:** worldwide — **leave the location empty** (no `geo_locations` at all). Do not use the
+  `country_groups=["worldwide"]` + Universal-Ads declaration route; that returns INTERNAL via the API.
 
 ## 3. Images (public → image_hash)
 Per creative, a 1:1 feed (1080×1080) and a 9:16 story (1080×1920), uploaded via public URLs with

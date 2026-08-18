@@ -5,8 +5,8 @@ build, plus the working alternative. Verified against Meta Marketing API v25.0 d
 
 ## Table of contents
 - [Keep everything PAUSED](#keep-everything-paused)
-- [Geo: worldwide declaration is broken via API](#geo-worldwide)
-- [Age floor traps](#age-floor)
+- [Geo: target worldwide by leaving location empty](#geo-worldwide)
+- [Reuse the source campaign's audiences when duplicating](#reuse-audiences)
 - [Advantage+ must be off in three places](#advantage-off)
 - [url_tags is immutable → rebuild](#url-tags)
 - [Delete = ARCHIVED, not REMOVED](#archived)
@@ -21,24 +21,21 @@ Create campaign, ad sets, and ads with `status=PAUSED`. Launch is a human decisi
 sign-off + schedule check. Never touch the account's global **"Review and publish (N)"** button.
 
 <a name="geo-worldwide"></a>
-## Geo: worldwide declaration is broken via API
-Setting `targeting.geo_locations.country_groups=["worldwide"]` **plus** the required
-`regional_regulated_categories` declaration (e.g. `TAIWAN_UNIVERSAL`, `SINGAPORE_UNIVERSAL`) returns
-Meta **INTERNAL** (is_retryable) on every attempt — while worldwide *without* the declaration returns
-a clean VALIDATION error telling you to add it. So worldwide geo is processed, but the declaration
-write itself is broken through the MCP path.
-- **Fix A (preferred via API):** target an **explicit country list** that excludes the
-  declaration-triggering countries (Taiwan, Singapore) and any Meta doesn't deliver to (Russia).
-  SHMS used its top historical-origin markets. No `country_groups`, no
-  `regional_regulated_categories` → the write succeeds.
-- **Fix B (UI):** flip geo to Worldwide in Ads Manager and accept the Universal Ads declaration
-  checkbox there.
+## Geo: target worldwide by leaving location empty
+To run **worldwide, omit the location** — do not set `geo_locations` at all (no country list, no
+`country_groups`). An absent/empty location delivers worldwide and needs no regional declaration.
+Do **not** use `geo_locations.country_groups=["worldwide"]` together with the
+`regional_regulated_categories` declaration (`TAIWAN_UNIVERSAL`, `SINGAPORE_UNIVERSAL`): that path
+returns Meta **INTERNAL** (is_retryable) on every attempt through the MCP. So: **no location =
+worldwide**; the country_groups+declaration route is the broken one to avoid. (An explicit country
+list still works fine when you deliberately want a subset of markets.)
 
-<a name="age-floor"></a>
-## Age floor traps
-`age_min=18` can be force-bumped by Meta. **Thailand + an attached custom audience forces
-`age_min ≥ 20`.** If you target TH with custom audiences, set `age_min=20` yourself or the write is
-adjusted/blocked.
+<a name="reuse-audiences"></a>
+## Reuse the source campaign's audiences when duplicating
+When you duplicate an existing campaign, **carry over its audiences unchanged** — the same included
+custom audiences and the same exclusions the source already had. Do **not** invent new audiences
+(no "top 25%" segment, no new lookalikes) unless the user explicitly asks. Keep
+`advantage_audience=0` and lookalike/custom `targeting_relaxation=0` as on the source.
 
 <a name="advantage-off"></a>
 ## Advantage+ must be off in three independent places

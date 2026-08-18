@@ -7,9 +7,10 @@ description: >-
   ad campaign through the API: "build a Meta campaign", "duplicate this Open Day campaign", "set up
   Facebook/Instagram ads", "add the story 9:16 images", "make the ads placement-customized", "flip
   geo to worldwide", "why is Stories showing the 1:1 square". Encodes the hard-won API gotchas
-  (worldwide-declaration INTERNAL error, ARCHIVED-not-REMOVED, url_tags immutability, the
-  is_default placement rule, never source_ad_id, keep everything PAUSED) so a rebuild doesn't repeat
-  past mistakes. Requires a connected Meta Ads MCP with ad-account write access.
+  (worldwide = leave location empty, reuse the source campaign's audiences when duplicating,
+  ARCHIVED-not-REMOVED, url_tags immutability, the is_default placement rule, never source_ad_id,
+  keep everything PAUSED) so a rebuild doesn't repeat past mistakes. Requires a connected Meta Ads MCP
+  with ad-account write access.
 ---
 
 # SEG Meta Conversion Campaign Builder
@@ -44,9 +45,11 @@ human decision made after preview sign-off and a schedule check.
    `OUTCOME_SALES`), `AUCTION`, **ABO** (budgets on ad sets, `is_cbo=false`/no campaign budget),
    Advantage+ campaign **OFF**. `status=PAUSED`.
 4. **Create the ad sets** — budget, optimization goal/billing event, schedule, audiences, placements,
-   geo, age. Turn **Advantage audience OFF** (`advantage_audience=0`) and lookalike/custom
-   targeting-relaxation OFF. For placement asset customization set **`is_dynamic_creative=false`**.
-   See `references/meta-api-gotchas.md` for the geo and age traps.
+   geo, age. **When duplicating a campaign, reuse the source's audiences unchanged** (don't create
+   new segments unless asked). For **worldwide, leave the location empty** (no `geo_locations`). Turn
+   **Advantage audience OFF** (`advantage_audience=0`) and lookalike/custom targeting-relaxation OFF.
+   For placement asset customization set **`is_dynamic_creative=false`**. See
+   `references/meta-api-gotchas.md` for the geo and audience notes.
 5. **Upload images** → capture each `image_hash`. Provide **both** the 1:1 feed art and the 9:16
    story art per creative if the ad runs on Stories/Reels. Images must be public and Meta-fetchable.
 6. **Build creatives** — `object_story_spec` (page_id, and instagram_user_id if IG), the copy, link,
