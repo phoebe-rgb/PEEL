@@ -120,8 +120,31 @@ queue, which is NOT ours); delete = status **`ARCHIVED`** (`REMOVED` is rejected
    `preview_iframe.php` screenshots) and confirm **IG Story, IG Reels, FB Story, FB Reels** all show
    the **9:16** image and Feed shows the 1:1 — before telling the client it's fixed.
 
-## Separate check — the end-card page identity (the "SHMS logo")
-The end card's round avatar + name come from the **SHMS Facebook Page `108901562465426`** profile
-picture, not from the creative. If the client wants the SHMS gold crest there, confirm the Page's
-profile photo is the SHMS crest (`SHMS ava facebook.jpg`) in Page settings — the ad rebuild above
-does not change it.
+## Separate fix — the end-card round logo (the "SHMS logo" + name)
+
+The 9:16 fix above is the **big full-screen image**. The small **round logo + account name** on the
+Story/Reels end card is a *different* thing: it is the **advertiser identity's profile picture**, not
+a creative field. Meta's docs are explicit — Stories branding ads (REACH / VIDEO_VIEWS) "only show an
+advertiser's Instagram account name and profile picture" (*Data and CTA Requirements*). There is **no
+`logo` field in `asset_feed_spec`** for stories/reels, so it cannot be set per-ad or via the rebuild.
+
+### Where the end-card logo comes from
+| Placement | The round logo + name is pulled from |
+|---|---|
+| **IG** Story / Reels (`shmsswitzerland`) | The **Instagram account's profile picture** |
+| **FB** Story / Reels | The **SHMS Facebook Page (`108901562465426`) profile picture** |
+
+### How to fix it (manual — profile-picture change, NOT an API action)
+Neither step is doable via the Marketing API / ads MCP — a person with access must do them once, and
+they then apply to every ad automatically:
+1. **Instagram** — in the Instagram app on the `shmsswitzerland` account: *Edit profile → Change
+   profile photo* → upload the SHMS crest (`SHMS ava facebook.jpg`). Covers all IG Story/Reels ads.
+2. **Facebook** — on the SHMS Page (`108901562465426`): *Page → profile picture → Edit* → upload the
+   same crest. Covers all FB Story/Reels ads.
+3. If the IG identity is a **page-backed "shadow" account** (not a real IG login), its picture
+   **auto-mirrors** the FB Page picture — so doing step 2 does step 1 for free.
+
+### If you want the logo BIG and in-frame (not just the small round avatar)
+The end-card avatar is always small and round. To show the SHMS logo large at the end of the story,
+**bake it into the 9:16 story image** (a logo band top or bottom of the vertical artwork) and re-upload
+that image. That is a design edit to the creative, then the rebuild above picks it up.
