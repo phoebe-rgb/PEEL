@@ -10,7 +10,7 @@ Build Meta ads from three inputs — an **existing campaign/adset** (to inherit 
 ## Golden rules
 
 - **Creatives are immutable.** You cannot edit an existing creative's copy, image, link, or CTA. To "duplicate and change copy/asset", build a **new** creative and a **new** ad. `ads_creative_update` / `ads_update_entity` only rename, relabel, or change status.
-- **New ads are created PAUSED.** They stay paused until the user activates them. Never activate without explicit instruction.
+- **New ads are created PAUSED.** They stay paused until the user activates them. Never activate without explicit instruction. To "turn the ads on but keep the campaign off", activate each **ad** with `ads_activate_entity` (`entity_type:"ad"`) and leave the campaign paused — the ad's effective status becomes `CAMPAIGN_PAUSED` and it won't deliver until the campaign itself is activated. All three levels (campaign, ad set, ad) must be ACTIVE to actually deliver.
 - **"Keep setup as is."** Placements, audience, budget, optimization live on the **ad set**, not the ad — so putting the new ad in the same ad set preserves them. On the creative, preserve: destination URL, URL parameters, CTA, page, and "no Advantage+".
 - **"No Advantage+"** = do not set `advantage_plus_creative` and do not opt into `advantage_plus_creative_features`. Placement asset customization (Feed vs Story image) is **not** Advantage+ — it is a fixed per-placement mapping (see references/feed-story-customization.md).
 - **Confirm before scale.** Build ONE ad, preview it (`ads_get_ad_preview`, both Feed and Story formats), get sign-off, then batch. Ads are live-account, hard-to-reverse objects.

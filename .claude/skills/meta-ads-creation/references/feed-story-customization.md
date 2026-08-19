@@ -74,6 +74,11 @@ is a fixed per-placement mapping, **not** Advantage+ optimization.
 - Feed image should be **1080x1080**, Story image **1080x1920**.
 - No Instagram account was attachable on SEG (`ads_get_ig_accounts` not rolled out); IG placements fall back to the Page. If IG delivery matters, attach an IG user id via `instagram_user_id` when available.
 - Video ads: upload each MP4 with `ads_creative_upload_video`, poll `ads_get_ad_videos` until `status.video_status == "ready"`, then use `video_data` (single) or `placement_videos` (per-placement) instead of images.
+- Canva `export-design` returns short-lived signed S3 URLs. `ads_creative_upload_image` occasionally fails one with "Image Wasn't Downloaded" (transient / near-expiry); just re-export that page and re-upload. Copy the URL with no stray whitespace — a space in the signature also fails the fetch. Uploading the same image twice is safe: identical bytes de-duplicate to the same `hash`.
+
+## Turning ads on but keeping the campaign off
+
+New ads are created PAUSED. If asked to "turn the ads on but keep the campaign off", activate each ad with `ads_activate_entity` (`entity_type:"ad"`) and leave the campaign paused. The ad reads ACTIVE at the ad level but its effective status is `CAMPAIGN_PAUSED`, so it does not deliver or spend until the campaign itself is activated.
 
 ## Canva deck mapping (SEG Parent Bachelor, India — reference)
 
