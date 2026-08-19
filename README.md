@@ -1,5 +1,18 @@
 # PEEL
 
+## `meta-ads-creation` skill
+
+A Claude skill for **creating and duplicating Meta (Facebook/Instagram) ads** on
+existing campaigns using the Facebook Ads MCP tools — pulling copy from a Google
+Sheet and creative assets from Canva, applying SEG naming/UTM conventions, and
+building Feed + Story per-placement creatives.
+
+It lives in [`.claude/skills/meta-ads-creation/`](.claude/skills/meta-ads-creation/)
+and triggers when someone wants to create, duplicate, or refresh Meta ads. See its
+[`SKILL.md`](.claude/skills/meta-ads-creation/SKILL.md) and the
+[`references/`](.claude/skills/meta-ads-creation/references/) for the naming/UTM
+conventions and the exact creative JSON (including Feed+Story asset customization).
+
 ## `preview-ads` skill
 
 A Claude skill for generating realistic **Google Ads preview mockups** — how a text
