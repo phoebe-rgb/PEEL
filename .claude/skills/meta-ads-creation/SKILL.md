@@ -24,7 +24,8 @@ Build Meta ads from three inputs — an **existing campaign/adset** (to inherit 
 5. **Build the ad.** `ads_create_ad` with an inline `creative` JSON:
    - Single image, one image everywhere → `object_story_spec.link_data` (see references/feed-story-customization.md).
    - Different image per placement (Feed square + Story/Reels vertical) → `asset_feed_spec` with `asset_customization_rules` (see references/feed-story-customization.md).
-   - Put the UTM string in `url_tags` (the "URL parameters" field) and keep `link` clean.
+   - **Video per placement** (Feed square + Story/Reels vertical) → `asset_feed_spec` with a `videos` array + `video_label` rules and `ad_formats:["SINGLE_VIDEO"]` (section C). Do **not** use `ads_create_creative`'s `placement_videos` shortcut — it hard-requires `instagram_user_id` and fails "Instagram Account Is Missing"; the `asset_feed_spec` path inherits the Page's IG identity automatically.
+   - Put the UTM string in `url_tags` (the "URL parameters" field) and keep `link` clean — **except** in a video `asset_feed_spec`, where `url_tags` is rejected, so append the UTM to `link_urls[].website_url` there.
 6. **Preview + verify.** `ads_get_ad_preview` for `MOBILE_FEED_STANDARD` and `INSTAGRAM_STORY`. Return the `preview_url` to the user.
 7. **Batch** the rest once approved, reusing the same structure. Name every ad per the convention below.
 
