@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Culinary Arts Academy Switzerland — Indonesia Admissions</title>
+<meta name="description" content="Launch an international culinary career from Switzerland — the world's #1 ranked culinary school and the only one ranked in the QS World University Rankings (2026). Dedicated Indonesia admissions team, all-inclusive programs, paid internships and globally recognized degrees.">
+<link rel="icon" href="https://d9hhrg4mnvzow.cloudfront.net/learn.culinaryartsswitzerland.com/india/6f2fe9aa-caa.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+
+<style>
+/* ===================== TOKENS ===================== */
+:root{
+  --red:#e42313;
+  --red-dark:#c01b0d;
+  --black:#0e0e0e;
+  --ink:#0e0e0e;
+  --muted:#5c5c5c;
+  --line:#e3e3e2;
+  --cream:#faf6ef;
+  --serif:'Old Standard TT', Georgia, serif;
+  --sans:'Inter', Arial, sans-serif;
+  --maxw:1200px;
+}
+
+/* ===================== RESET ===================== */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  color:var(--ink);
+  background:#fff;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  font-size:16px;
+  padding-bottom:64px;
+}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;line-height:1.12;letter-spacing:-.02em;text-transform:uppercase}
+h1 .art,h2 .art,h3 .art,h4 .art{text-transform:lowercase;font-style:italic;font-weight:400;letter-spacing:0}
+
+/* ===================== LAYOUT ===================== */
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+.section{padding:56px 0}
+.section--dark{background:var(--black);color:#fff}
+.section--cream{background:var(--cream)}
+.eyebrow{
+  font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--red);margin-bottom:14px;
+}
+.section--dark .eyebrow{color:#ff6a5a}
+.section-title{font-size:clamp(28px,5.2vw,40px);margin-bottom:14px}
+.section-intro{max-width:760px;color:var(--muted);font-size:16px;margin-bottom:34px}
+.section--dark .section-intro{color:#cfcfcf}
+
+/* ===================== BUTTONS ===================== */
+.btn{
+  display:inline-block;font-family:var(--sans);font-weight:600;font-size:13px;
+  padding:15px 28px;border-radius:2px;cursor:pointer;border:none;text-align:center;
+  transition:background .15s ease, transform .15s ease;
+}
+.btn--primary{background:var(--red);color:#fff}
+.btn--primary:hover{background:var(--red-dark)}
+.btn--ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6)}
+.btn--ghost:hover{background:rgba(255,255,255,.1)}
+.btn--outline{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.btn--outline:hover{background:var(--ink);color:#fff}
+.btn--block{display:block;width:100%}
+.btn--sm{padding:11px 20px;font-size:12.5px}
+
+/* ===================== HERO ===================== */
+.hero{
+  position:relative;color:#fff;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.35) 40%, rgba(0,0,0,.78) 100%),
+    url('assets/hero-chef-mountains.jpg') 78% 18%/cover no-repeat;
+  background-color:#0e0e0e;
+}
+.hero__inner{max-width:var(--maxw);margin:0 auto;padding:190px 20px 72px}
+.hero h1{font-size:clamp(42px,8vw,62px);line-height:1.08;margin-bottom:18px;max-width:16ch}
+.hero__logo{height:38px;width:auto;margin-bottom:22px}
+.hero__eyebrow{
+  font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--red);margin-bottom:16px;
+}
+.hero__sub{font-size:17px;color:#ececec;max-width:54ch;margin-bottom:30px}
+.hero__sub strong{color:#fff}
+
+/* ===================== PROGRAMMES ===================== */
+.prog-grid{display:grid;grid-template-columns:1fr;gap:22px}
+.prog-card{
+  background:#fff;border:1px solid var(--line);border-radius:4px;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.prog-card__img{aspect-ratio:16/10;background:#ddd center/cover no-repeat}
+.prog-card__body{padding:22px 22px 24px;display:flex;flex-direction:column;flex:1}
+.prog-card__body h3{font-size:clamp(24px,4vw,32px);margin-bottom:14px}
+.prog-meta{list-style:none;margin:0 0 16px;padding:0;font-size:14px}
+.prog-meta li{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
+.prog-meta li:last-child{border-bottom:none}
+.prog-meta .k{color:var(--muted);min-width:118px;font-weight:600}
+.prog-meta .v{color:var(--ink)}
+.prog-card p.desc{font-size:14.5px;color:var(--muted);margin-bottom:18px}
+.prog-card .btn{margin-top:auto}
+
+/* ===================== WHAT'S COVERED / FEES ===================== */
+.fees-grid{display:grid;grid-template-columns:1fr;gap:22px;margin-bottom:8px}
+.fee-card{
+  background:#fff;border:1px solid var(--line);border-radius:6px;overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:0 8px 22px rgba(17,17,17,.06);
+}
+.fee-card--feature{border-top:4px solid var(--red)}
+.fee-card__body{padding:26px 24px 26px;display:flex;flex-direction:column;flex:1}
+.fee-card__tag{
+  display:inline-block;align-self:flex-start;font-family:var(--sans);font-weight:700;
+  font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--red);
+  background:#fff3f2;padding:5px 10px;border-radius:2px;margin-bottom:14px;
+}
+.fee-card__body h3{font-size:clamp(19px,2.4vw,22px);margin-bottom:18px;min-height:2.4em}
+.fee-card__price{border-top:1px solid var(--line);padding-top:16px;margin-bottom:16px}
+.fee-card__price .chf{display:block;font-family:var(--sans);font-weight:700;font-size:30px;color:var(--ink);line-height:1}
+.fee-card__price .idr{display:block;font-family:var(--sans);font-size:14px;font-weight:600;color:var(--red);margin-top:6px}
+.fee-card__price .term{display:block;font-family:var(--sans);font-size:12.5px;color:var(--muted);margin-top:8px}
+.fee-card__inc{font-size:13.5px;color:var(--muted);margin-bottom:20px;line-height:1.55}
+.fee-card__inc strong{color:var(--ink)}
+.fee-card .btn{margin-top:auto}
+
+/* ===================== SCHOLARSHIPS / ROI HIGHLIGHT (softened) ===================== */
+.roi{
+  margin-top:40px;border:1px solid var(--line);border-top:4px solid var(--red);border-radius:8px;overflow:hidden;
+  background:#fff;box-shadow:0 10px 26px rgba(17,17,17,.08);
+}
+.roi__head{background:var(--black);color:#fff;padding:26px 28px;border-left:4px solid var(--red)}
+.roi__head h3{color:#fff;font-size:clamp(24px,4vw,32px);margin:0 0 6px}
+.roi__head p{font-size:14.5px;color:#d8d8d8;margin:0;max-width:60ch}
+.roi__stats{display:grid;grid-template-columns:1fr;border-bottom:1px solid var(--line)}
+.roi__stat{padding:26px 28px;text-align:center}
+.roi__stat + .roi__stat{border-top:1px solid var(--line)}
+.roi__stat .big{font-family:var(--serif);font-weight:700;color:var(--ink);font-size:44px;line-height:1}
+.roi__stat .big span{color:var(--red)}
+.roi__stat .cap{font-size:12.5px;letter-spacing:.05em;color:var(--muted);margin-top:10px;text-transform:uppercase}
+.roi__cols{display:grid;grid-template-columns:1fr;gap:28px;padding:28px}
+.roi__cols > div{max-width:640px}
+.roi__cols h4{font-family:var(--serif);font-size:clamp(21px,3.4vw,28px);margin-bottom:14px;color:var(--ink)}
+.incl{list-style:none;padding:0;margin:0}
+.incl li{position:relative;padding:7px 0 7px 28px;font-size:14.5px;color:var(--ink)}
+.incl li::before{
+  content:"";position:absolute;left:0;top:9px;width:16px;height:16px;border-radius:50%;
+  background:var(--red);
+}
+.incl li::after{content:"";position:absolute;left:5px;top:12px;width:5px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.fees-foot{margin-top:26px;font-size:13px;color:var(--muted)}
+@media(min-width:680px){
+  .roi__stats{grid-template-columns:1fr 1fr}
+  .roi__stat + .roi__stat{border-top:none;border-left:1px solid var(--line)}
+}
+
+/* ===================== STATS / SOCIAL PROOF ===================== */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:40px}
+.stat{text-align:center}
+.stat .num{font-family:var(--serif);font-size:clamp(60px,6.25vw,90px);font-weight:700;color:#fff;line-height:1}
+.stat .lbl{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#bdbdbd;margin-top:8px}
+.alumni-grid{display:grid;grid-template-columns:1fr;gap:20px}
+.alum-card{background:#1c1c1c;border:1px solid #2c2c2c;border-radius:4px;overflow:hidden}
+.alum-card__img{aspect-ratio:1/1;background:#2a2a2a center/cover no-repeat}
+.alum-card__body{padding:18px}
+.alum-card__body h3{color:#fff;font-size:clamp(24px,4vw,32px);margin-bottom:6px}
+.alum-card__role{font-size:13.5px;color:#bdbdbd}
+.alum-card__honours{font-size:12.5px;color:#ff8a7d;margin-top:8px}
+
+/* ===================== WHY SWITZERLAND ===================== */
+.why-list{list-style:none;padding:0;margin:0 0 8px;max-width:760px}
+.why-list li{position:relative;padding:10px 0 10px 30px;font-size:16px;border-bottom:1px solid rgba(255,255,255,.12)}
+.why-list li::before{content:"";position:absolute;left:0;top:16px;width:14px;height:14px;border-radius:50%;background:var(--red)}
+.trusted{margin-top:40px;padding-top:32px;border-top:2px solid var(--red)}
+.trusted h3{color:#fff;font-size:clamp(24px,4vw,32px);margin-bottom:18px}
+.trusted-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:14px}
+.trusted-list li{position:relative;padding-left:30px;font-size:15.5px;color:#e8e8e8}
+.trusted-list li::before{content:"";position:absolute;left:0;top:6px;width:16px;height:16px;border-radius:50%;background:var(--red)}
+.why-cta{margin-top:34px}
+
+/* ===================== CAMPUSES ===================== */
+.campus-grid{display:grid;grid-template-columns:1fr;gap:24px}
+.campus{border-radius:4px;overflow:hidden;background:#fff;border:1px solid var(--line)}
+.campus__img{aspect-ratio:16/10;background:#ddd center/cover no-repeat}
+.campus__img--placeholder{background:linear-gradient(135deg,#1a1a1a,#3a2a20)}
+.campus__body{padding:20px 22px 24px}
+.campus__body h3{font-size:clamp(24px,4vw,32px);margin-bottom:8px}
+.campus__body p{font-size:14.5px;color:var(--muted)}
+
+/* ===================== FORM ===================== */
+.form-section{background:var(--black);color:#fff}
+.form-card{background:#fff;color:var(--ink);border-radius:6px;padding:30px 24px;max-width:680px;margin:0 auto}
+.form-card h2{font-size:clamp(28px,5.2vw,40px);color:var(--ink);margin-bottom:8px}
+.form-card .form-sub{font-size:14.5px;color:var(--muted);margin-bottom:24px}
+.form-step-label{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin:8px 0 14px}
+.form-step2-sub{font-size:13.5px;color:var(--muted);margin-bottom:18px}
+.form-grid{display:grid;grid-template-columns:1fr;gap:16px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--ink)}
+.field label .req{color:var(--red)}
+.field input,.field select{
+  width:100%;padding:12px 13px;border:1px solid #cfcfcf;border-radius:3px;
+  font-family:var(--sans);font-size:15px;color:var(--ink);background:#fff;
+}
+.field input:focus,.field select:focus{outline:none;border-color:var(--red)}
+.consent{font-size:12px;color:var(--muted);margin-top:18px;display:flex;gap:10px;align-items:flex-start}
+.consent a{color:var(--red);text-decoration:underline}
+.form-actions{margin-top:22px}
+.form-actions--split{margin-top:22px;display:flex;gap:14px;align-items:center;justify-content:space-between}
+.form-actions--split .btn--ghost{color:var(--ink);border-color:#cfcfcf}
+.form-actions--split .btn--ghost:hover{background:#f2f2f2}
+.fstep{display:none}
+.fstep.active{display:block}
+.form-success{display:none;text-align:center;padding:20px 6px}
+.form-success.show{display:block}
+.form-success h3{font-size:24px;margin-bottom:10px}
+.form-success p{color:var(--muted);font-size:14.5px;max-width:46ch;margin:0 auto}
+
+/* ===================== FAQ ===================== */
+.faq-item{border-bottom:1px solid var(--line)}
+.faq-q{
+  width:100%;text-align:left;background:none;border:none;cursor:pointer;
+  padding:20px 36px 20px 0;position:relative;font-family:var(--serif);font-size:18px;
+  font-weight:700;color:var(--ink);
+}
+.faq-q::after{content:"+";position:absolute;right:4px;top:18px;font-family:var(--sans);font-size:24px;color:var(--red);transition:transform .2s}
+.faq-item.open .faq-q::after{content:"–"}
+.faq-a{display:none;padding:0 0 22px;font-size:15px;color:var(--muted);max-width:62ch}
+.faq-item.open .faq-a{display:block}
+
+/* ===================== RANKING BAR (hero trust-bar + footer, per screenshot) ===================== */
+.footer-rank{background:var(--black);color:#fff;padding:26px 0}
+.footer-rank__inner{
+  max-width:var(--maxw);margin:0 auto;padding:0 20px;
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:30px;text-align:center;
+}
+.footer-rank__logo{height:74px;width:auto}
+.footer-badge{display:flex;align-items:center;gap:12px;text-align:left}
+.footer-badge img{height:56px;width:auto}
+.footer-badge span{font-family:var(--serif);font-weight:700;font-size:14px;line-height:1.3;text-transform:uppercase;color:#fff;max-width:13ch}
+.footer-rank__qs{background:#fff;padding:10px 16px;border-radius:4px;width:200px;height:auto}
+.footer-rank__cta{white-space:nowrap}
+
+/* vertical award badge (trust bar under hero) — wreath + text only */
+.award-badge{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;max-width:420px}
+.award-badge__rank{font-family:var(--sans);font-weight:700;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:#fff;line-height:1.3;white-space:nowrap}
+.award-badge__laurel-img{height:120px;width:auto}
+.award-badge__cap{font-family:var(--sans);font-weight:500;font-size:13.5px;letter-spacing:.02em;color:#cfcfcf;line-height:1.4;white-space:nowrap}
+@media(max-width:679px){
+  .award-badge__rank,.award-badge__cap{white-space:normal;text-align:center}
+}
+.footer-badge-img{height:96px;width:auto}
+
+/* footer ranking bar: all logos + CTA on one row, spread edge-to-edge */
+.footer-rank__inner--row{width:100%;justify-content:space-between;gap:24px}
+.trust-bar{border-bottom:1px solid #2a2a2a}
+.footer-sub{padding:16px 0;border-top:1px solid #2a2a2a}
+.footer-sub__inner{max-width:var(--maxw);margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:center;text-align:center}
+.footer-sub__copy{font-size:12px;color:#8f8f8f}
+.footer-sub__privacy{font-size:12px;color:#cfcfcf;text-decoration:underline}
+@media(max-width:679px){
+  .footer-rank__inner{justify-content:center;text-align:center}
+  .footer-rank__cta{width:100%}
+}
+
+/* ===================== STICKY CTA BAR ===================== */
+.sticky-cta{
+  position:fixed;left:0;right:0;bottom:0;z-index:900;
+  background:var(--black);color:#fff;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:10px 16px;
+  transform:translateY(110%);transition:transform .3s ease;
+  box-shadow:0 -2px 14px rgba(0,0,0,.25);
+}
+.sticky-cta.show{transform:translateY(0)}
+.sticky-cta__txt{font-family:var(--serif);font-size:15px;font-weight:700}
+.sticky-cta .btn{padding:11px 18px;font-size:13px;white-space:nowrap}
+
+/* ===================== RESPONSIVE ===================== */
+@media(min-width:680px){
+  .stats{grid-template-columns:repeat(4,1fr)}
+  .form-grid{grid-template-columns:1fr 1fr}
+  .field--full{grid-column:1 / -1}
+  .trusted-list{grid-template-columns:1fr}
+}
+@media(min-width:860px){
+  body{padding-bottom:0}
+  .section{padding:80px 0}
+  .section-title{font-size:40px}
+  .hero h1{font-size:62px}
+  .hero__inner{padding:120px 20px 110px}
+  .hero{background-position:center}
+  .prog-grid{grid-template-columns:repeat(2,1fr)}
+  .fees-grid{grid-template-columns:repeat(3,1fr)}
+  .alumni-grid{grid-template-columns:repeat(4,1fr)}
+  .campus-grid{grid-template-columns:1fr 1fr}
+  .trusted-list{grid-template-columns:repeat(3,1fr)}
+  .sticky-cta{bottom:auto;top:0;transform:translateY(-110%);box-shadow:0 2px 14px rgba(0,0,0,.25);padding:12px 28px}
+  .sticky-cta.show{transform:translateY(0)}
+  .sticky-cta__inner{max-width:var(--maxw);margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px}
+}
+@media(min-width:1100px){
+  .prog-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     STICKY CTA BAR (mobile: bottom / desktop: top) — appears after hero
+     ============================================================ -->
+<div class="sticky-cta show" id="stickyCta">
+  <div class="sticky-cta__inner">
+    <span class="sticky-cta__txt">Take the first step.</span>
+    <a href="#admissions-form" class="btn btn--primary cta-indonesia">Request More Info</a>
+  </div>
+</div>
+
+<!-- ============================================================
+     1. HERO
+     ============================================================ -->
+<header class="hero" id="hero">
+  <div class="hero__inner">
+    <img class="hero__logo" src="assets/caas-logo.png" alt="Culinary Arts Academy Switzerland">
+    <p class="hero__eyebrow">Culinary Arts Academy Switzerland</p>
+    <h1>Turn Your Passion <span class="art">for</span> Food into a Career <span class="art">for</span> Life</h1>
+    <p class="hero__sub">Launch an <strong>international culinary career</strong> from Switzerland — the world's #1 ranked culinary school, with <strong>paid internships</strong> and globally recognized degrees that open doors worldwide.</p>
+    <a href="#admissions-form" class="btn btn--primary cta-indonesia">Request More Info</a>
+  </div>
+</header>
+
+<!-- ============================================================
+     1B. RANKING TRUST BAR — logo · #1 badge · QS logo · CTA
+     ============================================================ -->
+<section class="footer-rank trust-bar">
+  <div class="footer-rank__inner">
+    <div class="award-badge">
+      <span class="award-badge__rank">QS World University Rankings 2026</span>
+      <img class="award-badge__laurel-img" src="assets/badge-caas.png" alt="#1 Culinary School in Switzerland">
+      <span class="award-badge__cap">Nominated 'Europe's Best' by the World Culinary Awards</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     2. PROGRAMMES
+     ============================================================ -->
+<section class="section" id="programs">
+  <div class="wrap">
+    <p class="eyebrow">Our Programs</p>
+    <h2 class="section-title">Swiss excellence, global recognition, career-ready outcomes</h2>
+    <p class="section-intro">Study at the number one culinary school in Switzerland — the only culinary arts school ranked in the QS World University Rankings (2026) — and gain the skills to lead kitchens, launch brands, or manage global hospitality teams. Our programs blend hands-on chef training with business expertise, 2 degrees, and international paid internships to help you build a career faster — all in one of the world's safest and most welcoming countries, with housing, meals, visa support and a close-knit international community to guide you along the way.</p>
+
+    <div class="prog-grid">
+
+      <article class="prog-card">
+        <div class="prog-card__img" style="background-image:url('assets/bachelor-culinary-arts.jpg')"></div>
+        <div class="prog-card__body">
+          <h3>Bachelor <span class="art">of</span> Arts <span class="art">in</span> Culinary Arts</h3>
+          <ul class="prog-meta">
+            <li><span class="k">Duration</span><span class="v">3 years (incl. 2 internships)</span></li>
+            <li><span class="k">Degree</span><span class="v">2 Bachelor Degrees (Switzerland + UK)</span></li>
+            <li><span class="k">Pathways</span><span class="v">Culinary or Pastry &amp; Chocolate Arts</span></li>
+            <li><span class="k">Practical</span><span class="v">1,100 kitchen hours</span></li>
+          </ul>
+          <p class="desc">Build a global foundation for your culinary career with hands-on chef training, two paid internships, and business-focused courses. Ideal for students who want to lead kitchens, innovate in food, or grow an international brand.</p>
+          <a href="#admissions-form" class="btn btn--primary cta-indonesia cta-explore" data-program="Bachelor of Arts in Culinary Arts">Learn More</a>
+        </div>
+      </article>
+
+      <article class="prog-card">
+        <div class="prog-card__img" style="background-image:url('assets/bachelor-pastry-chocolate.jpg')"></div>
+        <div class="prog-card__body">
+          <h3>Bachelor <span class="art">of</span> Arts <span class="art">in</span> Pastry, Bakery &amp; Chocolate Arts</h3>
+          <ul class="prog-meta">
+            <li><span class="k">Duration</span><span class="v">3 years (incl. 2 internships)</span></li>
+            <li><span class="k">Degree</span><span class="v">2 Bachelor Degrees (Switzerland + UK)</span></li>
+            <li><span class="k">Location</span><span class="v">Le Bouveret &amp; Brig</span></li>
+            <li><span class="k">Practical</span><span class="v">1,100 kitchen hours</span></li>
+          </ul>
+          <p class="desc">Refine your craft in pastry, bread and chocolate through an immersive three-year program that pairs technical training with entrepreneurial insight — including two paid internships and the chance to help run a public training restaurant.</p>
+          <a href="#admissions-form" class="btn btn--primary cta-indonesia cta-explore" data-program="Bachelor of Arts in Pastry, Bakery &amp; Chocolate Arts">Learn More</a>
+        </div>
+      </article>
+
+      <article class="prog-card">
+        <div class="prog-card__img" style="background-image:url('assets/master-culinary-business.jpg')"></div>
+        <div class="prog-card__body">
+          <h3>Master <span class="art">of</span> Arts <span class="art">in</span> Culinary Business Management</h3>
+          <ul class="prog-meta">
+            <li><span class="k">Duration</span><span class="v">1 year (incl. internship)</span></li>
+            <li><span class="k">Degree</span><span class="v">2 Master's Degrees (Switzerland + UK)</span></li>
+            <li><span class="k">Practical</span><span class="v">240 kitchen hours</span></li>
+          </ul>
+          <p class="desc">Step up from chef to culinary leader. In just one year, build the business mindset, global experience, and network to launch your own venture or lead top brands.</p>
+          <a href="#admissions-form" class="btn btn--primary cta-indonesia cta-explore" data-program="MA in Culinary Business Management">Learn More</a>
+        </div>
+      </article>
+
+      <article class="prog-card">
+        <div class="prog-card__img" style="background-image:url('assets/diploma-program.jpg')"></div>
+        <div class="prog-card__body">
+          <h3>Professional Swiss Diploma <span class="art">in</span> Culinary Arts <span class="art">or</span> Pastry Arts</h3>
+          <ul class="prog-meta">
+            <li><span class="k">Duration</span><span class="v">1 year (2 terms + 6-month paid internship) — flexible 1, 2 or 3-term modular structure</span></li>
+            <li><span class="k">Award</span><span class="v">Professional Certificate after term 1, Professional Swiss Diploma after term 2 + internship, Professional Swiss Grand Diploma after optional term 3</span></li>
+            <li><span class="k">Pathways</span><span class="v">Culinary Arts or Pastry Arts</span></li>
+            <li><span class="k">Practical</span><span class="v">Up to 850 contact hours</span></li>
+          </ul>
+          <p class="desc">Fast-track your career with a hands-on deep dive into European and international cuisine — choose the Culinary or Pastry &amp; Chocolate pathway. Perfect for hands-on learners ready to impress the world.</p>
+          <a href="#admissions-form" class="btn btn--primary cta-indonesia cta-explore" data-program="Professional Swiss Diploma — Culinary Arts">Learn More</a>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     3. SOCIAL PROOF / ALUMNI  (Indonesia + SEA weighted)
+     ============================================================ -->
+<section class="section section--dark" id="alumni">
+  <div class="wrap">
+    <p class="eyebrow">Real Students. Real Success.</p>
+    <h2 class="section-title">An influential alumni network</h2>
+    <p class="section-intro">Over the past 20 years we have helped launch more than 5,000 culinary careers around the world — including chefs and restaurateurs leading kitchens across Jakarta and Southeast Asia. As part of Swiss Education Group, our alumni also have access to one of the largest hospitality networks in the world.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="num">5K</div><div class="lbl">Alumni from Culinary Arts Academy</div></div>
+      <div class="stat"><div class="num">45K</div><div class="lbl">Alumni from the Swiss Education Group network</div></div>
+      <div class="stat"><div class="num">97%</div><div class="lbl">Of students hired upon graduation</div></div>
+      <div class="stat"><div class="num">100+</div><div class="lbl">Nationalities in the alumni community</div></div>
+    </div>
+
+    <div class="alumni-grid">
+
+      <!-- [CONFIRM] Indonesian alumnus — source photo from culinaryartsswitzerland.com/en/culinary-arts-academy-alumni/ -->
+      <article class="alum-card">
+        <div class="alum-card__img" style="background-image:url('assets/alumni-theodore-darrel.jpg')"></div>
+        <div class="alum-card__body">
+          <h3>Theodore Darrel</h3>
+          <p class="alum-card__role">Owner &amp; Chef, Tide &amp; Table · Jakarta, Indonesia</p>
+          <p class="alum-card__honours">Culinary Arts Academy Switzerland · Class of 2019</p>
+        </div>
+      </article>
+
+      <!-- [CONFIRM] Indonesian alumnus — source photo from culinaryartsswitzerland.com/en/culinary-arts-academy-alumni/ -->
+      <article class="alum-card">
+        <div class="alum-card__img" style="background-image:url('assets/alumni-dary-sarwono.jpg')"></div>
+        <div class="alum-card__body">
+          <h3>Dary Hutomo Sarwono</h3>
+          <p class="alum-card__role">F&amp;B Director, Joglo Group · Jakarta, Indonesia</p>
+          <p class="alum-card__honours">Culinary Arts Academy Switzerland · Class of 2015</p>
+        </div>
+      </article>
+
+      <!-- [CONFIRM] Southeast Asian alumnus — source photo from alumni page -->
+      <article class="alum-card">
+        <div class="alum-card__img" style="background-image:url('assets/alumni-ian-chong.jpg')"></div>
+        <div class="alum-card__body">
+          <h3>Ian Ferdinand Chong</h3>
+          <p class="alum-card__role">Founder, Marymount Bakehouse · Singapore</p>
+          <p class="alum-card__honours">Culinary Arts Academy Switzerland · Class of 2016</p>
+        </div>
+      </article>
+
+      <article class="alum-card">
+        <div class="alum-card__img" style="background-image:url('assets/alumni-danna-vu.jpg')"></div>
+        <div class="alum-card__body">
+          <h3>Danna Vu</h3>
+          <p class="alum-card__role">Culinary competitor &amp; medallist</p>
+          <p class="alum-card__honours">Culinary World Cup 2018 Champion · Culinary Olympics 2020 Gold Medal</p>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     4. WHY STUDY IN SWITZERLAND
+     ============================================================ -->
+<section class="section section--dark" id="why-switzerland" style="background:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.6)),url('assets/why-switzerland-bg.jpg') center/cover fixed">
+  <div class="wrap">
+    <p class="eyebrow">Why Study in Switzerland</p>
+    <h2 class="section-title">A stepping stone <span class="art">to</span> international careers</h2>
+    <p class="section-intro">Switzerland offers more than breathtaking scenery — it's a stepping stone to international careers, trusted by parents and chosen by ambitious students worldwide.</p>
+    <ul class="why-list">
+      <li>Study in one of the safest and most stable countries in the world</li>
+      <li>Learn in a country known for quality, precision, and real-world results</li>
+      <li>Train in the home of world-famous culinary excellence</li>
+      <li>Be inspired in a country with one of the highest densities of Michelin-starred restaurants</li>
+      <li>A trusted choice with global recognition and long-term career value</li>
+    </ul>
+
+    <div class="trusted">
+      <h3>Trusted <span class="art">by</span> Indonesian Families</h3>
+      <ul class="trusted-list">
+        <li>Dedicated Indonesia admissions team — support from application to arrival</li>
+        <li>Safe, structured campus life with 24/7 student support</li>
+        <li>Degrees recognized for careers in Indonesia, Singapore, the UAE and beyond</li>
+      </ul>
+    </div>
+
+    <div class="why-cta">
+      <a href="#admissions-form" class="btn btn--primary cta-indonesia">Request More Info</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     5. CAMPUSES
+     ============================================================ -->
+<section class="section" id="campuses">
+  <div class="wrap">
+    <p class="eyebrow">The Campuses</p>
+    <h2 class="section-title">Two campuses, one world-class culinary journey</h2>
+    <p class="section-intro">Study on the shores of Lake Geneva in Le Bouveret or in the heart of the Swiss Alps in Brig. Both campuses combine stunning locations with hands-on training — with 16+ state-of-the-art training kitchens between them, including a 100-seat training restaurant — giving you the perfect setting to master your craft and launch a global culinary career.</p>
+
+    <div class="campus-grid">
+      <article class="campus">
+        <div class="campus__img" style="background-image:url('assets/le-bouveret.jpeg')"></div>
+        <div class="campus__body">
+          <h3>Le Bouveret</h3>
+          <p>On the shores of Lake Geneva, with state-of-the-art kitchens and a team of highly experienced chefs.</p>
+        </div>
+      </article>
+      <article class="campus">
+        <div class="campus__img" style="background-image:url('assets/brig-campus.jpg')"></div>
+        <div class="campus__body">
+          <h3>Brig</h3>
+          <p>In the heart of the Swiss Alps, combining a stunning setting with cutting-edge facilities and inspiring spaces.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     6. WHAT'S COVERED + TUITION FEES  (moved directly above the form)
+        Headline + subheadline kept from "What's Covered"; the 3 program
+        fee cards shown up-front to qualify serious applicants.
+     ============================================================ -->
+<section class="section section--cream" id="fees">
+  <div class="wrap">
+    <p class="eyebrow">What's Covered</p>
+    <h2 class="section-title">Everything is taken care of</h2>
+    <p class="section-intro">From accommodation and meals to student support, everything is taken care of — so you can focus on your craft. Whichever program you choose, one all-inclusive fee covers everything. Merit-based scholarships are available; ask our Indonesia admissions team about your options.</p>
+
+    <div class="fees-grid">
+
+      <!-- BACHELOR -->
+      <article class="fee-card fee-card--feature">
+        <div class="fee-card__body">
+          <span class="fee-card__tag">Bachelor's · 2 Degrees</span>
+          <h3>Bachelor <span class="art">of</span> Arts — Culinary, or Pastry, Bakery &amp; Chocolate Arts</h3>
+          <div class="fee-card__price">
+            <span class="chf">CHF 175,300</span>
+            <span class="idr">approx. Rp 3.6 billion</span>
+            <span class="term">3 years · 7 terms · 2 paid internships</span>
+          </div>
+          <p class="fee-card__inc"><strong>All-inclusive:</strong> tuition, accommodation &amp; meals, kitchen tools &amp; uniform, student services, arrival &amp; insurance, career services and 2 paid internships. Same fee for either pathway.</p>
+          <a href="#admissions-form" class="btn btn--primary btn--block cta-indonesia cta-explore" data-program="Bachelor of Arts in Culinary Arts">Request More Info</a>
+        </div>
+      </article>
+
+      <!-- MASTER -->
+      <article class="fee-card">
+        <div class="fee-card__body">
+          <span class="fee-card__tag">Master's · 2 Degrees</span>
+          <h3>MA <span class="art">in</span> Culinary Business Management</h3>
+          <div class="fee-card__price">
+            <span class="chf">CHF 49,000</span>
+            <span class="idr">approx. Rp 1.0 billion</span>
+            <span class="term">1 year · 2 terms · 1 paid internship</span>
+          </div>
+          <p class="fee-card__inc"><strong>All-inclusive:</strong> tuition, accommodation &amp; meals, kitchen tools &amp; uniform, student services, arrival &amp; insurance, career services and 1 paid internship.</p>
+          <a href="#admissions-form" class="btn btn--primary btn--block cta-indonesia cta-explore" data-program="MA in Culinary Business Management">Request More Info</a>
+        </div>
+      </article>
+
+      <!-- DIPLOMAS -->
+      <article class="fee-card">
+        <div class="fee-card__body">
+          <span class="fee-card__tag">Swiss Diploma</span>
+          <h3>Swiss Diplomas <span class="art">in</span> Culinary <span class="art">or</span> Pastry Arts</h3>
+          <div class="fee-card__price">
+            <span class="chf">CHF 42,400</span>
+            <span class="idr">approx. Rp 869 million</span>
+            <span class="term">1 year · 2 terms · 1 paid internship</span>
+          </div>
+          <p class="fee-card__inc"><strong>All-inclusive:</strong> tuition, accommodation &amp; meals, kitchen tools &amp; uniform, student services, arrival &amp; insurance, career services and 1 paid internship.</p>
+          <a href="#admissions-form" class="btn btn--primary btn--block cta-indonesia cta-explore" data-program="Professional Swiss Diploma — Culinary Arts">Request More Info</a>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- SCHOLARSHIPS + INTERNSHIP ROI -->
+    <div class="roi">
+      <div class="roi__head">
+        <h3>Paid Internships. Global Careers. Real ROI</h3>
+        <p>Every program is built to pay you back — in real-world experience, internship earnings and long-term employability.</p>
+      </div>
+      <div class="roi__stats">
+        <div class="roi__stat">
+          <div class="big"><span>97%</span> hired</div>
+          <div class="cap">of students employed upon graduation</div>
+        </div>
+        <div class="roi__stat">
+          <div class="big"><span>CHF 2,350</span>/mo</div>
+          <div class="cap">Average monthly salary during paid internships</div>
+        </div>
+      </div>
+      <div class="roi__cols">
+        <div>
+          <h4>Paid Internships. Global Careers.</h4>
+          <ul class="incl">
+            <li>All students complete <strong>at least one paid internship</strong> in Switzerland</li>
+            <li>Internship earnings: compensation varies by industry and location, with average monthly gross salaries in Switzerland around <strong>CHF 2,350</strong>.</li>
+            <li>Full access to <strong>career services, international job forums &amp; employer network</strong></li>
+            <li>Alumni work at places like <strong>Nobu, Ritz Paris, Burj Al Arab</strong> and more</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <!-- [CONFIRM] IDR figures indicative only, converted at approx. 1 CHF = Rp 20,500 (verify current rate before publishing) -->
+    <p class="fees-foot">Indonesian rupiah figures are indicative only, converted at approx. 1 CHF = Rp 20,500. Fees are payable in CHF; the exchange rate at the time of payment will apply. A refundable CHF 2,000 security deposit applies to all applicants. Pay in full 90 days before term start to receive a 2% early-bird discount on tuition, accommodation and meals.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     7. FORM — "Connect with our Indonesia Admissions Team"
+     ============================================================ -->
+<section class="section form-section" id="admissions-form">
+  <div class="wrap">
+    <div class="form-card">
+      <h2>Connect <span class="art">with</span> our Indonesia Admissions Team</h2>
+      <p class="form-sub">Share a few details and our Indonesia team will guide you through programs, fees, scholarships and the visa process.</p>
+
+      <form id="leadForm">
+        <div class="fstep active" data-step="1">
+          <p class="form-step-label">Step 1 of 2 — Your details</p>
+          <div class="form-grid">
+            <div class="field"><label>First name <span class="req">*</span></label><input type="text" name="first_name" placeholder="First name" required></div>
+            <div class="field"><label>Last name <span class="req">*</span></label><input type="text" name="last_name" placeholder="Last name" required></div>
+            <div class="field"><label>Email <span class="req">*</span></label><input type="email" name="email" placeholder="you@example.com" required></div>
+            <div class="field"><label>Phone <span class="req">*</span></label><input type="tel" name="phone" value="+62 " required></div>
+            <div class="field field--full"><label>Program of interest <span class="req">*</span></label>
+              <select name="program" id="programSelect" required>
+                <option value="">Please select</option>
+                <option>Bachelor of Arts in Culinary Arts</option>
+                <option>Bachelor of Arts in Pastry, Bakery &amp; Chocolate Arts</option>
+                <option>MA in Culinary Business Management</option>
+                <option>Professional Swiss Diploma — Culinary Arts</option>
+                <option>Professional Swiss Diploma — Pastry &amp; Chocolate Arts</option>
+              </select>
+            </div>
+            <div class="field field--full"><label>Desired start <span class="req">*</span></label><select name="desired_start" required><option value="">Please select</option><option>2026</option><option>2027</option><option>2028</option></select></div>
+          </div>
+          <div class="form-actions"><button type="button" class="btn btn--primary btn--block" id="toStep2">Continue &rarr;</button></div>
+        </div>
+
+        <div class="fstep" data-step="2">
+          <p class="form-step-label">Step 2 of 2 — Tell us more about you</p>
+          <p class="form-step2-sub">Optional — help us guide you better by sharing a little about your background and study goals.</p>
+          <div class="form-grid">
+            <div class="field"><label>Age bracket</label><select name="age"><option value="">Please select</option><option>Under 18</option><option>18 – 20</option><option>21 – 28</option><option>29 – 32</option><option>Above 33</option></select></div>
+            <div class="field"><label>Current education level</label><select name="education_level"><option value="">Please select</option><option>High School</option><option>Bachelor's</option><option>Master's</option><option>Other</option></select></div>
+            <div class="field"><label>English level</label><select name="english_level"><option value="">Please select</option><option>Native</option><option>Advanced</option><option>Intermediate</option><option>Beginner</option></select></div>
+            <div class="field"><label>How you plan to finance your studies</label><select name="financing"><option value="">Please select</option><option>Self funded</option><option>Family savings</option><option>Will work while studying</option><option>Need a partial scholarship</option><option>Need a full scholarship</option><option>I'm not sure yet / still exploring options</option></select></div>
+            <div class="field field--full"><label>Are you a parent or student?</label><select name="parent_or_student"><option value="">Please select</option><option>Parent</option><option>Student</option></select></div>
+          </div>
+          <div class="consent"><input type="checkbox" name="consent" value="yes" required style="margin-top:3px"><span>I agree to receive communications from Culinary Arts Academy by email, WhatsApp and phone, and to the processing of my personal data for this purpose. Your information will be stored securely. You can withdraw consent at any time. See our <a href="#">Privacy Policy</a>.</span></div>
+          <div class="form-actions form-actions--split"><button type="button" class="btn btn--ghost" id="backStep1">&larr; Back</button><button type="submit" class="btn btn--primary">Request More Info</button></div>
+        </div>
+      </form>
+      <div class="form-success" id="formSuccess"><h3>Thank you — we've received your details.</h3><p>Our Indonesia admissions team will be in touch shortly to guide you through programs, fees, scholarships and the visa process.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     8. FAQ — Indonesia-specific
+     ============================================================ -->
+<section class="section section--cream" id="faq">
+  <div class="wrap">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+
+    <div class="faq-item">
+      <button class="faq-q" type="button">What careers can this education lead to?</button>
+      <div class="faq-a">Our students go on to become chefs, food brand entrepreneurs, chefs for luxury hotels and restaurants like Ritz Paris and Four Seasons, or leaders in hospitality and F&amp;B companies — in Indonesia and around the world. Over 97% of graduates find employment within months of finishing.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" type="button">Are the degrees internationally recognized?</button>
+      <div class="faq-a">Yes. All Bachelor's and Master's programs award 2 degrees — one from Culinary Arts Academy Switzerland and one from the University of Derby in the UK — both fully accredited and recognized worldwide.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" type="button">Why study in Switzerland, rather than Australia or elsewhere?</button>
+      <div class="faq-a">Switzerland ranks among the safest and most stable countries in the world and is recognized as the global home of hospitality and culinary education. Located centrally in Europe, it offers premium quality of life, strong infrastructure, international exposure, and a rich culinary culture — making it an ideal place to train as a chef and build an international career.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" type="button">Do I need to arrange my own accommodation, meals, and visa?</button>
+      <div class="faq-a">No. All programs are all-inclusive, covering accommodation, meals, tuition, and full support for the student visa process. You'll be supported from the moment you apply to the moment you arrive — and beyond.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" type="button">Can I afford this? Do you offer scholarships?</button>
+      <div class="faq-a">We know studying abroad is a life investment — which is why we show our fees up front. Most of our students start seeing the benefits right after graduation and continue building on them throughout their careers. To support ambitious students, we offer merit-based scholarships — these are limited and awarded competitively. Many families use education loans knowing the long-term benefits are worth it, and we also offer flexible payment plans. Fill out the form and our Indonesia team will guide you through your options.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" type="button">Will I get real-world experience during the program?</button>
+      <div class="faq-a">Absolutely. Every program includes a paid international internship, giving you the chance to gain hands-on experience with top industry brands like Four Seasons or Ritz. All students complete a 4–6 month internship and graduate with valuable, real-world experience that sets them apart.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" type="button">Is campus life safe and welcoming for Indonesian students?</button>
+      <div class="faq-a">Yes — our campuses provide on-site security, structured international student support, help with registration, and a vibrant global community with students from over 100 nationalities. You'll feel at home from day one.</div>
+    </div>
+
+    <!-- [CONFIRM] Indonesia entry requirements — verify exact secondary-school and English requirements with admissions -->
+    <div class="faq-item">
+      <button class="faq-q" type="button">What are the entry requirements for Indonesian students?</button>
+      <div class="faq-a">For Bachelor's: completion of senior secondary school (SMA / SMK or an equivalent international high school diploma) plus English proficiency (IELTS 5.5 or equivalent). For Master's: a relevant undergraduate degree, ideally with some work experience. Diploma programs have flexible entry routes — reach out to check your eligibility.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     9. FOOTER — ranking bar (logo · #1 badge · QS logo · CTA)
+     ============================================================ -->
+<footer>
+  <div class="footer-rank">
+    <div class="footer-rank__inner footer-rank__inner--row">
+      <img class="footer-rank__logo" src="assets/caas-logo.png" alt="Culinary Arts Academy Switzerland">
+      <img class="footer-badge-img" src="assets/badge-caas.png" alt="#1 Culinary School in Switzerland">
+      <img class="footer-rank__qs" src="assets/qs-logo.jpg" alt="QS World University Rankings">
+      <a href="#admissions-form" class="btn btn--primary footer-rank__cta">Request More Info</a>
+    </div>
+  </div>
+  <div class="footer-sub">
+    <div class="footer-sub__inner">
+      <span class="footer-sub__copy">© 2026 Swiss Education Group. All rights reserved.</span>
+      <a class="footer-sub__privacy" href="#">Privacy Policy</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ----- Sticky CTA: show after scrolling past the hero ----- */
+(function(){
+  var bar = document.getElementById('stickyCta');
+  var hero = document.getElementById('hero');
+  function onScroll(){
+    var trigger = hero ? hero.offsetHeight - 80 : 400;
+    if(window.scrollY > trigger){ bar.classList.add('show'); }
+    else { bar.classList.remove('show'); }
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+
+/* ----- FAQ accordion ----- */
+document.querySelectorAll('.faq-q').forEach(function(q){
+  q.addEventListener('click', function(){
+    q.closest('.faq-item').classList.toggle('open');
+  });
+});
+
+/* ----- "Explore This Program" — preselect the program dropdown, then jump to form ----- */
+document.querySelectorAll('.cta-explore').forEach(function(btn){
+  btn.addEventListener('click', function(e){
+    var val = btn.getAttribute('data-program');
+    var sel = document.getElementById('programSelect');
+    if(sel && val){
+      for(var i=0;i<sel.options.length;i++){
+        if(sel.options[i].text.replace(/&amp;/g,'&') === val.replace(/&amp;/g,'&')){ sel.selectedIndex = i; break; }
+      }
+    }
+  });
+});
+
+/* ----- 2-step form ----- */
+(function(){
+  var f = document.getElementById('leadForm'); if(!f) return;
+  var s1 = f.querySelector('.fstep[data-step="1"]'), s2 = f.querySelector('.fstep[data-step="2"]');
+  var next = document.getElementById('toStep2'), back = document.getElementById('backStep1');
+  function show(step){
+    if(step === 2){ s1.classList.remove('active'); s2.classList.add('active'); s2.scrollIntoView({behavior:'smooth', block:'center'}); }
+    else { s2.classList.remove('active'); s1.classList.add('active'); s1.scrollIntoView({behavior:'smooth', block:'center'}); }
+  }
+  if(next) next.addEventListener('click', function(){
+    var inputs = s1.querySelectorAll('input,select'), ok = true;
+    for(var i=0;i<inputs.length;i++){ if(!inputs[i].checkValidity()){ inputs[i].reportValidity(); ok = false; break; } }
+    if(ok) show(2);
+  });
+  if(back) back.addEventListener('click', function(){ show(1); });
+})();
+
+/* ----- Submit ----- */
+(function(){
+  var form = document.getElementById('leadForm'), success = document.getElementById('formSuccess');
+  if(!form) return;
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    form.style.display = 'none';
+    success.classList.add('show');
+    success.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+})();
+</script>
+</body></html>
