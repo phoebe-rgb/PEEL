@@ -53,21 +53,31 @@ Base64-decoding a shortcode yields the media *pk*, which is NOT the Graph API me
 (validated: `DaiaGX8CCGt` → `3936…757`, but real id `18082742075649934`). Only
 `ads_get_ig_media` / the `/media` edge give the usable id.
 
-## 4. The working creative shape (existing IG post + custom link/tracking)
+## 4. The working creative shape (existing IG post + website link + tracking)
 The account's existing reel ads are `object_type: VIDEO` with `effective_instagram_media_id`
 set, `actor_id` = the **page**, `instagram_user_id` = the **school IG**. Reproduce with:
 ```
 POST /act_<AD_ACCOUNT>/adcreatives
-  name                       = <RegionPrefix>_BoostedPost_VID_EN_<AssetName>   # actually set instagram_user_id below
   instagram_user_id          = <school IG account id that OWNS the reel>
   source_instagram_media_id  = <numeric media id from §2>
+  call_to_action             = {"type":"LEARN_MORE","value":{"link":"<school website URL>"}}
   url_tags                   = utm_source=Facebook&utm_medium=cpc&utm_campaign={{campaign.name}}&utm_content={{adset.name}}&utm_term={{ad.name}}
 ```
-**Critical:** do NOT add `object_story_spec`/`page_id`, `link_data`, or a top-level
-`call_to_action`/`link` to a `source_instagram_media_id` creative — that triggers
-`"The link field is required"` or `"ambiguous promoted object"`. The bare
-`instagram_user_id` + `source_instagram_media_id` (+ `url_tags`) is what Meta accepts,
-and it delivers on FB + IG. Reuse **one creative per reel** across all its ad sets.
+The **website destination** rides on `call_to_action.value.link` — a top-level
+`call_to_action` is accepted here. Per-school destinations:
+| School | Website URL |
+|---|---|
+| CAAS | https://www.culinaryartsswitzerland.com/en/student-stories/ |
+| SHMS | https://www.shms.com/en/study-in-switzerland/ |
+| HIM  | https://www.him-business-school.com/en/student-life/ |
+
+**Critical:** with `source_instagram_media_id`, do NOT add `object_story_spec`/`page_id`
+or `link_data` — either one triggers `"The link field is required"` or
+`"ambiguous promoted object"`. The link must go **only** in `call_to_action.value.link`,
+and there must be **no** `object_story_spec`. This delivers on FB + IG. Reuse **one
+creative per reel** across all its ad sets. (The creative's link/CTA is immutable after
+publish — to change the destination, create a new creative and repoint each ad's
+`creative` to it.)
 
 ## 5. Create the ads
 ```
