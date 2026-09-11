@@ -749,8 +749,8 @@ h1,h2,h3,h4{font-family:var(--sans);font-weight:800;line-height:1.1;letter-spaci
 <script>
 /* Sticky CTA after hero */
 (function(){var bar=document.getElementById('stickyCta'),hero=document.getElementById('hero');function onScroll(){var t=hero?hero.offsetHeight-80:400;if(window.scrollY>t){bar.classList.add('show')}else{bar.classList.remove('show')}}window.addEventListener('scroll',onScroll,{passive:true});onScroll();})();
-/* Fees accordion */
-document.querySelectorAll('.acc__head').forEach(function(head){head.addEventListener('click',function(){var item=head.closest('.acc');var open=item.classList.contains('open');item.classList.toggle('open');head.setAttribute('aria-expanded',String(!open));});});
+/* Fees accordion — single open: opening one closes the others */
+document.querySelectorAll('.acc__head').forEach(function(head){head.addEventListener('click',function(){var item=head.closest('.acc');var willOpen=!item.classList.contains('open');document.querySelectorAll('.acc').forEach(function(other){if(other!==item){other.classList.remove('open');var oh=other.querySelector('.acc__head');if(oh)oh.setAttribute('aria-expanded','false');}});item.classList.toggle('open',willOpen);head.setAttribute('aria-expanded',String(willOpen));});});
 /* FAQ accordion */
 document.querySelectorAll('.faq-q').forEach(function(q){q.addEventListener('click',function(){q.closest('.faq-item').classList.toggle('open');});});
 /* Program CTA → preselect dropdown */
