@@ -28,23 +28,23 @@ The reader lives in Indonesia and is choosing where to study overseas. This IS a
 * Consent line: **KEEP email, WhatsApp and phone.** WhatsApp is a primary admissions channel in Indonesia — do not remove it.
 
 ## SECTION-BY-SECTION
-**Metadata.** Title: `HIM Business School — Indonesia Admissions | Be World Ready`. Meta description: Indonesia-facing — study business in Switzerland, BBA (Northwood, US) + new Master in Applied AI, 3 paid internships, Top 6 worldwide (QS), transparent Swiss fees, scholarship and LPDP guidance, dedicated Indonesia admissions team.
+**Metadata.** Title: `HIM Business School — Indonesia Admissions | Be World Ready`. Meta description: Indonesia-facing — study business in Switzerland, BBA (Northwood, US) + new Master in Applied AI, 3 paid internships, Top 6 worldwide (QS), transparent Swiss fees, merit scholarships, dedicated Indonesia admissions team.
 
-**Hero.** H1 stays ("Be World Ready. Study Business in Switzerland."). Add a supporting subheadline that names transparent fees, merit scholarships and **LPDP guidance for Indonesian students planning postgraduate study**. CTA and note reference the Indonesia team.
+**Hero.** H1 stays ("Be World Ready. Study Business in Switzerland."). Add a supporting subheadline that names transparent fees and merit scholarships for ambitious Indonesian students. CTA and note reference the Indonesia team.
 
 **Programs.** Card order and content unchanged (BBA + Master in Applied AI; BBA specialisations block).
 
 **Tuition Fees (moved directly above the form to qualify leads).** Keep the two-card accordion (BBA + Master). Headline/subhead take the all-inclusive "everything is taken care of" framing; the "What's Included" list becomes **"Everything is taken care of"**. Keep HIM's real fees — **BBA CHF 129,400** (Term 1 CHF 21,900, then CHF 21,500/term), Master "fees on request". Add IDR indicative figure (approx. **Rp 2.59 billion**, converted at ~1 CHF = Rp 20,000; payable in CHF via Flywire; rate at payment applies). Keep the "arrival in Switzerland" inclusion — it applies to this audience.
 
-**LPDP & Scholarships (NEW section, directly above the form, below Tuition Fees).** Two-column layout: LEFT is the image (I will send it to Netlify later → placeholder `assets/LPDP-indonesia.jpg`), with the **LPDP logo positioned top-left over the image, same position as the CAAS Indonesia page** (`assets/logos/lpdp.png`). RIGHT column: heading, intro, and points covering LPDP guidance, merit scholarships up to 20%, flexible per-term payment plans, 2% early-bird discount, and Indonesia-team support on loans and visa docs, plus a CTA. **Accuracy guardrail:** LPDP funds master's/doctoral study only (NOT the undergraduate BBA), and eligibility / funded fields / approved-institution lists are set by LPDP each intake — so frame LPDP as guidance for the Master and "our team will confirm what applies", never claim HIM is on the approved list or that LPDP covers the BBA.
+**Scholarships (section, directly above the form, below Tuition Fees).** Dark section (`section--blue offer offer--dark`) with heading "Scholarships & Payment Flexibility", covering merit scholarships up to 20% (limited & competitive), flexible per-term payment plans, 2% early-bird discount, and Indonesia-team support on education loans, payment plans and visa docs, plus a CTA. Localise the team reference to Indonesia.
 
 **ROI / careers section.** Content unchanged (97% hired, 3 paid internships, CHF 2,350 average internship salary, alumni employers).
 
 **Why HIM / Why Switzerland, Alumni, Campus, Partners, Video.** Content unchanged except localisation: "A springboard for global careers" (never "launchpad"), "Trusted by Indonesian families", degree "valued in Indonesia, Singapore, the UAE and beyond", Indonesia team CTA. **Alumni cards stay as-is — the HIM alumni page currently lists no Indonesian alum, so do not invent one.**
 
-**Form section.** Heading/subhead/thank-you reference the "Indonesia admissions team" and mention programs, fees, scholarships, LPDP and the visa process. Hidden country = Indonesia.
+**Form section.** Heading/subhead/thank-you reference the "Indonesia admissions team" and mention programs, fees, scholarships and the visa process. Hidden country = Indonesia.
 
-**FAQ.** Keep the visa FAQ (visa applies here). Rewrite entry requirements for Indonesian students: **completed senior secondary school (SMA / SMK) or equivalent**, English ~IELTS 5.5 (BBA); recognised Bachelor's (Master). Add one LPDP FAQ answered honestly (master's/doctoral only, not the BBA; eligibility set by LPDP; team helps prepare an LPDP-ready application).
+**FAQ.** Keep the visa FAQ (visa applies here). Rewrite entry requirements for Indonesian students: **completed senior secondary school (SMA / SMK) or equivalent**, English ~IELTS 5.5 (BBA); recognised Bachelor's (Master).
 
 **Footer.** Unchanged.
 
@@ -53,10 +53,6 @@ The reader lives in Indonesia and is choosing where to study overseas. This IS a
 * Never "launchpad" — use "springboard" / "stepping stone".
 * Never call the school a "university".
 * We are not selling a degree — we are selling the international career it makes possible. Lead with career outcomes and proof (rankings, internships, employability), then programme detail.
-
-## ASSETS TO UPLOAD (I will provide)
-* `assets/LPDP-indonesia.jpg` — the LPDP section image (left column).
-* `assets/logos/lpdp.png` — the LPDP logo (sits top-left over the image). Both have `onerror` fallbacks so the page renders cleanly before the assets land.
 
 ## VERIFY (4 steps max, then stop)
 1. Start the dev server, read its log ONCE.
