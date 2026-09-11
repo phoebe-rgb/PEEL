@@ -197,11 +197,17 @@ h1 .art,h2 .art,h3 .art,h4 .art{text-transform:lowercase;font-style:italic;font-
 .same-price-note{margin-top:14px;padding:12px 16px;background:#fff3f2;border-left:3px solid var(--red);border-radius:2px;font-size:13.5px;color:var(--ink)}
 .fees-foot{margin-top:26px;font-size:13px;color:var(--muted)}
 /* LPDP scholarship banner */
-.lpdp{margin:0 0 26px;background:var(--black);color:#fff;border-left:4px solid var(--red);border-radius:8px;padding:26px 28px;box-shadow:0 10px 26px rgba(17,17,17,.08)}
-.lpdp__tag{display:inline-block;font-family:var(--sans);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--red);padding:5px 12px;border-radius:2px;margin-bottom:14px}
+.lpdp{display:grid;grid-template-columns:1fr;background:var(--black);color:#fff;border-left:4px solid var(--red);border-radius:8px;overflow:hidden;box-shadow:0 10px 26px rgba(17,17,17,.08)}
+.lpdp__media{min-height:240px;background:#1c1c1c}
+.lpdp__media img{width:100%;height:100%;object-fit:cover;display:block}
+.lpdp__content{padding:30px 32px}
+.lpdp__row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.lpdp__logo{height:46px;width:auto;background:#fff;border-radius:8px;padding:6px}
+.lpdp__tag{display:inline-block;font-family:var(--sans);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--red);padding:5px 12px;border-radius:2px}
 .lpdp h3{color:#fff;font-size:clamp(22px,4vw,30px);margin:0 0 10px}
-.lpdp p{font-size:14.5px;color:#d8d8d8;margin:0 0 18px;max-width:64ch}
+.lpdp p{font-size:14.5px;color:#d8d8d8;margin:0 0 20px}
 .lpdp .btn{margin:0}
+@media(min-width:768px){.lpdp{grid-template-columns:1fr 1fr}.lpdp__content{padding:36px 40px}}
 
 /* ===================== WHAT'S INCLUDED ===================== */
 .included{background:#fff;border:1px solid var(--line);border-top:4px solid var(--red);border-radius:8px;padding:30px 28px;box-shadow:0 10px 26px rgba(17,17,17,.06)}
@@ -782,11 +788,20 @@ h1 .art,h2 .art,h3 .art,h4 .art{text-transform:lowercase;font-style:italic;font-
     <p class="eyebrow">Scholarships &amp; Funding</p>
     <h2 class="section-title">LPDP &amp; scholarships for Indonesian students</h2>
     <!-- [CONFIRM] LPDP eligibility &amp; program scope with admissions before publishing -->
+    <!-- Left image (/assets/IndonesianStudent.png) and LPDP logo (/assets/lpdp-logo.png) to be added in the Netlify project -->
     <div class="lpdp">
-      <span class="lpdp__tag">LPDP Scholarship</span>
-      <h3>Planning to fund your studies with LPDP?</h3>
-      <p>Many Indonesian students finance study abroad through <strong>LPDP (Lembaga Pengelola Dana Pendidikan)</strong>. Eligible applicants may use LPDP funding toward tuition and living costs, and our Indonesia admissions team can guide you through choosing an eligible program and preparing a strong application, alongside our own merit-based scholarships.</p>
-      <a href="#admissions-form" class="btn btn--primary cta-lead" data-cta="lpdp">Ask about LPDP &amp; scholarships</a>
+      <div class="lpdp__media">
+        <img src="/assets/IndonesianStudent.png" alt="Indonesian student at Culinary Arts Academy Switzerland">
+      </div>
+      <div class="lpdp__content">
+        <div class="lpdp__row">
+          <img class="lpdp__logo" src="/assets/lpdp-logo.png" alt="LPDP (Lembaga Pengelola Dana Pendidikan)">
+          <span class="lpdp__tag">LPDP Scholarship</span>
+        </div>
+        <h3>Planning to fund your studies with LPDP?</h3>
+        <p>Many Indonesian students finance study abroad through <strong>LPDP (Lembaga Pengelola Dana Pendidikan)</strong>. Eligible applicants may use LPDP funding toward tuition and living costs, and our Indonesia admissions team can guide you through choosing an eligible program and preparing a strong application, alongside our own merit-based scholarships.</p>
+        <a href="#admissions-form" class="btn btn--primary cta-lead" data-cta="lpdp">Ask about LPDP &amp; scholarships</a>
+      </div>
     </div>
   </div>
 </section>
