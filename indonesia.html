@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIM Business School — Indonesia Admissions | Be World Ready</title>
+<meta name="description" content="Study business in Switzerland at HIM Business School, Montreux. Bachelor of Business Administration (Northwood University, US) and the new Master in Applied AI in Customer Experience. 3 paid internships, Top 6 worldwide (QS), 97% hired at graduation. Transparent Swiss fees, scholarship and LPDP guidance, and a dedicated Indonesia admissions team — from application to arrival.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet">
+
+<style>
+/* ===================== TOKENS (HIM brand) ===================== */
+:root{
+  --blue:#03193A;--blue-2:#061f47;--blue-deep:#020f26;
+  --red:#e42313;--red-dark:#c01b0d;
+  --lightblue:#d1e5ff;--tint:#eaf1fb;--cream:#faf6ef;
+  --ink:#0e1526;--muted:#5c6474;--line:#e4e6ea;
+  --sans:'Inter', Arial, sans-serif;--maxw:1200px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--ink);background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased;font-size:16px;padding-bottom:64px}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+h1,h2,h3,h4{font-family:var(--sans);font-weight:800;line-height:1.1;letter-spacing:-.03em}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+.section{padding:56px 0}
+.section--blue{background:var(--blue);color:#fff}
+.section--deep{background:var(--blue-deep);color:#fff}
+.section--cream{background:var(--cream)}
+.section--tint{background:var(--tint)}
+.eyebrow{font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+.section--blue .eyebrow,.section--deep .eyebrow{color:#7fb0ff}
+.section-title{font-size:clamp(28px,5.2vw,42px);margin-bottom:14px}
+.section-intro{max-width:800px;color:var(--muted);font-size:16px;margin-bottom:34px}
+.section--blue .section-intro,.section--deep .section-intro{color:#c7d3e6}
+
+/* ===================== BUTTONS (rounded) ===================== */
+.btn{display:inline-block;font-family:var(--sans);font-weight:600;font-size:13.5px;letter-spacing:.02em;padding:15px 30px;border-radius:40px;cursor:pointer;border:none;text-align:center;transition:background .15s,transform .15s,box-shadow .15s}
+.btn--primary{background:var(--red);color:#fff}
+.btn--primary:hover{background:var(--red-dark);transform:translateY(-1px)}
+.btn--ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
+.btn--ghost:hover{background:rgba(255,255,255,.12)}
+.btn--block{display:block;width:100%}
+
+/* ===================== HERO ===================== */
+.hero{position:relative;color:#fff;overflow:hidden;
+  background:
+    linear-gradient(150deg, rgba(3,7,14,.74) 0%, rgba(2,6,12,.58) 45%, rgba(1,4,9,.82) 100%),
+    url('assets/HIMhero.jpg') center/cover no-repeat, var(--blue);
+}
+.hero::before{content:"";position:absolute;top:-120px;right:-120px;width:460px;height:460px;border-radius:50%;border:1px solid rgba(209,229,255,.16);pointer-events:none}
+.hero::after{content:"";position:absolute;bottom:-180px;left:-140px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(228,35,19,.12),transparent 70%);pointer-events:none}
+.hero__inner{position:relative;max-width:var(--maxw);margin:0 auto;padding:78px 20px 82px;z-index:2}
+.hero__badge{display:inline-flex;align-items:center;gap:9px;background:rgba(255,255,255,.08);border:1px solid rgba(209,229,255,.3);border-radius:40px;padding:7px 16px 7px 12px;font-size:12.5px;font-weight:600;color:#dbe7fb;margin-bottom:22px}
+.hero__badge .dot{width:10px;height:10px;border-radius:50%;background:var(--red);flex-shrink:0}
+.hero__eyebrow{font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#7fb0ff;margin-bottom:16px}
+.hero h1{font-size:clamp(42px,7.8vw,66px);line-height:1.05;margin-bottom:26px;max-width:15ch}
+.hero h1 .accent{color:var(--red)}
+.hero__cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.hero__note{font-size:12.5px;color:#9fb0c9}
+
+/* ===================== TRUST BAR (red, bigger numbers) ===================== */
+.trust{background:var(--blue-2);border-top:1px solid rgba(255,255,255,.06);color:#fff}
+.trust__inner{max-width:var(--maxw);margin:0 auto;padding:34px 20px;display:grid;grid-template-columns:repeat(2,1fr);gap:26px;text-align:center}
+.trust__item .num{font-size:clamp(42px,6.4vw,62px);font-weight:800;color:var(--red);line-height:1;letter-spacing:-.03em}
+.trust__item .num sup{font-size:.5em;font-weight:800}
+.trust__item .lbl{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#9fb0c9;margin-top:10px;line-height:1.35}
+
+/* ===================== PROGRAMS ===================== */
+.prog-grid{display:grid;grid-template-columns:1fr;gap:24px}
+.pcard{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 14px 40px rgba(3,25,58,.08)}
+.pcard__img{aspect-ratio:16/10;background:linear-gradient(150deg,#03193A,#061f47 60%,#020f26) center/cover no-repeat;position:relative}
+.pcard__tag{position:absolute;top:14px;left:14px;background:var(--red);color:#fff;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 12px;border-radius:40px}
+.pcard__body{padding:26px 26px 28px;display:flex;flex-direction:column;flex:1}
+.pcard__body h3{font-size:clamp(22px,3.4vw,27px);margin-bottom:14px;letter-spacing:-.02em}
+.prog-meta{list-style:none;margin:0 0 16px;padding:0;font-size:14px}
+.prog-meta li{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.prog-meta li:last-child{border-bottom:none}
+.prog-meta .k{color:var(--muted);min-width:118px;font-weight:600}
+.prog-meta .v{color:var(--ink);font-weight:500}
+.pcard p.desc{font-size:14.5px;color:var(--muted);margin-bottom:20px}
+.pcard .btn{margin-top:auto;align-self:flex-start}
+
+/* BBA-only specialisations box */
+.bba-only{margin-top:40px;background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:26px}
+.bba-only__head{display:flex;gap:16px;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap}
+.bba-only__badge{background:var(--red);color:#fff;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:7px 13px;border-radius:40px;white-space:nowrap;margin-top:2px}
+.bba-only__head h3{font-size:20px;margin-bottom:6px;letter-spacing:-.02em}
+.bba-only__head p{font-size:14px;color:var(--muted);max-width:72ch}
+.majors{display:grid;grid-template-columns:1fr;gap:16px}
+.major{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;transition:box-shadow .15s,transform .15s,border-color .15s}
+.major:hover{box-shadow:0 12px 30px rgba(3,25,58,.1);transform:translateY(-2px);border-color:#cdd6e5}
+.major__ico{width:42px;height:42px;border-radius:50%;background:var(--lightblue);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.major__ico span{width:15px;height:15px;border-radius:50%;background:var(--red)}
+.major h4{font-size:18px;margin-bottom:8px;letter-spacing:-.02em}
+.major p{font-size:13.5px;color:var(--muted);margin-bottom:16px;flex:1}
+.major .btn{margin-top:auto;align-self:flex-start;padding:10px 20px;font-size:12px}
+
+/* ===================== FEES ===================== */
+.acc{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.acc + .acc{margin-top:14px}
+.acc__head{width:100%;text-align:left;background:#fff;border:none;cursor:pointer;padding:22px;display:flex;justify-content:space-between;align-items:center;gap:16px;font-family:var(--sans);font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.acc__price{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+.acc__price .chf{font-size:16px;font-weight:800;color:var(--red);white-space:nowrap}
+.acc__price .inr{font-size:12px;font-weight:500;color:var(--muted);white-space:nowrap}
+.acc__toggle{font-size:26px;color:var(--red);line-height:1;flex-shrink:0;transition:transform .2s}
+.acc.open .acc__toggle{transform:rotate(45deg)}
+.acc__panel{display:none;padding:0 22px 24px;border-top:1px solid var(--line)}
+.acc.open .acc__panel{display:block}
+.acc__panel h4{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin:20px 0 10px}
+.incl{list-style:none;padding:0;margin:0}
+.incl li{position:relative;padding:7px 0 7px 28px;font-size:14.5px;color:var(--ink)}
+.incl li::before{content:"";position:absolute;left:0;top:9px;width:16px;height:16px;border-radius:50%;background:var(--red)}
+.incl li::after{content:"";position:absolute;left:5px;top:12px;width:5px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.internship-note{margin-top:18px;padding:14px 16px;background:var(--cream);border-radius:10px;font-size:13.5px;color:var(--muted)}
+.internship-note strong{color:var(--ink)}
+.fees-foot{margin-top:26px;font-size:13px;color:var(--muted)}
+
+/* ===================== OFFER (SHMS-style ROI / Scholarships) ===================== */
+.offer__wrap{max-width:880px;margin:0 auto;text-align:center}
+.offer__mark{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--red);margin-bottom:20px}
+.offer--dark .offer__mark{background:#7fb0ff}
+.offer__title{font-size:clamp(28px,5vw,38px);letter-spacing:-.03em;line-height:1.12;margin-bottom:10px}
+.section--cream .offer__title,.section--tint .offer__title{color:var(--blue)}
+.offer--dark .offer__title{color:#fff}
+.offer__rule{width:56px;height:3px;background:var(--red);border:none;margin:0 auto 26px}
+.offer__lead{font-size:17.5px;line-height:1.7;max-width:660px;margin:0 auto 40px}
+.section--cream .offer__lead,.section--tint .offer__lead{color:var(--muted)}
+.offer--dark .offer__lead{color:#c7d3e6}
+.offer-stats{display:grid;grid-template-columns:1fr;gap:30px;margin:0 auto 38px;max-width:680px}
+.offer-stat__num{display:block;font-size:52px;font-weight:800;color:var(--red);line-height:.95;letter-spacing:-.03em;white-space:nowrap}
+.offer-stat__lbl{display:block;font-size:14px;color:var(--muted);margin-top:12px;letter-spacing:.02em;line-height:1.4}
+.offer--dark .offer-stat__lbl{color:#c7d3e6}
+.offer-points{list-style:none;padding:0;margin:0;display:inline-block;text-align:left}
+.offer-points li{position:relative;padding:12px 0 12px 32px;font-size:16px;line-height:1.55}
+.offer-points li::before{content:"";position:absolute;left:0;top:19px;width:13px;height:13px;border-radius:50%;background:var(--red)}
+.section--cream .offer-points li,.section--tint .offer-points li{color:var(--ink);border-bottom:1px solid var(--line)}
+.offer--dark .offer-points li{color:#eef2f8}
+.offer--dark .offer-points li::before{background:#7fb0ff}
+.offer__cta{margin-top:32px}
+@media(min-width:680px){.offer-stats{grid-template-columns:repeat(3,1fr)}}
+
+/* ===================== VIDEO ===================== */
+.video-wrap{max-width:900px;margin:0 auto;border-radius:16px;overflow:hidden;box-shadow:0 18px 46px rgba(3,25,58,.14);border:1px solid var(--line)}
+.video-embed{position:relative;padding-bottom:56.25%;height:0;background:var(--blue)}
+.video-embed iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+
+/* ===================== PARTNERS ===================== */
+.partners-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:8px}
+.partner{background:#fff;border:1px solid var(--line);border-radius:12px;min-height:96px;display:flex;align-items:center;justify-content:center;padding:16px;text-align:center;font-weight:700;font-size:14px;color:var(--blue);letter-spacing:.01em}
+.partner img{max-height:56px;max-width:100%;width:auto;object-fit:contain;display:block}
+.partner__txt{display:none}
+.partners-foot{text-align:center;margin-top:26px;font-size:18px;font-weight:700;color:#fff;letter-spacing:-.01em}
+
+/* ===================== TOPPING THE LIST (QS) ===================== */
+.qs{background:var(--blue-deep);color:#fff}
+.qs__inner{max-width:var(--maxw);margin:0 auto;padding:64px 20px;display:grid;grid-template-columns:1fr;gap:36px;align-items:center}
+.qs__eyebrow{font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#9fb0c9;margin-bottom:16px}
+.qs h2{font-size:clamp(26px,4.4vw,38px);line-height:1.14;letter-spacing:-.02em;margin-bottom:26px}
+.qs h2 em{font-style:italic;font-weight:700}
+.qs__badge{display:flex;justify-content:center}
+.qs__badge img{max-width:340px;width:100%;height:auto}
+@media(min-width:820px){.qs__inner{grid-template-columns:1.05fr .95fr}}
+
+/* ===================== SOCIAL PROOF / ALUMNI (image bg + overlay) ===================== */
+.alumni-sec{position:relative;color:#fff;background:var(--blue)}
+.alumni-sec__bg{position:absolute;inset:0;background:url('assets/background.jpg') center/cover no-repeat;z-index:0}
+.alumni-sec__overlay{position:absolute;inset:0;background:linear-gradient(160deg, rgba(3,25,58,.9) 0%, rgba(2,15,38,.86) 100%);z-index:1}
+.alumni-sec .wrap{position:relative;z-index:2}
+.alumni-sec .eyebrow{color:#7fb0ff}
+.alumni-sec .section-intro{color:#d3ddec}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:40px}
+.stat{text-align:center}
+.stat .num{font-size:clamp(48px,6vw,74px);font-weight:800;color:var(--red);line-height:1;letter-spacing:-.03em}
+.stat .lbl{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#c2cfe2;margin-top:8px;line-height:1.4}
+.alumni-grid{display:grid;grid-template-columns:1fr;gap:18px}
+.alum-card{background:rgba(8,24,54,.72);border:1px solid #1c3866;border-radius:14px;padding:24px 22px;position:relative;overflow:hidden;backdrop-filter:blur(2px)}
+.alum-card::after{content:"";position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;border:1px solid rgba(209,229,255,.16)}
+.alum-card__photo{position:relative;overflow:hidden;width:66px;height:66px;border-radius:50%;background:var(--red) center/cover no-repeat;margin-bottom:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:20px;border:2px solid rgba(255,255,255,.18)}
+.alum-card__photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.alum-card h3{color:#fff;font-size:19px;margin-bottom:4px;letter-spacing:-.02em}
+.alum-card__year{font-size:12px;color:#7fb0ff;font-weight:600;margin-bottom:12px}
+.alum-card__role{font-size:14px;color:#d3ddec;line-height:1.45}
+.alum-card__role strong{color:#fff}
+
+/* ===================== WHY SWITZERLAND ===================== */
+.why-list{list-style:none;padding:0;margin:0 0 8px;max-width:800px}
+.why-list li{position:relative;padding:11px 0 11px 32px;font-size:16px;border-bottom:1px solid rgba(255,255,255,.12);color:#e6ecf5}
+.why-list li::before{content:"";position:absolute;left:0;top:17px;width:14px;height:14px;border-radius:50%;background:var(--red)}
+.trusted{margin-top:40px;padding-top:32px;border-top:2px solid var(--red)}
+.trusted h3{color:#fff;font-size:clamp(22px,4vw,30px);margin-bottom:18px}
+.trusted-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:14px}
+.trusted-list li{position:relative;padding-left:30px;font-size:15.5px;color:#dbe4f0}
+.trusted-list li::before{content:"";position:absolute;left:0;top:6px;width:16px;height:16px;border-radius:50%;background:var(--red)}
+.why-cta{margin-top:34px}
+
+/* ===================== CAMPUS (original image, no overlay) ===================== */
+.campus{display:grid;grid-template-columns:1fr;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#fff;box-shadow:0 12px 30px rgba(3,25,58,.06)}
+.campus__img{min-height:280px;background:url('assets/HIMcampus.jpg') center/cover no-repeat, var(--blue);position:relative;display:flex;align-items:flex-end;padding:26px;color:#fff}
+.campus__pin{position:relative;z-index:2;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.55)}
+.campus__pin span{display:block;font-size:28px;font-weight:800;letter-spacing:-.02em;text-transform:none;margin-top:4px}
+.campus__body{padding:30px}
+.campus__body h3{font-size:clamp(22px,4vw,28px);margin-bottom:12px;letter-spacing:-.02em}
+.campus__body p{font-size:15px;color:var(--muted);margin-bottom:14px}
+.campus__facts{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:10px}
+.campus__facts li{background:var(--cream);border:1px solid var(--line);border-radius:40px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--ink)}
+
+/* ===================== LIGHT-BLUE CTA BAND ===================== */
+.cta-band{background:var(--lightblue)}
+.cta-band__inner{max-width:var(--maxw);margin:0 auto;padding:44px 20px;display:grid;grid-template-columns:1fr;gap:22px;align-items:center}
+.cta-band h2{font-size:clamp(24px,4vw,34px);color:var(--blue);letter-spacing:-.02em;line-height:1.16}
+.cta-band p{font-size:15.5px;color:#33415c;margin-top:10px;max-width:52ch}
+.cta-band .btn{justify-self:start}
+@media(min-width:760px){.cta-band__inner{grid-template-columns:1fr auto}.cta-band .btn{justify-self:end}}
+
+/* ===================== FORM ===================== */
+.form-section{background:var(--blue);color:#fff}
+.form-card{background:#fff;color:var(--ink);border-radius:18px;padding:32px 26px;max-width:700px;margin:0 auto;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.form-card h2{font-size:clamp(26px,5vw,38px);color:var(--ink);margin-bottom:8px;letter-spacing:-.03em}
+.form-card .form-sub{font-size:14.5px;color:var(--muted);margin-bottom:24px}
+.form-step-label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin:8px 0 14px}
+.form-step2-sub{font-size:13.5px;color:var(--muted);margin-bottom:18px}
+.form-grid{display:grid;grid-template-columns:1fr;gap:16px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--ink)}
+.field label .req{color:var(--red)}
+.field input,.field select{width:100%;padding:13px;border:1px solid #cfd4dc;border-radius:10px;font-family:var(--sans);font-size:15px;color:var(--ink);background:#fff}
+.field input:focus,.field select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(228,35,19,.12)}
+.consent{font-size:12px;color:var(--muted);margin-top:18px;display:flex;gap:10px;align-items:flex-start}
+.consent a{color:var(--red);text-decoration:underline}
+.form-actions{margin-top:22px}
+.form-actions--split{margin-top:22px;display:flex;gap:14px;align-items:center;justify-content:space-between}
+.form-actions--split .btn--ghost{color:var(--ink);border-color:#cfd4dc}
+.form-actions--split .btn--ghost:hover{background:#f2f2f2}
+.fstep{display:none}
+.fstep.active{display:block}
+.form-success{display:none;text-align:center;padding:26px 6px}
+.form-success.show{display:block}
+.form-success .check{width:64px;height:64px;border-radius:50%;background:var(--red);margin:0 auto 18px;position:relative}
+.form-success .check::after{content:"";position:absolute;left:23px;top:16px;width:12px;height:24px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg)}
+.form-success h3{font-size:24px;margin-bottom:10px;letter-spacing:-.02em}
+.form-success p{color:var(--muted);font-size:14.5px;max-width:48ch;margin:0 auto}
+
+/* ===================== FAQ ===================== */
+.faq-item{border-bottom:1px solid var(--line)}
+.faq-q{width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:20px 40px 20px 0;position:relative;font-family:var(--sans);font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.faq-q::after{content:"+";position:absolute;right:4px;top:17px;font-size:26px;color:var(--red);transition:transform .2s}
+.faq-item.open .faq-q::after{content:"–"}
+.faq-a{display:none;padding:0 0 22px;font-size:15px;color:var(--muted);max-width:70ch}
+.faq-item.open .faq-a{display:block}
+
+/* ===================== ARE YOU WORLD READY (footer CTA band) ===================== */
+.worldready{background:var(--blue);color:#fff;text-align:center;border-top:1px solid rgba(255,255,255,.06)}
+.worldready__inner{max-width:var(--maxw);margin:0 auto;padding:64px 20px}
+.worldready h2{font-size:clamp(28px,5vw,40px);margin-bottom:40px}
+.wr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:30px 20px;align-items:start;margin-bottom:36px}
+.wr-logo{display:flex;align-items:center;justify-content:center;grid-column:1 / -1}
+.wr-logo .footer__logo{font-size:30px}
+.wr-stat .num{font-size:clamp(40px,6vw,58px);font-weight:800;color:#fff;line-height:1;letter-spacing:-.03em}
+.wr-stat .lbl{font-size:13px;color:#c7d3e6;margin-top:10px;line-height:1.4}
+@media(min-width:860px){.wr-grid{grid-template-columns:auto repeat(4,1fr);gap:24px}.wr-logo{grid-column:auto}}
+
+/* ===================== FOOTER ===================== */
+.footer{background:var(--blue-deep);color:#fff;border-top:1px solid rgba(255,255,255,.08)}
+.footer__cta{max-width:var(--maxw);margin:0 auto;padding:30px 20px;display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between}
+.footer__brand{display:flex;align-items:center;gap:14px}
+.footer__logo{font-weight:800;font-size:22px;letter-spacing:-.02em;color:#fff}
+.footer__logo .ring{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--red);margin-left:2px}
+.footer__tag{font-size:13px;color:#9fb0c9;max-width:34ch}
+.footer__sub{border-top:1px solid rgba(255,255,255,.08)}
+.footer__sub-inner{max-width:var(--maxw);margin:0 auto;padding:16px 20px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:center;text-align:center}
+.footer__copy{font-size:12px;color:#8395ad}
+.footer__privacy{font-size:12px;color:#c7d3e6;text-decoration:underline}
+
+/* ===================== STICKY CTA ===================== */
+.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:900;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 16px;transform:translateY(110%);transition:transform .3s;box-shadow:0 -2px 14px rgba(0,0,0,.25)}
+.sticky-cta.show{transform:translateY(0)}
+.sticky-cta__txt{font-size:14px;font-weight:700;letter-spacing:-.01em}
+.sticky-cta .btn{padding:11px 20px;font-size:13px;white-space:nowrap}
+
+/* ===================== RESPONSIVE ===================== */
+@media(min-width:680px){
+  .trust__inner{grid-template-columns:repeat(4,1fr)}
+  .stats{grid-template-columns:repeat(4,1fr)}
+  .prog-grid{grid-template-columns:repeat(2,1fr)}
+  .majors{grid-template-columns:repeat(2,1fr)}
+  .partners-grid{grid-template-columns:repeat(4,1fr)}
+  .form-grid{grid-template-columns:1fr 1fr}
+  .field--full{grid-column:1 / -1}
+}
+@media(min-width:860px){
+  body{padding-bottom:0}
+  .section{padding:84px 0}
+  .hero__inner{padding:124px 20px 116px}
+  .alumni-grid{grid-template-columns:repeat(4,1fr)}
+  .majors{grid-template-columns:repeat(4,1fr)}
+  .campus{grid-template-columns:1.05fr 1fr}
+  .campus__img{min-height:100%}
+  .trusted-list{grid-template-columns:repeat(3,1fr)}
+  .sticky-cta{bottom:auto;top:0;transform:translateY(-110%);box-shadow:0 2px 14px rgba(0,0,0,.25);padding:12px 28px}
+  .sticky-cta.show{transform:translateY(0)}
+  .sticky-cta__inner{max-width:var(--maxw);margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px}
+}
+
+/* ===== v4: rotating section backgrounds + centered sections + footer logo ===== */
+.section--cream2{background:#efe6d5}
+.section--lblue{background:#d1e5ff}
+.section--cream2 .offer__title,.section--lblue .offer__title{color:var(--blue)}
+.section--cream2 .offer__lead,.section--lblue .offer__lead{color:var(--muted)}
+.section--cream2 .offer-points li,.section--lblue .offer-points li{color:var(--ink);border-bottom:1px solid var(--line)}
+.section--cream2 .offer-stat__lbl,.section--lblue .offer-stat__lbl{color:var(--muted)}
+.section--lblue .section-intro{color:var(--muted)}
+.section--lblue .why-list li{color:var(--ink);border-bottom:1px solid rgba(3,25,58,.14)}
+.section--lblue .trusted h3{color:var(--blue)}
+.section--lblue .trusted-list li{color:var(--ink)}
+.section--cream2 .partners-foot,.section--lblue .partners-foot{color:var(--blue)}
+.section--blue .faq-q{color:#fff}
+.section--blue .faq-a{color:#c7d3e6}
+.section--blue .faq-item{border-bottom:1px solid rgba(255,255,255,.14)}
+/* center every section */
+.section>.wrap>.eyebrow,.section>.wrap>.section-title,.section>.wrap>.section-intro{text-align:center}
+.section>.wrap>.section-intro{margin-left:auto;margin-right:auto}
+.hero__inner{text-align:center}
+.hero h1{margin-left:auto;margin-right:auto}
+.hero__cta{justify-content:center}
+.bba-only__head{justify-content:center;text-align:center}
+.trusted h3{text-align:center}
+.cta-band__inner{text-align:center;grid-template-columns:1fr!important}
+.cta-band p{margin-left:auto;margin-right:auto}
+.cta-band .btn{justify-self:center}
+/* footer + worldready logo image */
+.brand-img{height:42px;width:auto;display:block;margin:0 auto}
+.footer__brandrow{display:flex;justify-content:center;padding:28px 20px 6px}
+
+/* ===== Indonesia: hero subheadline ===== */
+.hero__sub{font-size:clamp(16px,2.4vw,19px);line-height:1.6;color:#dbe7fb;max-width:60ch;margin:0 auto 26px;font-weight:400}
+.hero__sub strong{color:#fff;font-weight:700}
+
+/* ===== Indonesia: LPDP / scholarships 2-column section ===== */
+.lpdp{background:var(--cream)}
+.lpdp__grid{display:grid;grid-template-columns:1fr;gap:30px;align-items:center}
+.lpdp__media{position:relative;border-radius:16px;overflow:hidden;min-height:280px;background:linear-gradient(150deg,#03193A,#061f47 60%,#020f26) center/cover no-repeat;border:1px solid var(--line);box-shadow:0 14px 40px rgba(3,25,58,.1)}
+.lpdp__media img{width:100%;height:100%;object-fit:cover;display:block}
+.lpdp__logo{position:absolute;top:18px;left:18px;z-index:2;background:#fff;border-radius:12px;padding:10px 14px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.lpdp__logo img{height:40px;width:auto;display:block}
+.lpdp__body h2{font-size:clamp(26px,4.6vw,38px);letter-spacing:-.03em;line-height:1.14;color:var(--blue);margin-bottom:14px}
+.lpdp__body>p{font-size:16px;color:var(--muted);line-height:1.7;margin-bottom:22px;max-width:60ch}
+.lpdp-points{list-style:none;padding:0;margin:0 0 26px}
+.lpdp-points li{position:relative;padding:11px 0 11px 32px;font-size:15.5px;line-height:1.55;color:var(--ink);border-bottom:1px solid var(--line)}
+.lpdp-points li:last-child{border-bottom:none}
+.lpdp-points li::before{content:"";position:absolute;left:0;top:18px;width:13px;height:13px;border-radius:50%;background:var(--red)}
+.lpdp-points strong{color:var(--blue)}
+.lpdp__note{font-size:12.5px;color:var(--muted);margin-top:6px;max-width:62ch}
+@media(min-width:860px){.lpdp__grid{grid-template-columns:1fr 1.05fr}.lpdp__media{min-height:420px}}
+</style>
+</head>
+<body>
+
+<!-- STICKY CTA -->
+<div class="sticky-cta" id="stickyCta">
+  <div class="sticky-cta__inner">
+    <span class="sticky-cta__txt">Ready to be world ready?</span>
+    <a href="#admissions-form" class="btn btn--primary">Talk to our Indonesia Team</a>
+  </div>
+</div>
+
+<!-- 1. HERO -->
+<header class="hero" id="hero">
+  <div class="hero__inner">
+    <p class="hero__eyebrow">HIM Business School · Montreux, Switzerland</p>
+    <h1>Be <span class="accent">World Ready.</span> Study Business in Switzerland.</h1>
+    <p class="hero__sub">Launch an international career from one of the world's top business schools — with 3 paid internships and a globally recognised Swiss degree. <strong>Transparent fees, merit scholarships and LPDP guidance</strong> for Indonesian students planning postgraduate study.</p>
+    <div class="hero__cta">
+      <a href="#admissions-form" class="btn btn--primary">Talk to our Indonesia Admissions Team</a>
+      <span class="hero__note">Dedicated Indonesia team · guidance from application to arrival</span>
+    </div>
+  </div>
+</header>
+
+<!-- TRUST BAR (bigger red numbers) -->
+<section class="trust">
+  <div class="trust__inner">
+    <div class="trust__item"><div class="num">6<sup>th</sup></div><div class="lbl">Worldwide — Employer &amp; Academic Reputation (QS)</div></div>
+    <div class="trust__item"><div class="num">97%</div><div class="lbl">Of students hired upon graduation</div></div>
+    <div class="trust__item"><div class="num">3</div><div class="lbl">Paid worldwide internships (BBA)</div></div>
+    <div class="trust__item"><div class="num">60+</div><div class="lbl">Nationalities on campus</div></div>
+  </div>
+</section>
+
+<!-- 2. PROGRAMS -->
+<section class="section section--cream" id="programs">
+  <div class="wrap">
+    <p class="eyebrow">Our Programs</p>
+    <h2 class="section-title">Two Swiss programs. Endless career paths.</h2>
+    <p class="section-intro">HIM blends acclaimed Swiss management principles with contemporary, future-focused business education. Start your career with our flagship Bachelor of Business Administration and three paid internships — or step into the future of business with our brand-new Master in Applied AI in Customer Experience, delivered across Montreux and Macao.</p>
+
+    <div class="prog-grid">
+      <!-- BBA -->
+      <article class="pcard">
+        <div class="pcard__img" style="background-image:linear-gradient(180deg,rgba(3,25,58,.12),rgba(3,25,58,.45)),url('assets/HIMBachelor.jpg')">
+          <span class="pcard__tag">Flagship</span>
+        </div>
+        <div class="pcard__body">
+          <h3>Bachelor of Business Administration</h3>
+          <ul class="prog-meta">
+            <li><span class="k">Duration</span><span class="v">3 years · 6 terms + 3 paid internships</span></li>
+            <li><span class="k">Degree</span><span class="v">BBA awarded by Northwood University (US) · ACBSP accredited</span></li>
+            <li><span class="k">Specialisations</span><span class="v">Finance · Marketing · Management · Hospitality</span></li>
+            <li><span class="k">Intakes</span><span class="v">January &amp; October</span></li>
+          </ul>
+          <p class="desc">A people-first, customer-centric business degree built for fast movers. Complete three paid internships — around 1.5 years of real experience — and graduate versatile, connected and ready to lead across industries.</p>
+          <a href="#admissions-form" class="btn btn--primary cta-major" data-program="Bachelor of Business Administration">Explore the BBA</a>
+        </div>
+      </article>
+
+      <!-- MASTER AI (NEW) -->
+      <article class="pcard">
+        <div class="pcard__img" style="background-image:linear-gradient(180deg,rgba(3,25,58,.12),rgba(3,25,58,.45)),url('assets/HIMMaster.avif')">
+          <span class="pcard__tag">New for 2026</span>
+        </div>
+        <div class="pcard__body">
+          <h3>Master in Applied AI in Customer Experience</h3>
+          <ul class="prog-meta">
+            <li><span class="k">Level</span><span class="v">Postgraduate master's · 1 year</span></li>
+            <li><span class="k">Campuses</span><span class="v">Montreux (Switzerland) + Macao (China)</span></li>
+            <li><span class="k">Cohort</span><span class="v">Exclusive 24-student cohort</span></li>
+            <li><span class="k">Option</span><span class="v">Optional dual master (+ MSc in Leadership, César Ritz)</span></li>
+          </ul>
+          <p class="desc">HIM's first-ever master's — for future CX leaders, not engineers. Learn to connect AI with real business needs, customer experience and responsible innovation: build your AI foundation online, then apply it in Macao, one of Asia's fastest-moving innovation hubs.</p>
+          <a href="#admissions-form" class="btn btn--primary cta-major" data-program="Master in Applied AI in Customer Experience">Explore the Master</a>
+        </div>
+      </article>
+    </div>
+
+    <!-- BBA-only specialisations -->
+    <div class="bba-only">
+      <div class="bba-only__head">
+        <span class="bba-only__badge">BBA only</span>
+        <div>
+          <h3>Specialise your Bachelor's — choose one major</h3>
+          <p>In Year 1 you build business fundamentals, then pick one major for Years 2–3.</p>
+        </div>
+      </div>
+      <div class="majors">
+        <article class="major">
+          <div class="major__ico"><span></span></div>
+          <h4>Finance</h4>
+          <p>Corporate investment, portfolio strategy and international finance for elite financial roles.</p>
+          <a href="#admissions-form" class="btn btn--primary cta-major" data-program="BBA — Finance specialisation">Explore</a>
+        </article>
+        <article class="major">
+          <div class="major__ico"><span></span></div>
+          <h4>Marketing</h4>
+          <p>Branding, luxury marketing, data and strategic communication across global markets.</p>
+          <a href="#admissions-form" class="btn btn--primary cta-major" data-program="BBA — Marketing specialisation">Explore</a>
+        </article>
+        <article class="major">
+          <div class="major__ico"><span></span></div>
+          <h4>Management</h4>
+          <p>Lead people, processes and performance in complex, cross-cultural environments.</p>
+          <a href="#admissions-form" class="btn btn--primary cta-major" data-program="BBA — Management specialisation">Explore</a>
+        </article>
+        <article class="major">
+          <div class="major__ico"><span></span></div>
+          <h4>Hospitality</h4>
+          <p>Turn service into strategy — innovation, operations and revenue leadership in luxury hospitality.</p>
+          <a href="#admissions-form" class="btn btn--primary cta-major" data-program="BBA — Hospitality specialisation">Explore</a>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. PAID INTERNSHIPS / REAL ROI (tint) -->
+<section class="section section--lblue offer" id="roi">
+  <div class="wrap offer__wrap">
+    <span class="offer__mark"></span>
+    <p class="eyebrow">Careers &amp; Return on Investment</p>
+    <h2 class="offer__title">Paid Internships. Global Careers. Real ROI.</h2>
+    <hr class="offer__rule">
+    <p class="offer__lead">A Swiss business education that pays you back — in real experience, a monthly salary during your studies, and a career without borders.</p>
+    <div class="offer-stats">
+      <div class="offer-stat"><span class="offer-stat__num">97%</span><span class="offer-stat__lbl">Hired upon graduation</span></div>
+      <div class="offer-stat"><span class="offer-stat__num">3</span><span class="offer-stat__lbl">Paid worldwide internships (BBA)</span></div>
+      <div class="offer-stat"><span class="offer-stat__num">CHF&nbsp;2,350</span><span class="offer-stat__lbl">Average monthly internship salary</span></div>
+    </div>
+    <ul class="offer-points"><li>Alumni work at UBS, LVMH, Richemont, Accor, Google, Moncler &amp; more</li></ul>
+  </div>
+</section>
+
+<!-- 6. VIDEO (light cream) -->
+<section class="section section--cream" id="video">
+  <div class="wrap">
+    <p class="eyebrow" style="text-align:center">Watch</p>
+    <h2 class="section-title" style="text-align:center;max-width:22ch;margin-left:auto;margin-right:auto">Discover the essentials of a HIM degree</h2>
+    <p class="section-intro" style="text-align:center;margin-left:auto;margin-right:auto">See how HIM combines Swiss excellence with future-focused business education to prepare you for global career opportunities.</p>
+    <div class="video-wrap">
+      <div class="video-embed">
+        <iframe src="https://player.vimeo.com/video/917904797?title=0&amp;byline=0&amp;portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="HIM Business School"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. PARTNERS (dark cream) -->
+<section class="section section--cream2" id="partners">
+  <div class="wrap">
+    <p class="eyebrow">Endless Career Paths</p>
+    <h2 class="section-title">Two programs. Endless career paths.</h2>
+    <p class="section-intro">Across both degrees you tailor your studies to your ambitions and build expertise endorsed by leading industry names. Our specialisations and projects are developed with global brands, including:</p>
+    <div class="partners-grid">
+      <div class="partner"><img src="assets/logos/uefa.png" alt="UEFA" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="partner__txt">UEFA</span></div>
+      <div class="partner"><img src="assets/logos/edmond-de-rothschild.png" alt="Edmond de Rothschild" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="partner__txt">Edmond de Rothschild</span></div>
+      <div class="partner"><img src="assets/logos/tourbillon.png" alt="Tourbillon Boutique" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="partner__txt">Tourbillon Boutique</span></div>
+      <div class="partner"><img src="assets/logos/swiss-sustainable-finance.png" alt="Swiss Sustainable Finance" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="partner__txt">Swiss Sustainable Finance</span></div>
+      <div class="partner"><img src="assets/logos/luxury-institute.png" alt="Luxury Institute" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="partner__txt">Luxury Institute</span></div>
+      <div class="partner"><img src="assets/logos/nestle-professional.png" alt="Nestlé Professional" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="partner__txt">Nestlé Professional</span></div>
+      <div class="partner"><img src="assets/logos/ubs.png" alt="UBS" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="partner__txt">UBS</span></div>
+      <div class="partner"><img src="assets/logos/disneyland-paris.png" alt="Disneyland Paris" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="partner__txt">Disneyland Paris</span></div>
+    </div>
+    <p class="partners-foot">They hire our graduates. You could be next.</p>
+  </div>
+</section>
+
+<!-- REAL STUDENTS. REAL SUCCESS. (image bg + overlay) -->
+<section class="section alumni-sec" id="alumni">
+  <div class="alumni-sec__bg"></div>
+  <div class="alumni-sec__overlay"></div>
+  <div class="wrap">
+    <p class="eyebrow">Real Students. Real Success.</p>
+    <h2 class="section-title">An alumni network that opens doors</h2>
+    <p class="section-intro">HIM graduates join one of the largest hospitality and business networks in the world — over 45,000 alumni across the Swiss Education Group, in 100+ countries, with mentorship, exclusive job opportunities and lifelong career support.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="num">10K+</div><div class="lbl">HIM alumni worldwide</div></div>
+      <div class="stat"><div class="num">45K+</div><div class="lbl">Alumni in the Swiss Education Group network</div></div>
+      <div class="stat"><div class="num">97%</div><div class="lbl">Of students hired upon graduation</div></div>
+      <div class="stat"><div class="num">90%</div><div class="lbl">Alumni highly satisfied with HIM (NPS)</div></div>
+    </div>
+
+    <div class="alumni-grid">
+      <article class="alum-card"><div class="alum-card__photo"><img src="assets/HIMalumni-NINHDO.avif" alt="Ninh Do" onerror="this.remove()">ND</div><h3>Ninh Do</h3><p class="alum-card__year">Class of 2006</p><p class="alum-card__role"><strong>Regional Head of Partner Marketing</strong><br>Google Cloud, North America</p></article>
+      <article class="alum-card"><div class="alum-card__photo"><img src="assets/HIMalumni-BOWEI.avif" alt="Bowei Li" onerror="this.remove()">BL</div><h3>Bowei Li</h3><p class="alum-card__year">China · Class of 2020</p><p class="alum-card__role"><strong>Communication Manager</strong><br>LKQ Europe, Switzerland</p></article>
+      <article class="alum-card"><div class="alum-card__photo"><img src="assets/HIMalumni-MARIELLE.avif" alt="Marielle McElrath" onerror="this.remove()">MM</div><h3>Marielle McElrath</h3><p class="alum-card__year">Poland · Class of 2020</p><p class="alum-card__role"><strong>Manager in Training (MIT), EMEA</strong><br>Louis Vuitton, Dubai</p></article>
+      <article class="alum-card"><div class="alum-card__photo"><img src="assets/HIMalumni-LEONARDO.avif" alt="Leonardo Gloor" onerror="this.remove()">LG</div><h3>Leonardo Gloor</h3><p class="alum-card__year">Italy · Class of 2018</p><p class="alum-card__role"><strong>VP, Capital Markets</strong><br>JLL Hotels &amp; Hospitality</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- WHY SWITZERLAND (light blue) -->
+<section class="section section--lblue" id="why-switzerland">
+  <div class="wrap">
+    <p class="eyebrow">Why Study in Switzerland</p>
+    <h2 class="section-title">A springboard for global careers</h2>
+    <p class="section-intro">Switzerland offers more than breathtaking scenery — it's a springboard for international careers, trusted by parents and chosen by ambitious Indonesian students.</p>
+    <ul class="why-list">
+      <li>Live and learn in one of the safest and most trusted countries in the world</li>
+      <li>Graduate with a Swiss-based degree recognised and valued by employers everywhere</li>
+      <li>Study in the country ranked No.1 worldwide for achieving career goals (educations.com)</li>
+      <li>Benefit from Switzerland's reputation for innovation, structure and academic excellence</li>
+      <li>Travel easily across Europe with direct access to top cities and career hubs</li>
+      <li>Gain paid international internship experience and global career exposure</li>
+    </ul>
+    <div class="trusted">
+      <h3>Trusted by Indonesian families</h3>
+      <ul class="trusted-list">
+        <li>Dedicated Indonesia admissions team — support from application to arrival</li>
+        <li>Safe, structured campus life in central Montreux with student services</li>
+        <li>A globally recognised degree valued in Indonesia, Singapore, the UAE and beyond</li>
+      </ul>
+    </div>
+    <div class="why-cta"><a href="#admissions-form" class="btn btn--primary">Talk to our Indonesia Team</a></div>
+  </div>
+</section>
+
+<!-- 11. CAMPUS (original image, no overlay) -->
+<section class="section" id="campus">
+  <div class="wrap">
+    <p class="eyebrow">The Campus</p>
+    <h2 class="section-title">Live well, learn well — in the heart of Montreux</h2>
+    <p class="section-intro">On the shores of Lake Geneva, surrounded by the Swiss and French Alps, Montreux is safe, welcoming and full of life — with cafés, shops and world-renowned events like the Montreux Jazz Festival just steps away.</p>
+    <div class="campus">
+      <div class="campus__img"><div class="campus__pin">Swiss Riviera<span>Montreux</span></div></div>
+      <div class="campus__body">
+        <h3>A close-knit, multicultural community</h3>
+        <p>The HIM community is spread across several renovated buildings, all within walking distance, so you're never far from friends, classes or campus life. Each is equipped with state-of-the-art accommodation and modern learning facilities — with panoramic terraces looking out over the Alps and Lake Geneva.</p>
+        <p>You'll join students from more than 60 nationalities in a supportive, people-first environment where you feel at home from day one.</p>
+        <ul class="campus__facts"><li>Lake Geneva</li><li>60+ nationalities</li><li>24/7 student support</li><li>Montreux Jazz Festival</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12. LIGHT-BLUE CTA BAND -->
+<section class="cta-band">
+  <div class="cta-band__inner">
+    <div>
+      <h2>Your global business career starts here — are you ready?</h2>
+      <p>Speak with our dedicated Indonesia team about the BBA and the new Master in Applied AI — programs, fees, scholarships, LPDP and the visa process, from application to arrival.</p>
+    </div>
+    <a href="#admissions-form" class="btn btn--primary">Take the Next Step</a>
+  </div>
+</section>
+
+<!-- 12b. TUITION FEES (dark cream) — moved directly above the form to qualify leads -->
+<section class="section section--cream2" id="fees">
+  <div class="wrap">
+    <p class="eyebrow">Tuition Fees</p>
+    <h2 class="section-title">One all-inclusive fee — everything is taken care of</h2>
+    <p class="section-intro">No hidden extras. Each program covers tuition, accommodation, meals, student services, arrival support, insurance and career services. Here is exactly what each program costs — and everything that comes with it.</p>
+
+    <div class="acc open">
+      <button class="acc__head" type="button" aria-expanded="true">
+        <span>Bachelor of Business Administration</span>
+        <span class="acc__price"><span class="chf">CHF 129,400</span><span class="inr">approx. Rp 2.59 billion · 3 years / 6 terms + 3 internships</span></span>
+        <span class="acc__toggle">+</span>
+      </button>
+      <div class="acc__panel">
+        <p style="font-size:14.5px;color:var(--muted);margin-top:16px">A prestigious Swiss degree blending business expertise with hospitality excellence — preparing you to lead in luxury, finance, marketing, hospitality and entrepreneurship, with real-world experience and global connections built in. Fees are CHF 21,900 for Term 1 and CHF 21,500 per term thereafter.</p>
+        <h4>Everything is taken care of</h4>
+        <ul class="incl">
+          <li>Tuition — academic courses, exams, guest lectures, workshops &amp; field trips</li>
+          <li>Accommodation (double standard room) &amp; all weekday + weekend meals</li>
+          <li>Student services, sports facilities, digital center &amp; lifelong alumni membership</li>
+          <li>Arrival in Switzerland — Geneva airport welcome, induction weekend &amp; residence permit</li>
+          <li>Insurance &amp; social assistance · career support &amp; 3 paid worldwide internships</li>
+        </ul>
+        <div class="internship-note"><strong>Internship value:</strong> monthly gross salary in Switzerland can reach CHF 2,350.* A refundable CHF 2,000 security deposit applies, and a 2% early-bird discount is available when fees are paid in full 90 days before term start. <br><span style="font-size:12px">*Average gross salary. Amounts may vary by placement and industry.</span></div>
+      </div>
+    </div>
+
+    <div class="acc">
+      <button class="acc__head" type="button" aria-expanded="false">
+        <span>Master in Applied AI in Customer Experience</span>
+        <span class="acc__price"><span class="chf">Fees on request</span><span class="inr">Postgraduate · 1 year · Montreux + Macao</span></span>
+        <span class="acc__toggle">+</span>
+      </button>
+      <div class="acc__panel">
+        <p style="font-size:14.5px;color:var(--muted);margin-top:16px">HIM's new one-year master's for future customer-experience leaders. An exclusive 24-student cohort studies across Switzerland and China, with an optional dual master (adding an MSc in Leadership from César Ritz Colleges).</p>
+        <h4>Everything is taken care of</h4>
+        <ul class="incl">
+          <li>Tuition &amp; access to the online AI foundation (40 hours)</li>
+          <li>International immersion in Macao — field trips, company partnerships &amp; live business challenges</li>
+          <li>Student services, career support &amp; alumni network access</li>
+          <li>Optional dual-master pathway with César Ritz Colleges</li>
+        </ul>
+        <div class="internship-note"><strong>Limited seats:</strong> the inaugural cohort is capped at 24 students. Our Indonesia team will share the current fee schedule and application deadlines — and can advise on LPDP eligibility for this postgraduate program.</div>
+      </div>
+    </div>
+
+    <p class="fees-foot">Indonesian rupiah figures are indicative only, converted at approx. 1 CHF = Rp 20,000. Fees are payable in CHF (via Flywire); the exchange rate at the time of payment will apply. Fees are reviewed annually and subject to change. Our Indonesia admissions team will share the full, current fee breakdown and scholarship eligibility for each program.</p>
+  </div>
+</section>
+
+<!-- 12c. LPDP & SCHOLARSHIPS (2-column) — directly above the form -->
+<section class="section lpdp" id="scholarships">
+  <div class="wrap">
+    <div class="lpdp__grid">
+      <div class="lpdp__media">
+        <div class="lpdp__logo"><img src="assets/logos/lpdp.png" alt="LPDP — Lembaga Pengelola Dana Pendidikan" onerror="this.parentElement.style.display='none'"></div>
+        <img src="assets/LPDP-indonesia.jpg" alt="Indonesian students at HIM Business School" onerror="this.style.display='none'">
+      </div>
+      <div class="lpdp__body">
+        <p class="eyebrow" style="text-align:left">Scholarships &amp; LPDP</p>
+        <h2>Funding your studies — including LPDP for postgraduate study</h2>
+        <p>Ambition should never be limited by circumstance. Our dedicated Indonesia team helps you plan every step of your investment — with real guidance, not guesswork — including how to prepare an application supported by Indonesia's LPDP scholarship.</p>
+        <ul class="lpdp-points">
+          <li><strong>LPDP guidance</strong> — LPDP (Lembaga Pengelola Dana Pendidikan) funds Indonesians for master's and doctoral study abroad. Our team can guide you on eligibility and preparing an LPDP-ready application for the Master in Applied AI.</li>
+          <li><strong>Merit-based scholarships</strong> of up to 20% — limited &amp; awarded competitively</li>
+          <li><strong>Flexible per-term payment plans</strong> to spread the investment</li>
+          <li><strong>2% early-bird discount</strong> when fees are paid in full 90 days before term start</li>
+          <li><strong>Indonesia-team support</strong> on education loans, payment plans and visa documentation</li>
+        </ul>
+        <div class="offer__cta"><a href="#admissions-form" class="btn btn--primary">Check your scholarship &amp; LPDP options</a></div>
+        <p class="lpdp__note">LPDP eligibility, funded fields and approved-institution lists are set by LPDP and reviewed each intake; LPDP supports postgraduate (master's/doctoral) study and does not fund the Bachelor's. Our team will confirm what applies to your situation.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 13. FORM -->
+<section class="section form-section" id="admissions-form">
+  <div class="wrap">
+    <div class="form-card">
+      <h2>Connect with our Indonesia Admissions Team</h2>
+      <p class="form-sub">Share a few details and our Indonesia team will guide you through programs, fees, scholarships, LPDP and the visa process.</p>
+      <form id="leadForm">
+        <div class="fstep active" data-step="1">
+          <p class="form-step-label">Step 1 of 2 — Your details</p>
+          <div class="form-grid">
+            <div class="field"><label>First name <span class="req">*</span></label><input type="text" name="first_name" placeholder="First name" required></div>
+            <div class="field"><label>Last name <span class="req">*</span></label><input type="text" name="last_name" placeholder="Last name" required></div>
+            <div class="field"><label>Email <span class="req">*</span></label><input type="email" name="email" placeholder="you@example.com" required></div>
+            <div class="field"><label>Phone <span class="req">*</span></label><input type="tel" name="phone" value="+62 " required></div>
+            <div class="field field--full"><label>City of residence <span class="req">*</span></label><input type="text" name="city" placeholder="e.g. Jakarta" required></div>
+            <div class="field field--full"><label>Program of interest <span class="req">*</span></label>
+              <select name="program" id="programSelect" required>
+                <option value="">Please select</option>
+                <option>Bachelor of Business Administration</option>
+                <option>BBA — Finance specialisation</option>
+                <option>BBA — Marketing specialisation</option>
+                <option>BBA — Management specialisation</option>
+                <option>BBA — Hospitality specialisation</option>
+                <option>Master in Applied AI in Customer Experience</option>
+              </select>
+            </div>
+            <div class="field field--full"><label>Desired start <span class="req">*</span></label><select name="desired_start" required><option value="">Please select</option><option>January 2027</option><option>October 2026</option><option>Summer 2026 (Master AI)</option><option>2027</option><option>2028</option></select></div>
+          </div>
+          <div class="form-actions"><button type="button" class="btn btn--primary btn--block" id="toStep2">Continue &rarr;</button></div>
+        </div>
+        <div class="fstep" data-step="2">
+          <p class="form-step-label">Step 2 of 2 — Tell us more about you</p>
+          <p class="form-step2-sub">Optional — help us guide you better by sharing a little about your background and study goals.</p>
+          <div class="form-grid">
+            <div class="field"><label>Age bracket</label><select name="age"><option value="">Please select</option><option>Under 18</option><option>18 – 20</option><option>21 – 28</option><option>29 – 32</option><option>Above 33</option></select></div>
+            <div class="field"><label>Current education level</label><select name="education_level"><option value="">Please select</option><option>High School</option><option>Bachelor's</option><option>Master's</option><option>Other</option></select></div>
+            <div class="field"><label>English level</label><select name="english_level"><option value="">Please select</option><option>Native</option><option>Advanced</option><option>Intermediate</option><option>Beginner</option></select></div>
+            <div class="field"><label>How you plan to finance your studies</label><select name="financing"><option value="">Please select</option><option>Self funded</option><option>Family savings</option><option>Will work while studying</option><option>Need a partial scholarship</option><option>Need a full scholarship</option><option>Considering an education loan</option><option>I'm not sure yet / still exploring options</option></select></div>
+            <div class="field field--full"><label>Are you a parent or student?</label><select name="parent_or_student"><option value="">Please select</option><option>Parent</option><option>Student</option></select></div>
+          </div>
+          <div class="consent"><input type="checkbox" name="consent" value="yes" required style="margin-top:3px"><span>I agree to receive communications from HIM Business School by email, WhatsApp and phone, and to the processing of my personal data for this purpose. Your information will be stored securely. You can withdraw consent at any time. See our <a href="https://www.him-business-school.com/en/privacy-policy/" target="_blank" rel="noopener">Privacy Policy</a>.</span></div>
+          <div class="form-actions form-actions--split"><button type="button" class="btn btn--ghost" id="backStep1">&larr; Back</button><button type="submit" class="btn btn--primary">Request More Info</button></div>
+        </div>
+      </form>
+      <div class="form-success" id="formSuccess"><div class="check"></div><h3>Thank you — we've received your details.</h3><p>Our Indonesia admissions team will be in touch shortly to guide you through programs, fees, scholarships, LPDP and the visa process.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ (dark blue) -->
+<section class="section section--blue" id="faq">
+  <div class="wrap">
+    <p class="eyebrow">Frequently Asked Questions</p>
+    <h2 class="section-title">Indonesia admissions — your questions answered</h2>
+
+    <div class="faq-item"><button class="faq-q" type="button">What careers can this education lead to?</button><div class="faq-a">Graduates of HIM launch global careers in finance, marketing, luxury brand management, hospitality, technology and leadership roles across industries. Whether you want to lead international business projects, work in wealth management, apply AI in customer experience, or start your own company, HIM gives you the business skills, Swiss expertise and confidence to make it happen. Many students receive job offers before graduation.</div></div>
+    <div class="faq-item"><button class="faq-q" type="button">Is the degree internationally recognised?</button><div class="faq-a">Yes. The Bachelor of Business Administration is awarded in partnership with Northwood University (US), whose programs are accredited through ACBSP. The new Master in Applied AI in Customer Experience is a Swiss postgraduate degree with an optional dual-master pathway alongside César Ritz Colleges. Both are globally respected credentials valued by top employers.</div></div>
+    <div class="faq-item"><button class="faq-q" type="button">What is the new Master in Applied AI in Customer Experience?</button><div class="faq-a">It's HIM's first-ever master's — a one-year postgraduate degree for future customer-experience leaders (not engineers). You build an AI foundation online, then apply it through immersion in Macao, one of Asia's fastest-moving innovation hubs. The inaugural cohort is limited to 24 students, with an optional dual master adding an MSc in Leadership from César Ritz Colleges.</div></div>
+    <div class="faq-item"><button class="faq-q" type="button">Why study in Switzerland, rather than elsewhere?</button><div class="faq-a">Switzerland is a world leader in quality education — ranked among the safest and most career-focused countries, and known for precision, structure and innovation. Studying in Montreux gives you an authentic Swiss learning experience in a vibrant, culturally rich city on the shores of Lake Geneva, with easy access to Europe's top business hubs.</div></div>
+    <div class="faq-item"><button class="faq-q" type="button">Do I need to arrange my own accommodation, meals and visa?</button><div class="faq-a">No. Our on-campus programs are all-inclusive — covering accommodation, meals and full visa support. You'll live in a central, scenic location with structured assistance from your first day to graduation.</div></div>
+    <div class="faq-item"><button class="faq-q" type="button">Can I afford this? Do you offer scholarships?</button><div class="faq-a">Studying abroad is a long-term investment. To support motivated students, HIM offers competitive merit-based scholarships of up to 20% and flexible payment plans for eligible applicants. Scholarships are limited and awarded competitively, so applying early is encouraged. Many families also finance their studies through education loans, and eligible postgraduate students may apply through Indonesia's LPDP scholarship. Fill out the form and our Indonesia team will walk you through your options.</div></div>
+    <div class="faq-item"><button class="faq-q" type="button">Will I get real-world experience during the program?</button><div class="faq-a">Yes. The BBA includes three paid worldwide internships — around 1.5 years of professional experience — with recent placements at Richemont, Marriott, Accor and leading luxury and finance brands. The Master applies AI to live business challenges through company partnerships and field work in Macao.</div></div>
+    <div class="faq-item"><button class="faq-q" type="button">What are the entry requirements for Indonesian students?</button><div class="faq-a">For the BBA: completed senior secondary school (SMA / SMK) or equivalent, with English proficiency of around IELTS 5.5 (or TOEFL iBT 46). For the Master: a recognised Bachelor's degree. Not quite there on English? Our English Foundation Programme helps you build the skills to start with confidence.</div></div>
+    <div class="faq-item"><button class="faq-q" type="button">Can I use an LPDP scholarship to study at HIM?</button><div class="faq-a">LPDP (Lembaga Pengelola Dana Pendidikan) funds Indonesian citizens for master's and doctoral study at approved institutions abroad — so it would apply to the Master in Applied AI in Customer Experience, not the undergraduate BBA. Eligibility, funded fields and the list of approved institutions are set by LPDP and reviewed each intake. Our Indonesia team can help you check the current requirements and prepare an LPDP-ready application, alongside HIM's own merit-based scholarships.</div></div>
+  </div>
+</section>
+
+<!-- 15. ARE YOU WORLD READY (stats CTA, per old LP) -->
+<section class="worldready">
+  <div class="worldready__inner">
+    <h2>Are you world ready?</h2>
+    <div class="wr-grid">
+      <div class="wr-logo"><img src="assets/HIM_white.png" alt="HIM Business School" class="brand-img" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="footer__logo" style="display:none">HIM<span class="ring"></span></span></div>
+      <div class="wr-stat"><div class="num">14:1</div><div class="lbl">Student-to-faculty ratio</div></div>
+      <div class="wr-stat"><div class="num">25+</div><div class="lbl">Business challenges from companies (in the past 3 years)</div></div>
+      <div class="wr-stat"><div class="num">30+</div><div class="lbl">Best hospitality school for academic reputation (score: 93.7/100)</div></div>
+      <div class="wr-stat"><div class="num">60+</div><div class="lbl">Nationalities represented on campus</div></div>
+    </div>
+    <a href="#admissions-form" class="btn btn--primary">Yes, I'm Ready</a>
+  </div>
+</section>
+
+<!-- 16. FOOTER -->
+<footer class="footer">
+  <div class="footer__brandrow"><img src="assets/HIM_white.png" alt="HIM Business School" class="brand-img" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="footer__logo" style="display:none">HIM<span class="ring"></span></span></div>
+  <div class="footer__sub">
+    <div class="footer__sub-inner">
+      <span class="footer__copy">© 2026 Swiss Education Group. All rights reserved.</span>
+      <a class="footer__privacy" href="https://www.him-business-school.com/en/privacy-policy/" target="_blank" rel="noopener">Privacy Policy</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* Sticky CTA after hero */
+(function(){var bar=document.getElementById('stickyCta'),hero=document.getElementById('hero');function onScroll(){var t=hero?hero.offsetHeight-80:400;if(window.scrollY>t){bar.classList.add('show')}else{bar.classList.remove('show')}}window.addEventListener('scroll',onScroll,{passive:true});onScroll();})();
+/* Fees accordion */
+document.querySelectorAll('.acc__head').forEach(function(head){head.addEventListener('click',function(){var item=head.closest('.acc');var open=item.classList.contains('open');item.classList.toggle('open');head.setAttribute('aria-expanded',String(!open));});});
+/* FAQ accordion */
+document.querySelectorAll('.faq-q').forEach(function(q){q.addEventListener('click',function(){q.closest('.faq-item').classList.toggle('open');});});
+/* Program CTA → preselect dropdown */
+document.querySelectorAll('.cta-major').forEach(function(btn){btn.addEventListener('click',function(){var val=btn.getAttribute('data-program'),sel=document.getElementById('programSelect');if(sel&&val){for(var i=0;i<sel.options.length;i++){if(sel.options[i].text.replace(/&amp;/g,'&')===val.replace(/&amp;/g,'&')){sel.selectedIndex=i;break;}}}});});
+/* 2-step form */
+(function(){var f=document.getElementById('leadForm');if(!f)return;var s1=f.querySelector('.fstep[data-step="1"]'),s2=f.querySelector('.fstep[data-step="2"]');var next=document.getElementById('toStep2'),back=document.getElementById('backStep1');function show(step){if(step===2){s1.classList.remove('active');s2.classList.add('active');s2.scrollIntoView({behavior:'smooth',block:'center'});}else{s2.classList.remove('active');s1.classList.add('active');s1.scrollIntoView({behavior:'smooth',block:'center'});}}if(next)next.addEventListener('click',function(){var inputs=s1.querySelectorAll('input,select'),ok=true;for(var i=0;i<inputs.length;i++){if(!inputs[i].checkValidity()){inputs[i].reportValidity();ok=false;break;}}if(ok)show(2);});if(back)back.addEventListener('click',function(){show(1);});})();
+/* Submit */
+(function(){var form=document.getElementById('leadForm'),success=document.getElementById('formSuccess');if(!form)return;form.addEventListener('submit',function(e){e.preventDefault();form.style.display='none';success.classList.add('show');success.scrollIntoView({behavior:'smooth',block:'center'});});})();
+</script>
+</body></html>
