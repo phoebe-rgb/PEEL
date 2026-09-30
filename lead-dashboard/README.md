@@ -1,70 +1,75 @@
 # SEG Lead Tracking — auto compare Netlify vs CRM
 
-Tự động đối chiếu lead thu được trên **Netlify Forms** với lead thực sự vào **CRM (Salesforce)**,
-rồi **tự cảnh báo qua Slack** khi có lead bị mất. Đây là phần Funnel không làm được
-(Funnel chỉ xem thủ công, không có thông báo).
+Live dashboard + daily Slack alert that reconcile leads captured on **Netlify Forms**
+against leads that actually reached the **CRM (Salesforce)**. This is what Funnel can't do
+(Funnel is manual, no notification).
 
-## Nguyên lý
+## How it works
 
-> Lead có trong Netlify nhưng **không** thấy trong export Salesforce = **lead bị mất**.
+> A Netlify lead whose **email** is not found in the Salesforce export = **lost lead**.
+> No pending/grace bucket — if it isn't in the CRM, it's lost.
 
-Khớp bằng **email** (lowercase). Nguồn CRM hiện tại — Google Sheet *"SEG - New Lead from Netify"*,
-tab **"Funnel data"** (cột `Date`, `Email`) — chưa có `Submission Id`, nên email là khoá khớp.
-Nếu về sau export thêm cột **Submission Id**, code tự nhận UUID và dùng luôn làm khoá mạnh hơn
-(`getCrmKeys` trả cả `emails` và `ids`; `classify` khớp email HOẶC event_id).
+- Matching key: **email** (lowercase). If the export later adds a **Submission Id** column,
+  its UUIDs are picked up automatically as a stronger key (`getCrmKeys` returns `emails`+`ids`;
+  `classify` matches email OR event_id).
+- The CRM source must be the **all-time** Salesforce lead export. A returning applicant who
+  first registered long ago updates their OLD lead (original date kept), so a recent-window-only
+  export would flag them as false "lost". All-time avoids that.
+- The dashboard page (`public/index.html`) fetches `/.netlify/functions/leads` on load, so it
+  is always live. The alert function reports only the **previous day's** lost leads.
 
-Chỉ so từ `MATCH_WINDOW_START` (mốc Salesforce bắt đầu có dữ liệu, hiện 2026-09-01) để tránh
-"mất" giả với lead cũ. Lead < `ALERT_LAG_DAYS` ngày để ở trạng thái *chờ* (do export trễ).
+## Components
 
-> ⚠️ Khớp email không tuyệt đối (email lệch, CRM gộp trùng) → coi số "mất" là **tín hiệu cần
-> kiểm chứng**. Thêm `Submission Id` vào export là cách làm nó chính xác 100%.
+| File | Role |
+|------|------|
+| `public/index.html` | Live dashboard — fetches the function, SEG theme, filters (school / country / channel / date), lost-lead table + CSV. |
+| `netlify/functions/leads.mjs` | JSON API: current Netlify leads + CRM match status + summary. |
+| `netlify/functions/lost-lead-alert.mjs` | **Scheduled** — reports yesterday's lost leads as a Slack DM (counts + dashboard link, no PII). |
+| `netlify/functions/_lib.mjs` | Shared: Netlify Forms pull, CRM CSV read, matched/lost classify. |
+| `netlify.toml` | Build config + schedule. |
 
-## Thành phần
+## Environment variables (set on Netlify)
 
-| File | Vai trò |
-|------|---------|
-| `netlify/functions/lost-lead-alert.mjs` | **Chạy theo lịch** (mặc định 08:00 UTC/ngày). Kéo lead Netlify + đọc danh sách CRM, so khớp, gửi Slack danh sách lead mất. |
-| `netlify/functions/leads.mjs` | API JSON: lead hiện tại + trạng thái khớp CRM (cho trang xem nhanh). |
-| `netlify/functions/_lib.mjs` | Hàm dùng chung: gọi Netlify API, đọc CRM CSV, phân loại matched/lost/pending. |
-| `public/index.html` | Trang xem nhanh (tùy chọn). |
-| `netlify.toml` | Cấu hình build + lịch chạy. |
+| Var | Required | Description |
+|-----|:---:|-------------|
+| `NETLIFY_API_TOKEN` | ✅ | Netlify personal access token (User settings → Applications → New access token). Lets the functions read Forms on the 4 SEG sites. |
+| `SALESFORCE_CSV_URL` | ✅ | CSV URL of the **all-time** Salesforce lead export (date + email). A Google Sheet, refreshed daily by Funnel, **Published to web → CSV** (or Share → Anyone with the link → Viewer, using `.../export?format=csv&gid=<tab>`). |
+| `SLACK_BOT_TOKEN` | ✅ | Slack bot token (`xoxb-…`) with scopes `chat:write` + `im:write`, to DM Phoebe. |
+| `SLACK_DM_USER_ID` | ✅ | Phoebe's Slack member ID (e.g. `U0123ABC`) — the DM recipient. |
+| `DASHBOARD_URL` | ✅ | Link to this (password-protected) dashboard, included in the alert. |
+| `ALERT_TZ` | ❌ | Timezone for "yesterday" (default `Asia/Ho_Chi_Minh`). |
+| `SLACK_WEBHOOK_URL` | ❌ | Fallback if no bot token — posts to a channel instead of a DM. |
+| `SITE_MAP` | ❌ | JSON `{siteId:"BRAND"}` to change the sites. Defaults to the 4 SEG sites. |
 
-## Cần cấu hình (biến môi trường trên Netlify)
-
-| Biến | Bắt buộc | Mô tả |
-|------|:---:|-------|
-| `NETLIFY_API_TOKEN` | ✅ | Netlify personal access token (User settings → Applications → New access token). Để function đọc Forms của 4 site SEG. |
-| `SALESFORCE_CSV_URL` | ✅ | URL CSV của export Salesforce. Dùng **tab "Funnel data"** (không phải tab đầu): `https://docs.google.com/spreadsheets/d/1bAvxn13rUsclKOEKe_B0gRVWXbdQDn5vymPba0sBmtM/export?format=csv&gid=1301696085`. Sheet phải **Share → Anyone with the link (Viewer)** (hoặc Publish tab) để function đọc được không cần đăng nhập Google. |
-| `SLACK_WEBHOOK_URL` | ✅ | Slack Incoming Webhook của kênh nhận cảnh báo. |
-| `MATCH_WINDOW_START` | ❌ | Chỉ so từ ngày này (mặc định lấy env; nên đặt `2026-09-01`). Tránh "mất" giả với lead trước khi Salesforce có dữ liệu. |
-| `ALERT_LAG_DAYS` | ❌ | Số ngày chờ trước khi coi là mất (mặc định 2, do export Salesforce trễ). |
-| `ALERT_WINDOW_DAYS` | ❌ | Cửa sổ tính "lead vừa mất" để báo mỗi lần (mặc định 3). |
-| `SITE_MAP` | ❌ | JSON `{siteId: "BRAND"}` nếu đổi danh sách site. Mặc định đã gắn 4 site SEG. |
-
-4 site SEG đang gắn sẵn: CAAS (`36b518a4…`), SHMS (`0643bf0d…`), HIM (`a29a7635…`), CRCS (`45589786…`).
+4 SEG sites are built in: CAAS (`36b518a4…`), SHMS (`0643bf0d…`), HIM (`a29a7635…`), CRCS (`45589786…`).
 
 ## Deploy
 
 ```bash
-# từ thư mục lead-dashboard/
-netlify sites:create --name seg-lead-tracking     # hoặc dùng site có sẵn
+# from lead-dashboard/
+netlify sites:create --name seg-lead-tracking      # or reuse an existing site
 netlify env:set NETLIFY_API_TOKEN  "xxxx"
-netlify env:set SALESFORCE_CSV_URL "https://docs.google.com/spreadsheets/d/1bAvxn13rUsclKOEKe_B0gRVWXbdQDn5vymPba0sBmtM/export?format=csv&gid=1301696085"
-netlify env:set SLACK_WEBHOOK_URL  "https://hooks.slack.com/services/xxx"
-netlify env:set MATCH_WINDOW_START "2026-09-01"
+netlify env:set SALESFORCE_CSV_URL "https://docs.google.com/spreadsheets/d/<ALL_TIME_SHEET>/export?format=csv&gid=<tab>"
+netlify env:set SLACK_BOT_TOKEN    "xoxb-…"
+netlify env:set SLACK_DM_USER_ID   "U0123ABC"
+netlify env:set DASHBOARD_URL      "https://seg-lead-tracking.netlify.app"
 netlify deploy --prod
 ```
 
-Chạy thử cảnh báo ngay (không đợi lịch): mở `/.netlify/functions/lost-lead-alert` trên trình duyệt,
-hoặc `netlify functions:invoke lost-lead-alert`.
+Test the alert now (without waiting for the schedule): open `/.netlify/functions/lost-lead-alert`
+in the browser, or `netlify functions:invoke lost-lead-alert`.
 
-## ⚠️ Bảo mật
+The schedule (twice daily, after the 08:15 & 14:15 exports) is in `netlify.toml` — Netlify cron is
+UTC, so adjust the hours to your export timezone.
 
-Trang và dữ liệu chứa **thông tin liên hệ lead thật**. Bật **password protection** cho site
-(Site settings → Access & security) hoặc giới hạn SSO team — **không để public**.
+## ⚠️ Security
 
-## Kiểm chứng trước khi tin số "mất"
+The page and data contain **real lead contact details**. Turn on **password protection**
+(Site configuration → Access & security → Visitor access) or restrict to the team via SSO —
+**never leave it public**. Password protection is a single site password (no username).
 
-Khớp theo email nên số lead "mất" là tín hiệu, chưa phải kết luận. Trước khi báo động rộng:
-1. Lấy vài lead "mất" trong dashboard, tìm email đó thẳng trong Salesforce (có thể đã vào nhưng email khác/gộp trùng).
-2. Nhờ freelancer thêm cột **Submission Id** vào export → khớp bằng `event_id`, chính xác 100%.
+## Getting the CRM match to 100%
+
+Matching is by email, which is close but not perfect (typo'd emails, merged CRM records).
+Ask the freelancer to add a **Submission Id** column to the export → matching by `event_id`
+becomes exact.

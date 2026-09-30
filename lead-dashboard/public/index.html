@@ -1,47 +1,169 @@
 <!doctype html>
-<html lang="vi">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SEG Lead Tracking</title>
 <style>
-  :root{--bg:#0f1420;--pan:#171e2e;--line:#2b3650;--tx:#e8edf7;--mut:#9aa7c2;--acc:#5b8cff;--good:#37c98b;--bad:#ff5c7a}
-  @media(prefers-color-scheme:light){:root{--bg:#f4f6fb;--pan:#fff;--line:#e0e6f1;--tx:#16203a;--mut:#5c6b8a}}
-  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui,sans-serif}
-  .wrap{max-width:1000px;margin:0 auto;padding:22px 16px 60px}h1{font-size:20px;margin:0 0 2px}
-  .sub{color:var(--mut);font-size:13px;margin-bottom:16px}
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}@media(max-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
-  .card{background:var(--pan);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-  .n{font-size:26px;font-weight:700}.l{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.4px}
-  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:14px}
-  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
-  th{color:var(--mut)} .tbox{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:14px}
-  .note{color:var(--mut);font-size:13px;margin-top:16px}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>SEG Lead Tracking — Netlify vs CRM</h1>
-  <div class="sub" id="sub">Đang tải…</div>
-  <div class="grid" id="kpis"></div>
-  <div id="tbl"></div>
-  <p class="note">Cảnh báo tự động chạy hằng ngày qua Slack (function <code>lost-lead-alert</code>). Trang này chỉ để xem nhanh.</p>
+:root{
+  --bg:#eef1f6; --pan:#ffffff; --pan2:#f2f5fa; --line:#dde3ee; --tx:#16233d; --mut:#66738d;
+  --navy:#1f3a5f; --gold:#b8902f;
+  --incrm:#2f6bb0; --lost:#c0392b; --pend:#94a2b8;
+  --caas:#c8102e; --shms:#1b6b45; --him:#14315b; --crcs:#b5651d;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#0e1526; --pan:#152037; --pan2:#1b273f; --line:#2a3752; --tx:#e7ecf6; --mut:#9aa7c2;
+  --navy:#8fb2e6; --gold:#e0b24e; --incrm:#7fb0ea; --lost:#e5738a; --pend:#8390a6;
+  --caas:#f2607a; --shms:#4cc191; --him:#7fa8e6; --crcs:#d99552;
+}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:22px 16px 64px}
+.head{display:flex;align-items:center;gap:12px;border-bottom:3px solid var(--gold);padding-bottom:12px}
+.logo{width:34px;height:34px;border-radius:7px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
+h1{font-size:19px;margin:0;color:var(--navy)}
+.sub{color:var(--mut);font-size:12.5px;margin-top:8px}
+.ban{padding:9px 12px;border-radius:8px;font-size:12.5px;margin:12px 0;border:1px solid}
+.ban.note{background:rgba(184,144,47,.10);border-color:var(--gold);color:#8a6a1e}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .ban.note{color:var(--gold)}}
+.bar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:14px 0}
+.card{background:var(--pan);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+.kpi .n{font-size:25px;font-weight:800;letter-spacing:-.5px}.kpi .l{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.kpi .s{font-size:11.5px;color:var(--mut);margin-top:2px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}@media(max-width:900px){.row2{grid-template-columns:1fr}}
+.sec-t{font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.6px;margin:0 0 10px}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .sec-t{color:var(--gold)}}
+select,input[type=date],button{background:var(--pan);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12.5px;cursor:pointer}
+.chk{display:inline-flex;align-items:center;gap:6px;color:var(--mut);cursor:pointer;font-size:12.5px}
+.fld{display:inline-flex;align-items:center;gap:5px;color:var(--mut);font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mut);position:sticky;top:0;background:var(--pan)}
+.tbox{max-height:440px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.pill{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.p-caas{background:rgba(200,16,46,.13);color:var(--caas)}.p-shms{background:rgba(27,107,69,.15);color:var(--shms)}
+.p-him{background:rgba(20,49,91,.15);color:var(--him)}.p-crcs{background:rgba(181,101,29,.15);color:var(--crcs)}
+.muted{color:var(--mut)}a.dl{color:var(--navy);text-decoration:none;font-weight:700}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) a.dl{color:var(--gold)}}
+.days{display:flex;align-items:flex-end;gap:3px;height:150px;margin-top:8px}
+.dcol{flex:1;display:flex;flex-direction:column-reverse;min-height:2px}
+.seg{width:100%}.seg.m{background:var(--incrm)}.seg.l{background:var(--lost)}.seg.p{background:var(--pend)}
+.crow{display:grid;grid-template-columns:58px 1fr 96px;align-items:center;gap:8px;font-size:12px;margin-bottom:7px}
+.track{background:var(--pan2);border-radius:6px;height:20px;overflow:hidden}.tf{height:100%}
+.lg{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:8px;flex-wrap:wrap}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.hint{font-size:12px;color:var(--mut);margin-top:8px}
+</style></head><body><div class="wrap">
+<div class="head"><div class="logo">SEG</div><h1>Lead Tracking — Netlify vs CRM</h1></div>
+<div class="sub" id="sub">Loading live data…</div>
+<div class="ban note" id="method"></div>
+<div class="bar">
+  <label class="chk"><input type="checkbox" id="hideTest" checked> Hide test</label>
+  <select id="brandF"><option value="">All schools</option><option>CAAS</option><option>SHMS</option><option>HIM</option><option>CRCS</option></select>
+  <select id="countryF"><option value="">All countries</option></select>
+  <select id="chanF"><option value="">All channels</option></select>
+  <span class="fld">From <input type="date" id="from"></span>
+  <span class="fld">To <input type="date" id="to"></span>
+  <button id="reset">Reset</button>
+  <a class="dl" id="dlBtn" href="#" style="margin-left:auto">⬇︎ Download lost leads (CSV)</a>
+</div>
+<div class="grid" id="kpis"></div>
+<div class="card" style="margin-bottom:12px">
+  <div class="sec-t">Leads per day — reached CRM vs lost</div>
+  <div class="days" id="cDays"></div>
+  <div class="lg"><span><span class="dot" style="background:var(--incrm)"></span>In CRM</span><span><span class="dot" style="background:var(--lost)"></span>Lost</span></div>
+  <div class="hint" id="daysHint"></div>
+</div>
+<div class="row2">
+  <div class="card"><div class="sec-t">By school — total (lost)</div><div id="cBrand"></div></div>
+  <div class="card"><div class="sec-t">Lost leads by channel</div><div id="cChan"></div></div>
+</div>
+<div class="card" style="margin-bottom:12px"><div class="sec-t">Lost leads by country</div><div id="cCountry"></div></div>
+<div class="card">
+  <div class="sec-t" id="tblTitle" style="margin-bottom:8px"></div>
+  <div id="tblArea"></div>
+</div>
+<p class="hint" id="foot"></p>
 </div>
 <script>
+let LEADS=[], M={crm_connected:false};
 const esc=s=>(s==null?'':(''+s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ctryOf=l=>l.country||l.market||'—';
+const BRANDVAR={CAAS:'--caas',SHMS:'--shms',HIM:'--him',CRCS:'--crcs'};
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v)||'#888';
+const v=id=>document.getElementById(id).value;
+const ageDays=iso=>(Date.now()-new Date(iso).getTime())/86400000;
+
 fetch('/.netlify/functions/leads').then(r=>r.json()).then(d=>{
-  const real=d.leads.filter(l=>!l.is_test);
-  document.getElementById('sub').textContent=real.length+' lead thật · cập nhật '+new Date(d.generated_at).toLocaleString('vi-VN')+(d.crm_connected?'':' · ⚠️ chưa nối nguồn CRM');
-  const s=d.summary, k=[];
-  k.push(kpi(real.length,'Lead Netlify'));
-  if(s){k.push(kpi(s.matched,'Vào CRM','var(--good)'));k.push(kpi(s.lost,'Lead MẤT','var(--bad)'));k.push(kpi(s.pending,'Chờ (<2 ngày)'));}
-  else{k.push(kpi('—','Vào CRM'));k.push(kpi('—','Lead MẤT'));k.push(kpi('—','Chờ'));}
-  document.getElementById('kpis').innerHTML=k.join('');
-  const rows=d.crm_connected?real.filter(l=>l.in_crm===false):real.slice(0,80);
-  document.getElementById('tbl').innerHTML='<div class="tbox"><table><thead><tr><th>Ngày</th><th>Trường</th><th>Tên</th><th>Email</th><th>Điện thoại</th><th>Nguồn</th></tr></thead><tbody>'+
-    rows.map(l=>`<tr><td>${(l.created_at||'').slice(0,10)}</td><td>${l.brand}</td><td>${esc((l.first_name+' '+l.last_name).trim())}</td><td>${esc(l.email)}</td><td>${esc(l.phone)}</td><td>${esc(l.source)}</td></tr>`).join('')+'</tbody></table></div>';
-}).catch(e=>document.getElementById('sub').textContent='Lỗi tải dữ liệu: '+e.message);
-function kpi(n,l,c){return `<div class="card"><div class="n" style="${c?'color:'+c:''}">${n}</div><div class="l">${l}</div></div>`;}
-</script>
-</body>
-</html>
+  M=d;
+  LEADS=(d.leads||[]).map(l=>({...l, status: l.is_test?'test':(l.in_crm?'matched':'lost')}));
+  if(!LEADS.length){document.getElementById('sub').textContent='No leads returned. Check function config (NETLIFY_API_TOKEN / SALESFORCE_CSV_URL).';return;}
+  const ds=LEADS.map(l=>l.created_at.slice(0,10)).sort();
+  M.nl_from=ds[0];M.nl_to=ds[ds.length-1];
+  init();render();
+}).catch(e=>{document.getElementById('sub').textContent='Error loading data: '+e.message;});
+
+function init(){
+  const countries=[...new Set(LEADS.filter(l=>!l.is_test).map(ctryOf))].filter(x=>x&&x!=='—').sort();
+  const chans=[...new Set(LEADS.filter(l=>!l.is_test).map(l=>l.source||'—'))].filter(Boolean).sort();
+  document.getElementById('countryF').innerHTML='<option value="">All countries</option>'+countries.map(c=>`<option>${esc(c)}</option>`).join('');
+  document.getElementById('chanF').innerHTML='<option value="">All channels</option>'+chans.map(c=>`<option>${esc(c)}</option>`).join('');
+  for(const id of ['from','to']){const e=document.getElementById(id);e.min=M.nl_from;e.max=M.nl_to;}
+  document.getElementById('from').value=M.nl_from;document.getElementById('to').value=M.nl_to;
+  ['hideTest','brandF','countryF','chanF','from','to'].forEach(id=>document.getElementById(id).addEventListener('change',render));
+  document.getElementById('reset').onclick=()=>{['brandF','countryF','chanF'].forEach(i=>document.getElementById(i).value='');document.getElementById('from').value=M.nl_from;document.getElementById('to').value=M.nl_to;document.getElementById('hideTest').checked=true;render();};
+  document.getElementById('sub').textContent=LEADS.length+' Netlify leads ('+M.nl_from+' → '+M.nl_to+') · '+(M.crm_connected?('CRM connected — '+(M.crm_count||0).toLocaleString()+' emails'):'⚠️ CRM not connected')+' · refreshed '+new Date(M.generated_at).toLocaleString();
+  document.getElementById('method').innerHTML='<b>Lost</b> = a Netlify lead (by email) not found in the all-time Salesforce export. Returning applicants are counted as reached. Test leads (name/email contains "test") hidden by default.';
+}
+function rows(){
+  const b=v('brandF'),c=v('countryF'),ch=v('chanF'),ht=document.getElementById('hideTest').checked,f=v('from'),t=v('to');
+  return LEADS.filter(l=>{
+    if(ht&&l.is_test) return false;
+    if(b&&l.brand!==b) return false;
+    if(c&&ctryOf(l)!==c) return false;
+    if(ch&&(l.source||'—')!==ch) return false;
+    const d=l.created_at.slice(0,10);
+    if(f&&d<f) return false; if(t&&d>t) return false;
+    return true;
+  });
+}
+function render(){
+  const r=rows().filter(l=>l.status!=='test');
+  const matched=r.filter(l=>l.status==='matched'),lost=r.filter(l=>l.status==='lost');
+  const den=r.length, rate=den?(lost.length/den*100):0;
+  document.getElementById('kpis').innerHTML=[
+    kpi(r.length.toLocaleString(),'Netlify leads',''),
+    kpi(matched.length.toLocaleString(),'In CRM','','var(--incrm)'),
+    kpi(lost.length.toLocaleString(),'Lost','not found in CRM','var(--lost)'),
+    kpi(rate.toFixed(0)+'%','Lost rate','of all leads','var(--lost)')
+  ].join('');
+  dayChart(r);brandChart(r);barChart('cChan',tally(lost,l=>l.source||'—'),'--lost');barChart('cCountry',tally(lost,ctryOf),'--lost');
+  document.getElementById('tblTitle').textContent='Lost leads — follow up ('+lost.length+')';
+  document.getElementById('tblArea').innerHTML=lost.length?tbl(lost):'<div class="muted" style="padding:16px">No lost leads in this filter.</div>';
+  document.getElementById('dlBtn').style.display=lost.length?'':'none';
+  document.getElementById('dlBtn').onclick=e=>{e.preventDefault();csv(lost);};
+}
+function kpi(n,l,s,c){return `<div class="card kpi"><div class="n" style="${c?'color:'+c:''}">${n}</div><div class="l">${l}</div><div class="s">${s||''}</div></div>`;}
+function tally(arr,fn){const m={};arr.forEach(x=>{const k=fn(x)||'—';m[k]=(m[k]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+function dayChart(r){
+  const by={};r.forEach(l=>{const d=l.created_at.slice(0,10);(by[d]=by[d]||{m:0,l:0})[l.status==='matched'?'m':'l']++;});
+  const days=Object.keys(by).sort(),mx=Math.max(1,...days.map(d=>by[d].m+by[d].l));
+  document.getElementById('cDays').innerHTML=days.map(d=>{const o=by[d],h=x=>x/mx*150;
+    return `<div class="dcol" title="${d}  in CRM ${o.m} · lost ${o.l}"><div class="seg m" style="height:${h(o.m)}px"></div><div class="seg l" style="height:${h(o.l)}px"></div></div>`;}).join('');
+  document.getElementById('daysHint').textContent=days.length?(days[0]+' → '+days[days.length-1]):'';
+}
+function brandChart(r){
+  const by={};r.forEach(l=>{const o=by[l.brand]=by[l.brand]||{t:0,l:0};o.t++;if(l.status==='lost')o.l++;});
+  const items=Object.entries(by).sort((a,b)=>b[1].t-a[1].t),mx=Math.max(1,...items.map(([,o])=>o.t));
+  document.getElementById('cBrand').innerHTML=items.map(([k,o])=>`<div class="crow"><span class="muted">${k}</span><div class="track"><div class="tf" style="width:${o.t/mx*100}%;background:${cssv(BRANDVAR[k]||'--navy')}"></div></div><b>${o.t} <span style="color:var(--lost)">(${o.l})</span></b></div>`).join('');
+}
+function barChart(id,items,colorVar){
+  items=items.slice(0,8);const mx=Math.max(1,...items.map(i=>i[1]));
+  document.getElementById(id).innerHTML=items.map(([k,val])=>`<div class="crow"><span class="muted" style="overflow:hidden;text-overflow:ellipsis" title="${esc(k)}">${esc(k)}</span><div class="track"><div class="tf" style="width:${val/mx*100}%;background:${cssv(colorVar)}"></div></div><b>${val}</b></div>`).join('')||'<span class="muted">—</span>';
+}
+function tbl(rows){return '<div class="tbox"><table><thead><tr><th>Date</th><th>School</th><th>Name</th><th>Email</th><th>Phone</th><th>Program</th><th>Country</th><th>Channel</th></tr></thead><tbody>'+
+  rows.map(l=>`<tr><td>${l.created_at.slice(0,10)}</td><td><span class="pill p-${l.brand.toLowerCase()}">${l.brand}</span></td><td>${esc((l.first_name+' '+l.last_name).trim())}</td><td>${esc(l.email)}</td><td>${esc(l.phone)}</td><td>${esc(l.program)}</td><td>${esc(ctryOf(l))}</td><td>${esc(l.source)}</td></tr>`).join('')+'</tbody></table></div>';}
+function csv(rows){const c=['created_at','brand','first_name','last_name','email','phone','program','market','country','source','utm_campaign','event_id'];
+  const q=s=>'"'+(''+(s==null?'':s)).replace(/"/g,'""')+'"';
+  const t=[c.join(',')].concat(rows.map(r=>c.map(k=>q(r[k])).join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='lost_leads.csv';a.click();}
+</script></body></html>

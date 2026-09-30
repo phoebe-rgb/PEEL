@@ -108,20 +108,15 @@ export async function getCrmKeys() {
   };
 }
 
-// Split leads into matched / lost / pending against the CRM keys.
-// A lead is matched if its email (or event_id, when the export carries one) is in the CRM.
-// Leads younger than lagDays are held as "pending" (CRM export lag) instead of "lost".
-// windowStart (YYYY-MM-DD) guards against false "lost" before CRM history begins.
-export function classify(leads, keys, lagDays = 2, windowStart = process.env.MATCH_WINDOW_START || "") {
-  const now = Date.now();
-  const matched = [], lost = [], pending = [], outOfWindow = [];
+// Split leads into matched / lost against the CRM keys.
+// A lead is matched if its email (or event_id, when the export carries one) is in the
+// all-time CRM export; otherwise it is lost. (No pending/lag bucket — lost is lost.)
+export function classify(leads, keys) {
+  const matched = [], lost = [];
   for (const l of leads) {
-    if (windowStart && (l.created_at || "").slice(0, 10) < windowStart) { outOfWindow.push(l); continue; }
     const hit = keys.emails.has((l.email || "").trim().toLowerCase()) ||
                 keys.ids.has((l.event_id || "").toLowerCase());
-    if (hit) matched.push(l);
-    else if ((now - new Date(l.created_at).getTime()) / 86400000 < lagDays) pending.push(l);
-    else lost.push(l);
+    (hit ? matched : lost).push(l);
   }
-  return { matched, lost, pending, outOfWindow };
+  return { matched, lost };
 }
