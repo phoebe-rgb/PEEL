@@ -17,9 +17,14 @@ import { getLeads, getCrmKeys, classify } from "./_lib.mjs";
 const ymd = (d, tz) =>
   new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
 
-export default async () => {
+export default async (req) => {
   const tz = process.env.ALERT_TZ || "Asia/Ho_Chi_Minh";
   const yesterday = ymd(new Date(Date.now() - 86400000), tz);
+
+  // First run: trigger once with ?all=1 to report the whole backlog of lost leads.
+  // Scheduled runs (no param) report only the previous day's new lost leads.
+  let allMode = false;
+  try { allMode = ["1", "true", "all", "yes"].includes((new URL(req.url).searchParams.get("all") || "").toLowerCase()); } catch {}
 
   const keys = await getCrmKeys();
   if (!keys) {
@@ -30,24 +35,22 @@ export default async () => {
   const real = leads.filter((l) => !l.is_test);
   const { lost } = classify(real, keys);
 
-  // Only yesterday's lost leads (by the lead's created date in ALERT_TZ).
-  const fresh = lost.filter((l) => ymd(new Date(l.created_at), tz) === yesterday);
+  const target = allMode ? lost : lost.filter((l) => ymd(new Date(l.created_at), tz) === yesterday);
+  if (!target.length) return json({ mode: allMode ? "all" : "daily", yesterday, lost: 0, note: "no alert sent" });
 
-  if (!fresh.length) return json({ yesterday, new_lost: 0, note: "no alert sent" });
-
-  const bySchool = tally(fresh, (l) => l.brand);
-  const byChannel = tally(fresh, (l) => l.source || "—");
   const link = process.env.DASHBOARD_URL ? `\n📊 Full list + contact details: ${process.env.DASHBOARD_URL}` : "";
-  const plural = fresh.length === 1 ? "lead" : "leads";
+  const plural = target.length === 1 ? "lead" : "leads";
+  const heading = allMode
+    ? `:mag: *SEG Lead Tracking — initial report (all lost leads to date)*\n*${target.length}* lost ${plural} not found in CRM.`
+    : `:mag: *SEG Lead Tracking — ${yesterday}*\n*${target.length}* new lost ${plural} yesterday (not found in CRM).`;
   const text =
-    `:mag: *SEG Lead Tracking — ${yesterday}*\n` +
-    `*${fresh.length}* new lost ${plural} yesterday (not found in CRM).\n` +
-    `By school: ${fmt(bySchool)}\n` +
-    `By channel: ${fmt(byChannel)}` +
+    `${heading}\n` +
+    `By school: ${fmt(tally(target, (l) => l.brand))}\n` +
+    `By channel: ${fmt(tally(target, (l) => l.source || "—"))}` +
     link;
 
   await slack(text);
-  return json({ yesterday, new_lost: fresh.length });
+  return json({ mode: allMode ? "all" : "daily", yesterday, lost: target.length });
 };
 
 function tally(arr, fn) {

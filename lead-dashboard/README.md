@@ -56,7 +56,11 @@ netlify env:set DASHBOARD_URL      "https://seg-lead-tracking.netlify.app"
 netlify deploy --prod
 ```
 
-Test the alert now (without waiting for the schedule): open `/.netlify/functions/lost-lead-alert`
+**First run (one-off):** open `/.netlify/functions/lost-lead-alert?all=1` once — this reports the
+ENTIRE backlog of lost leads. After that, the daily schedule (no param) reports only the
+previous day's new lost leads.
+
+Test the alert any time (without waiting for the schedule): open `/.netlify/functions/lost-lead-alert`
 in the browser, or `netlify functions:invoke lost-lead-alert`.
 
 The schedule (twice daily, after the 08:15 & 14:15 exports) is in `netlify.toml` — Netlify cron is
