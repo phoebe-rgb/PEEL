@@ -99,10 +99,20 @@ const EMAIL = /[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/gi;
 // SALESFORCE_CSV_URL may hold several CSV URLs separated by comma or newline. All are
 // fetched and merged, so you can combine an all-time historical baseline export with the
 // continuously-updating "new leads" export and always check a lead against the full past.
+// Default CRM sources (Google Sheets published/shared as CSV):
+//  1) "SEG - New Lead from Netify" (Funnel data tab) — new leads, updates continuously
+//  2) "SEG_CRM_baseline_alltime" — all-time historical lead emails (returning-applicant memory)
+// Both sheets must be shared "Anyone with the link (Viewer)" so the function can read them.
+// Override by setting SALESFORCE_CSV_URL (comma-separated) in Netlify env.
+const DEFAULT_CRM_CSV = [
+  "https://docs.google.com/spreadsheets/d/1bAvxn13rUsclKOEKe_B0gRVWXbdQDn5vymPba0sBmtM/export?format=csv&gid=1301696085",
+  "https://docs.google.com/spreadsheets/d/1vU6ETa6cmWLXP3XnF7epGL2wG3be2RItQCDJSZQ9CfU/export?format=csv&gid=285924473",
+].join(",");
+
 export async function getCrmKeys() {
-  const raw = process.env.SALESFORCE_CSV_URL;
-  if (!raw) return null;
+  const raw = process.env.SALESFORCE_CSV_URL || DEFAULT_CRM_CSV;
   const urls = raw.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
+  if (!urls.length) return null;
   const emails = new Set(), ids = new Set();
   for (const url of urls) {
     const r = await fetch(url);
