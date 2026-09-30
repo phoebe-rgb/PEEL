@@ -96,16 +96,22 @@ const EMAIL = /[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/gi;
 //   https://docs.google.com/spreadsheets/d/<ID>/export?format=csv&gid=1301696085
 // and share the sheet "anyone with the link (Viewer)" or publish that tab, so the function
 // can fetch it without Google auth.
+// SALESFORCE_CSV_URL may hold several CSV URLs separated by comma or newline. All are
+// fetched and merged, so you can combine an all-time historical baseline export with the
+// continuously-updating "new leads" export and always check a lead against the full past.
 export async function getCrmKeys() {
-  const url = process.env.SALESFORCE_CSV_URL;
-  if (!url) return null;
-  const r = await fetch(url);
-  if (!r.ok) throw new Error("SALESFORCE_CSV_URL -> " + r.status);
-  const text = await r.text();
-  return {
-    emails: new Set((text.match(EMAIL) || []).map((s) => s.toLowerCase())),
-    ids: new Set((text.match(UUID) || []).map((s) => s.toLowerCase())),
-  };
+  const raw = process.env.SALESFORCE_CSV_URL;
+  if (!raw) return null;
+  const urls = raw.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
+  const emails = new Set(), ids = new Set();
+  for (const url of urls) {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error("SALESFORCE_CSV_URL (" + url.slice(0, 60) + "…) -> " + r.status);
+    const text = await r.text();
+    for (const e of text.match(EMAIL) || []) emails.add(e.toLowerCase());
+    for (const u of text.match(UUID) || []) ids.add(u.toLowerCase());
+  }
+  return { emails, ids };
 }
 
 // Split leads into matched / lost against the CRM keys.
