@@ -23,7 +23,7 @@ export default async () => {
 
   const keys = await getCrmKeys();
   if (!keys) {
-    await slack("⚠️ SEG Lead Tracking: `SALESFORCE_CSV_URL` chưa cấu hình — không đối chiếu được.");
+    await slack("⚠️ SEG Lead Tracking: no CRM source configured — cannot reconcile leads.");
     return json({ error: "no crm source" });
   }
   const leads = await getLeads();
@@ -37,12 +37,13 @@ export default async () => {
 
   const bySchool = tally(fresh, (l) => l.brand);
   const byChannel = tally(fresh, (l) => l.source || "—");
-  const link = process.env.DASHBOARD_URL ? `\n📊 Danh sách + liên hệ: ${process.env.DASHBOARD_URL}` : "";
+  const link = process.env.DASHBOARD_URL ? `\n📊 Full list + contact details: ${process.env.DASHBOARD_URL}` : "";
+  const plural = fresh.length === 1 ? "lead" : "leads";
   const text =
     `:mag: *SEG Lead Tracking — ${yesterday}*\n` +
-    `*${fresh.length}* lead mới bị MẤT hôm qua (không vào CRM).\n` +
-    `Theo trường: ${fmt(bySchool)}\n` +
-    `Theo kênh: ${fmt(byChannel)}` +
+    `*${fresh.length}* new lost ${plural} yesterday (not found in CRM).\n` +
+    `By school: ${fmt(bySchool)}\n` +
+    `By channel: ${fmt(byChannel)}` +
     link;
 
   await slack(text);
