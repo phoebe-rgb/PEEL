@@ -5,11 +5,11 @@
   publish = "public"
   functions = "netlify/functions"
 
-# Lost-lead alert to Slack — runs twice daily, ~45 min AFTER the Salesforce export
-# (export is at 08:15 and 14:15). Netlify cron is UTC — adjust the hours to match the
-# export's timezone. Example below = 09:00 and 15:00 UTC.
+# Lost-lead alert to Slack — once daily, reports the PREVIOUS day's lost leads.
+# Runs 02:00 UTC = 09:00 Asia/Bangkok, just after the 08:15 export so yesterday's
+# leads have fully landed in the CRM. Netlify cron is UTC.
 [functions."lost-lead-alert"]
-  schedule = "0 9,15 * * *"
+  schedule = "0 2 * * *"
 
 # Protect the dashboard: it shows real lead PII, so it must NOT be public.
 # Set a site password in Netlify UI (Site settings → Access & security → Visitor access → Password protection)
