@@ -28,9 +28,10 @@ async function nf(path) {
 
 function isTest(l) {
   const name = (l.first_name + " " + l.last_name).trim().toLowerCase();
-  return (l.email || "").endsWith("@email.com") ||
-         name.startsWith("test") || /pierst/i.test(name) ||
-         (l.page_url || "").includes("netlify.app");
+  const email = (l.email || "").toLowerCase();
+  return name.includes("test") || email.includes("test") ||
+         email.endsWith("@email.com") || email.includes("example.com") ||
+         /pierst/i.test(name) || (l.page_url || "").includes("netlify.app");
 }
 
 function slim(sub, brand) {
