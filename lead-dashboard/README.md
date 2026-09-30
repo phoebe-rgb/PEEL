@@ -37,7 +37,7 @@ against leads that actually reached the **CRM (Salesforce)**. This is what Funne
 | `SLACK_BOT_TOKEN` | ✅ | Slack bot token (`xoxb-…`) with scopes `chat:write` + `im:write`, to DM Phoebe. |
 | `SLACK_DM_USER_ID` | ✅ | Phoebe's Slack member ID (e.g. `U0123ABC`) — the DM recipient. |
 | `DASHBOARD_URL` | ✅ | Link to this (password-protected) dashboard, included in the alert. |
-| `ALERT_TZ` | ❌ | Timezone for "yesterday" (default `Asia/Ho_Chi_Minh`). |
+| `ALERT_MIN_AGE_HOURS` | ❌ | Min lead age before it counts as lost (default 24) — covers the CRM export lag so fresh leads aren't false alarms. |
 | `SLACK_WEBHOOK_URL` | ❌ | Fallback if no bot token — posts to a channel instead of a DM. |
 | `SITE_MAP` | ❌ | JSON `{siteId:"BRAND"}` to change the sites. Defaults to the 4 SEG sites. |
 
@@ -56,15 +56,16 @@ netlify env:set DASHBOARD_URL      "https://seg-lead-tracking.netlify.app"
 netlify deploy --prod
 ```
 
-**First run (one-off):** open `/.netlify/functions/lost-lead-alert?all=1` once — this reports the
-ENTIRE backlog of lost leads. After that, the daily schedule (no param) reports only the
-previous day's new lost leads.
+**How the alert behaves:** it runs right after each export and Slack-alerts every *new* lost
+lead once — the already-alerted set is remembered in **Netlify Blobs** (`seg-lead-tracking`
+store), so nothing repeats. The **first run** has an empty memory, so it reports the whole
+current backlog; every run after that only reports newly detected lost leads.
 
-Test the alert any time (without waiting for the schedule): open `/.netlify/functions/lost-lead-alert`
-in the browser, or `netlify functions:invoke lost-lead-alert`.
+`ALERT_MIN_AGE_HOURS` (default 24) keeps a just-submitted lead from being called "lost" before
+the CRM export has had a chance to include it (avoids false alarms from the export lag).
 
-The schedule (twice daily, after the 08:15 & 14:15 exports) is in `netlify.toml` — Netlify cron is
-UTC, so adjust the hours to your export timezone.
+Test any time: open `/.netlify/functions/lost-lead-alert` or `netlify functions:invoke lost-lead-alert`.
+The schedule (after the 08:15 & 14:15 exports) is in `netlify.toml` — Netlify cron is UTC.
 
 ## ⚠️ Security
 

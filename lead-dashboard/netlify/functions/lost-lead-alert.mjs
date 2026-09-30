@@ -1,30 +1,24 @@
-// AUTO LEAD TRACKING — scheduled (see netlify.toml). Runs after the Salesforce export.
-// Reports ONLY the previous day's lost leads (Netlify leads created yesterday that are not
-// in the all-time CRM export). Sends a Slack DM to Phoebe with counts + a dashboard link.
-// No lead PII goes to Slack — contact details live in the password-protected dashboard.
+// AUTO LEAD TRACKING — scheduled (see netlify.toml). Runs shortly after each Salesforce
+// export. It flags Netlify leads not found in the all-time CRM export and Slack-alerts
+// each NEW lost lead exactly once (remembered in Netlify Blobs, so no repeats).
+// The first run has an empty memory, so it reports the whole current backlog, then it's
+// incremental. No lead PII in Slack — counts + a dashboard link only.
 //
 // Env vars:
-//   NETLIFY_API_TOKEN  - read Netlify Forms on the 4 SEG sites
-//   SALESFORCE_CSV_URL - all-time Salesforce lead export (published Google Sheet CSV; date+email)
-//   SLACK_BOT_TOKEN    - Slack bot token (xoxb-…) with chat:write + im:write
-//   SLACK_DM_USER_ID   - Phoebe's Slack member ID (e.g. U0123ABC) to DM
-//   DASHBOARD_URL      - link to the password-protected dashboard
-//   ALERT_TZ           - timezone for "yesterday" (default Asia/Ho_Chi_Minh)
-//   SLACK_WEBHOOK_URL  - optional fallback if no bot token (posts to a channel, not a DM)
+//   NETLIFY_API_TOKEN   - read Netlify Forms on the 4 SEG sites
+//   SLACK_BOT_TOKEN + SLACK_DM_USER_ID  - DM Phoebe (or SLACK_WEBHOOK_URL for a channel)
+//   DASHBOARD_URL       - link included in the alert
+//   ALERT_MIN_AGE_HOURS - min lead age before it can be called lost (default 24; covers the
+//                         CRM export lag so a just-submitted lead isn't a false alarm)
 
+import { getStore } from "@netlify/blobs";
 import { getLeads, getCrmKeys, classify } from "./_lib.mjs";
 
-const ymd = (d, tz) =>
-  new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+const STORE = "seg-lead-tracking";
+const KEY = "alerted_event_ids";
 
-export default async (req) => {
-  const tz = process.env.ALERT_TZ || "Asia/Ho_Chi_Minh";
-  const yesterday = ymd(new Date(Date.now() - 86400000), tz);
-
-  // First run: trigger once with ?all=1 to report the whole backlog of lost leads.
-  // Scheduled runs (no param) report only the previous day's new lost leads.
-  let allMode = false;
-  try { allMode = ["1", "true", "all", "yes"].includes((new URL(req.url).searchParams.get("all") || "").toLowerCase()); } catch {}
+export default async () => {
+  const minAgeH = Number(process.env.ALERT_MIN_AGE_HOURS || 24);
 
   const keys = await getCrmKeys();
   if (!keys) {
@@ -35,22 +29,39 @@ export default async (req) => {
   const real = leads.filter((l) => !l.is_test);
   const { lost } = classify(real, keys);
 
-  const target = allMode ? lost : lost.filter((l) => ymd(new Date(l.created_at), tz) === yesterday);
-  if (!target.length) return json({ mode: allMode ? "all" : "daily", yesterday, lost: 0, note: "no alert sent" });
+  // Already-alerted memory (survives runs). Falls back to no-memory if Blobs is unavailable.
+  let store = null, seen = new Set();
+  try {
+    store = getStore(STORE);
+    const raw = await store.get(KEY);
+    if (raw) seen = new Set(JSON.parse(raw));
+  } catch (e) { console.error("Blobs unavailable:", e?.message); }
 
-  const link = process.env.DASHBOARD_URL ? `\n📊 Full list + contact details: ${process.env.DASHBOARD_URL}` : "";
-  const plural = target.length === 1 ? "lead" : "leads";
-  const heading = allMode
-    ? `:mag: *SEG Lead Tracking — initial report (all lost leads to date)*\n*${target.length}* lost ${plural} not found in CRM.`
-    : `:mag: *SEG Lead Tracking — ${yesterday}*\n*${target.length}* new lost ${plural} yesterday (not found in CRM).`;
-  const text =
-    `${heading}\n` +
-    `By school: ${fmt(tally(target, (l) => l.brand))}\n` +
-    `By channel: ${fmt(tally(target, (l) => l.source || "—"))}` +
-    link;
+  const now = Date.now();
+  const ageH = (iso) => (now - new Date(iso).getTime()) / 3600000;
 
-  await slack(text);
-  return json({ mode: allMode ? "all" : "daily", yesterday, lost: target.length });
+  // New lost leads = lost, old enough to be confirmed (past export lag), not yet alerted.
+  const fresh = lost.filter((l) => ageH(l.created_at) >= minAgeH && l.event_id && !seen.has(l.event_id));
+
+  if (fresh.length) {
+    const link = process.env.DASHBOARD_URL ? `\n📊 Full list + contact details: ${process.env.DASHBOARD_URL}` : "";
+    const plural = fresh.length === 1 ? "lead" : "leads";
+    const first = seen.size === 0; // first ever run → whole backlog
+    const heading = first
+      ? `:mag: *SEG Lead Tracking — initial report (all lost leads to date)*\n*${fresh.length}* lost ${plural} not found in CRM.`
+      : `:rotating_light: *SEG Lead Tracking — ${fresh.length} new lost ${plural} detected*`;
+    await slack(
+      `${heading}\n` +
+      `By school: ${fmt(tally(fresh, (l) => l.brand))}\n` +
+      `By channel: ${fmt(tally(fresh, (l) => l.source || "—"))}` +
+      link
+    );
+    if (store) {
+      for (const l of fresh) seen.add(l.event_id);
+      try { await store.set(KEY, JSON.stringify([...seen])); } catch (e) { console.error("Blobs write:", e?.message); }
+    }
+  }
+  return json({ lost_total: lost.length, newly_alerted: fresh.length, remembered: seen.size });
 };
 
 function tally(arr, fn) {
