@@ -1,0 +1,15 @@
+# Netlify config for the SEG Lead Tracking dashboard
+# Docs: https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+# Daily lost-lead alert to Slack — 08:00 UTC every day.
+# The schedule runs the netlify/functions/lost-lead-alert function.
+[functions."lost-lead-alert"]
+  schedule = "0 8 * * *"
+
+# Protect the dashboard: it shows real lead PII, so it must NOT be public.
+# Set a site password in Netlify UI (Site settings → Access & security → Visitor access → Password protection)
+# OR restrict to your Netlify team via SSO. This file cannot set the password; do it in the UI.
