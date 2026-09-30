@@ -1,19 +1,19 @@
 // On-demand JSON API: current Netlify leads + (if configured) their CRM match status.
 // Used by the optional dashboard page. The auto-tracking/alert lives in lost-lead-alert.mjs.
-import { getLeads, getCrmIds, classify } from "./_lib.mjs";
+import { getLeads, getCrmKeys, classify } from "./_lib.mjs";
 
 export default async () => {
   const leads = await getLeads();
-  const crmIds = await getCrmIds();
+  const keys = await getCrmKeys();
   let summary = null;
-  if (crmIds) {
+  if (keys) {
     const real = leads.filter((l) => !l.is_test);
-    const { matched, lost, pending } = classify(real, crmIds);
+    const { matched, lost, pending } = classify(real, keys);
     summary = { total: real.length, matched: matched.length, lost: lost.length, pending: pending.length };
-    const set = crmIds;
-    for (const l of leads) l.in_crm = set.has((l.event_id || "").toLowerCase());
+    for (const l of leads)
+      l.in_crm = keys.emails.has((l.email || "").trim().toLowerCase()) || keys.ids.has((l.event_id || "").toLowerCase());
   }
-  return new Response(JSON.stringify({ generated_at: new Date().toISOString(), crm_connected: !!crmIds, summary, leads }), {
+  return new Response(JSON.stringify({ generated_at: new Date().toISOString(), crm_connected: !!keys, summary, leads }), {
     headers: { "content-type": "application/json", "cache-control": "no-store" },
   });
 };

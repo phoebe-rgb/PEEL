@@ -6,12 +6,18 @@ rồi **tự cảnh báo qua Slack** khi có lead bị mất. Đây là phần F
 
 ## Nguyên lý
 
-Mỗi lần submit trên landing page sinh 1 `event_id` duy nhất, ghi đồng thời vào **Netlify Forms**
-và **Pardot → Salesforce** (là trường *Submission Id*). Vì vậy:
+> Lead có trong Netlify nhưng **không** thấy trong export Salesforce = **lead bị mất**.
 
-> Lead có trong Netlify nhưng **không** có `event_id` tương ứng trong Salesforce = **lead bị mất**.
+Khớp bằng **email** (lowercase). Nguồn CRM hiện tại — Google Sheet *"SEG - New Lead from Netify"*,
+tab **"Funnel data"** (cột `Date`, `Email`) — chưa có `Submission Id`, nên email là khoá khớp.
+Nếu về sau export thêm cột **Submission Id**, code tự nhận UUID và dùng luôn làm khoá mạnh hơn
+(`getCrmKeys` trả cả `emails` và `ids`; `classify` khớp email HOẶC event_id).
 
-Đã kiểm chứng: 100% lead Netlify (930/930 tính đến 30/09/2026) đều có `event_id`, nên khớp nối đáng tin.
+Chỉ so từ `MATCH_WINDOW_START` (mốc Salesforce bắt đầu có dữ liệu, hiện 2026-09-01) để tránh
+"mất" giả với lead cũ. Lead < `ALERT_LAG_DAYS` ngày để ở trạng thái *chờ* (do export trễ).
+
+> ⚠️ Khớp email không tuyệt đối (email lệch, CRM gộp trùng) → coi số "mất" là **tín hiệu cần
+> kiểm chứng**. Thêm `Submission Id` vào export là cách làm nó chính xác 100%.
 
 ## Thành phần
 
@@ -28,10 +34,11 @@ và **Pardot → Salesforce** (là trường *Submission Id*). Vì vậy:
 | Biến | Bắt buộc | Mô tả |
 |------|:---:|-------|
 | `NETLIFY_API_TOKEN` | ✅ | Netlify personal access token (User settings → Applications → New access token). Để function đọc Forms của 4 site SEG. |
-| `SALESFORCE_CSV_URL` | ✅ | **Mắt xích còn thiếu.** URL 1 file CSV chứa Submission Id của lead đã vào Salesforce — ví dụ 1 Google Sheet (report Salesforce export sang) đã *Publish to web → CSV*. Function chỉ cần quét ra các `event_id`. |
+| `SALESFORCE_CSV_URL` | ✅ | URL CSV của export Salesforce. Dùng **tab "Funnel data"** (không phải tab đầu): `https://docs.google.com/spreadsheets/d/1bAvxn13rUsclKOEKe_B0gRVWXbdQDn5vymPba0sBmtM/export?format=csv&gid=1301696085`. Sheet phải **Share → Anyone with the link (Viewer)** (hoặc Publish tab) để function đọc được không cần đăng nhập Google. |
 | `SLACK_WEBHOOK_URL` | ✅ | Slack Incoming Webhook của kênh nhận cảnh báo. |
-| `ALERT_LAG_DAYS` | ❌ | Số ngày chờ trước khi coi là mất (mặc định 2, do export Salesforce trễ ~1 ngày). |
-| `ALERT_WINDOW_DAYS` | ❌ | Cửa sổ tính "lead vừa mất" để báo hằng ngày (mặc định 3). |
+| `MATCH_WINDOW_START` | ❌ | Chỉ so từ ngày này (mặc định lấy env; nên đặt `2026-09-01`). Tránh "mất" giả với lead trước khi Salesforce có dữ liệu. |
+| `ALERT_LAG_DAYS` | ❌ | Số ngày chờ trước khi coi là mất (mặc định 2, do export Salesforce trễ). |
+| `ALERT_WINDOW_DAYS` | ❌ | Cửa sổ tính "lead vừa mất" để báo mỗi lần (mặc định 3). |
 | `SITE_MAP` | ❌ | JSON `{siteId: "BRAND"}` nếu đổi danh sách site. Mặc định đã gắn 4 site SEG. |
 
 4 site SEG đang gắn sẵn: CAAS (`36b518a4…`), SHMS (`0643bf0d…`), HIM (`a29a7635…`), CRCS (`45589786…`).
@@ -41,9 +48,10 @@ và **Pardot → Salesforce** (là trường *Submission Id*). Vì vậy:
 ```bash
 # từ thư mục lead-dashboard/
 netlify sites:create --name seg-lead-tracking     # hoặc dùng site có sẵn
-netlify env:set NETLIFY_API_TOKEN   "xxxx"
-netlify env:set SALESFORCE_CSV_URL  "https://docs.google.com/.../pub?output=csv"
-netlify env:set SLACK_WEBHOOK_URL   "https://hooks.slack.com/services/xxx"
+netlify env:set NETLIFY_API_TOKEN  "xxxx"
+netlify env:set SALESFORCE_CSV_URL "https://docs.google.com/spreadsheets/d/1bAvxn13rUsclKOEKe_B0gRVWXbdQDn5vymPba0sBmtM/export?format=csv&gid=1301696085"
+netlify env:set SLACK_WEBHOOK_URL  "https://hooks.slack.com/services/xxx"
+netlify env:set MATCH_WINDOW_START "2026-09-01"
 netlify deploy --prod
 ```
 
@@ -55,7 +63,8 @@ hoặc `netlify functions:invoke lost-lead-alert`.
 Trang và dữ liệu chứa **thông tin liên hệ lead thật**. Bật **password protection** cho site
 (Site settings → Access & security) hoặc giới hạn SSO team — **không để public**.
 
-## Còn thiếu để chạy tự động
+## Kiểm chứng trước khi tin số "mất"
 
-1 nguồn CRM đọc được bằng máy (`SALESFORCE_CSV_URL`). Cần lấy từ freelancer / Salesforce admin:
-report Salesforce lọc theo *Submission Id* export sang Google Sheet auto-refresh. Có cái này là auto-tracking chạy đầy đủ.
+Khớp theo email nên số lead "mất" là tín hiệu, chưa phải kết luận. Trước khi báo động rộng:
+1. Lấy vài lead "mất" trong dashboard, tìm email đó thẳng trong Salesforce (có thể đã vào nhưng email khác/gộp trùng).
+2. Nhờ freelancer thêm cột **Submission Id** vào export → khớp bằng `event_id`, chính xác 100%.

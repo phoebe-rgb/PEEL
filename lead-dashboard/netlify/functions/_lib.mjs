@@ -82,27 +82,45 @@ export async function getLeads() {
   return out;
 }
 
-// Read the Salesforce/CRM export (published Google Sheet CSV or any CSV URL) and
-// return a lowercase Set of every UUID found (the Submission Ids that reached the CRM).
-// Returns null if SALESFORCE_CSV_URL is not configured.
-export async function getCrmIds() {
+const EMAIL = /[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/gi;
+
+// Read the Salesforce/CRM export and return the keys that prove a lead reached the CRM:
+//   { emails:Set, ids:Set }  (both lowercased)
+// The current export ("SEG - New Lead from Netify" → tab "Funnel data") has Date+Email,
+// so matching is by EMAIL. If a Submission Id column is added later, its UUIDs are picked
+// up automatically and used as a stronger key. Returns null if SALESFORCE_CSV_URL is unset.
+//
+// NOTE: the Google Sheet's default CSV export is the FIRST tab. Point SALESFORCE_CSV_URL at
+// the "Funnel data" tab explicitly, e.g.:
+//   https://docs.google.com/spreadsheets/d/<ID>/export?format=csv&gid=1301696085
+// and share the sheet "anyone with the link (Viewer)" or publish that tab, so the function
+// can fetch it without Google auth.
+export async function getCrmKeys() {
   const url = process.env.SALESFORCE_CSV_URL;
   if (!url) return null;
   const r = await fetch(url);
   if (!r.ok) throw new Error("SALESFORCE_CSV_URL -> " + r.status);
   const text = await r.text();
-  return new Set((text.match(UUID) || []).map((s) => s.toLowerCase()));
+  return {
+    emails: new Set((text.match(EMAIL) || []).map((s) => s.toLowerCase())),
+    ids: new Set((text.match(UUID) || []).map((s) => s.toLowerCase())),
+  };
 }
 
-// Split leads into matched / lost using the CRM id set. Leads younger than lagDays
-// are held as "pending" (CRM export lag) instead of counted as lost.
-export function classify(leads, crmIds, lagDays = 2) {
+// Split leads into matched / lost / pending against the CRM keys.
+// A lead is matched if its email (or event_id, when the export carries one) is in the CRM.
+// Leads younger than lagDays are held as "pending" (CRM export lag) instead of "lost".
+// windowStart (YYYY-MM-DD) guards against false "lost" before CRM history begins.
+export function classify(leads, keys, lagDays = 2, windowStart = process.env.MATCH_WINDOW_START || "") {
   const now = Date.now();
-  const matched = [], lost = [], pending = [];
+  const matched = [], lost = [], pending = [], outOfWindow = [];
   for (const l of leads) {
-    if (crmIds.has((l.event_id || "").toLowerCase())) matched.push(l);
+    if (windowStart && (l.created_at || "").slice(0, 10) < windowStart) { outOfWindow.push(l); continue; }
+    const hit = keys.emails.has((l.email || "").trim().toLowerCase()) ||
+                keys.ids.has((l.event_id || "").toLowerCase());
+    if (hit) matched.push(l);
     else if ((now - new Date(l.created_at).getTime()) / 86400000 < lagDays) pending.push(l);
     else lost.push(l);
   }
-  return { matched, lost, pending };
+  return { matched, lost, pending, outOfWindow };
 }

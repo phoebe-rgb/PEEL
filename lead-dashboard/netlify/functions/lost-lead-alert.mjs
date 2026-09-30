@@ -12,7 +12,7 @@
 //   ALERT_LAG_DAYS      - how many days to wait before calling a lead "lost" (default 2)
 //   ALERT_WINDOW_DAYS   - how far back to look for newly-confirmed lost leads (default 3)
 
-import { getLeads, getCrmIds, classify } from "./_lib.mjs";
+import { getLeads, getCrmKeys, classify } from "./_lib.mjs";
 
 export default async () => {
   const lag = Number(process.env.ALERT_LAG_DAYS || 2);
@@ -20,14 +20,14 @@ export default async () => {
   const hook = process.env.SLACK_WEBHOOK_URL;
 
   const leads = await getLeads();
-  const crmIds = await getCrmIds();
-  if (!crmIds) {
+  const keys = await getCrmKeys();
+  if (!keys) {
     await slack(hook, "⚠️ Lead tracking không chạy được: chưa cấu hình `SALESFORCE_CSV_URL` (nguồn lead CRM).");
     return new Response("no crm source", { status: 200 });
   }
 
   const real = leads.filter((l) => !l.is_test);
-  const { lost, matched, pending } = classify(real, crmIds, lag);
+  const { lost, matched, pending } = classify(real, keys, lag);
 
   // Newly-confirmed lost: past the lag window, but created within the last windowDays.
   const now = Date.now();
