@@ -6,3 +6,7 @@ seg-dashboard/data-snapshots/
 
 # Claude personal settings (not committed)
 .claude/settings.local.json
+
+# Built frontend pulled from live (build artifacts + business data) - local only
+seg-dashboard/public/
+seg-dashboard/frontend-src/
