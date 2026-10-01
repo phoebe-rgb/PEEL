@@ -66,9 +66,9 @@ cells, `grain="day"`.
 - **No campaign-type dimension** (Search/YouTube/GDN/PMax) and **no prior-year
   window** are stored — relevant to two of the open bugs.
 
-Data snapshots captured 2026-10-01 are in `data-snapshots/` (the large `live`
-and `keywords` cubes are omitted on purpose; re-pull with the script in
-"How to re-pull data").
+Data snapshots captured 2026-10-01 are kept **local only** (gitignored
+`data-snapshots/`, since they are live business data); re-pull any of them with
+the script in "How to re-pull data".
 
 ## Open bugs (Piers' review) — to fix in the frontend
 1. **India YoY wrong.** Dashboard shows spend +136% / leads +500%; Funnel shows
@@ -111,12 +111,19 @@ and `keywords` cubes are omitted on purpose; re-pull with the script in
   fields into Funnel, Slack Mon/Tue/Thu message templates).
 
 ## What is still missing
-- **`public/` — the SPA frontend assets.** Cloudflare has no API to download
-  deployed static assets, and the live site is behind basic auth. To recover it,
-  fetch the live site with a valid credential (the `?k=<DASH_KEY>` share link or
-  the dashboard password) and save the served files into `public/`.
-- `index.js.map` (sourcemap) — not served; the bundled `worker/index.js` is the
-  source of truth for the backend.
+- **The original frontend SOURCE (React/Vite project: `src/*.tsx`, etc.).**
+  The built SPA was pulled from the live site into `public/` (gitignored):
+  `index.html` + `assets/index-*.js` (836 KB **minified**) + CSS, plus
+  `public/data/*.json` (hist_weekly/hist_daily/keywords/budget… — 26 MB). But the
+  deployment ships **no sourcemap** (`*.js.map` returns the SPA index via the
+  single-page-application fallback), so only minified output is recoverable from
+  Cloudflare. Fixing logic bugs (India YoY, country filter, Google channel
+  split) and adding the Alert Setup page require the original source, which lives
+  only on the machine that runs `wrangler deploy`. A fix made in the minified
+  bundle would also be overwritten by the next local deploy, so the source must
+  come from local (push the project to a branch/repo).
+- `index.js.map` (worker sourcemap) — not served; bundled `worker/index.js` is
+  the source of truth for the backend.
 
 ## How to redeploy
 1. Recover `public/` (above).
