@@ -74,6 +74,11 @@ th{color:var(--mut);position:sticky;top:0;background:var(--pan)}
   <div class="lg"><span><span class="dot" style="background:var(--incrm)"></span>In CRM</span><span><span class="dot" style="background:var(--gold)"></span>Unqualified (filtered)</span><span><span class="dot" style="background:var(--lost)"></span>Lost (to investigate)</span></div>
   <div class="hint" id="daysHint"></div>
 </div>
+<div class="card" style="margin-bottom:12px">
+  <div class="sec-t">Lost rate % per day — of CRM-eligible leads</div>
+  <div id="cRate"></div>
+  <div class="hint" id="rateHint"></div>
+</div>
 <div class="row2">
   <div class="card"><div class="sec-t">By school — total (lost)</div><div id="cBrand"></div></div>
   <div class="card"><div class="sec-t">Lost leads by channel</div><div id="cChan"></div></div>
@@ -150,7 +155,7 @@ function render(){
     kpi(lost.length.toLocaleString(),'Lost','real — to investigate','var(--lost)'),
     kpi(rate.toFixed(0)+'%','Lost rate','of CRM-eligible','var(--lost)')
   ].join('');
-  dayChart(r);brandChart(r);barChart('cChan',tally(lost,l=>l.source||'—'),'--lost');barChart('cCountry',tally(lost,ctryOf),'--lost');
+  dayChart(r);rateChart(r);brandChart(r);barChart('cChan',tally(lost,l=>l.source||'—'),'--lost');barChart('cCountry',tally(lost,ctryOf),'--lost');
   document.getElementById('tblTitle').textContent='Lost leads — to investigate ('+lost.length+')';
   document.getElementById('tblArea').innerHTML=lost.length?tbl(lost):'<div class="muted" style="padding:16px">No lost leads in this filter.</div>';
   document.getElementById('dlLost').style.display=lost.length?'':'none';
@@ -165,9 +170,27 @@ function tally(arr,fn){const m={};arr.forEach(x=>{const k=fn(x)||'—';m[k]=(m[k
 function dayChart(r){
   const by={};r.forEach(l=>{const o=(by[l.created_at.slice(0,10)]=by[l.created_at.slice(0,10)]||{m:0,u:0,l:0});o[l.status==='matched'?'m':l.status==='unqualified'?'u':'l']++;});
   const days=Object.keys(by).sort(),mx=Math.max(1,...days.map(d=>by[d].m+by[d].u+by[d].l));
-  document.getElementById('cDays').innerHTML=days.map(d=>{const o=by[d],h=x=>x/mx*150;
-    return `<div class="dcol" title="${d}  in CRM ${o.m} · unqualified ${o.u} · lost ${o.l}"><div class="seg m" style="height:${h(o.m)}px"></div><div class="seg u" style="height:${h(o.u)}px"></div><div class="seg l" style="height:${h(o.l)}px"></div></div>`;}).join('');
+  document.getElementById('cDays').innerHTML=days.map(d=>{const o=by[d],h=x=>x/mx*150,lr=(o.m+o.l)?(o.l/(o.m+o.l)*100):0;
+    return `<div class="dcol" title="${d}  in CRM ${o.m} · unqualified ${o.u} · lost ${o.l} · lost rate ${lr.toFixed(0)}%"><div class="seg m" style="height:${h(o.m)}px"></div><div class="seg u" style="height:${h(o.u)}px"></div><div class="seg l" style="height:${h(o.l)}px"></div></div>`;}).join('');
   document.getElementById('daysHint').textContent=days.length?(days[0]+' → '+days[days.length-1]):'';
+}
+// Daily lost rate = lost ÷ CRM-eligible (matched + lost) per day; unqualified excluded (not a loss).
+function rateChart(r){
+  const by={};r.forEach(l=>{if(l.status==='unqualified')return;const k=l.created_at.slice(0,10);const o=by[k]=by[k]||{el:0,l:0};o.el++;if(l.status==='lost')o.l++;});
+  const days=Object.keys(by).sort(),host=document.getElementById('cRate'),hint=document.getElementById('rateHint');
+  if(!days.length){host.innerHTML='<span class="muted">—</span>';hint.textContent='';return;}
+  const pctOf=d=>by[d].el?by[d].l/by[d].el*100:0,vals=days.map(pctOf);
+  const mx=Math.max(5,Math.ceil(Math.max(...vals)/5)*5);
+  const W=640,H=160,padL=30,padR=10,padT=10,padB=22,pw=W-padL-padR,ph=H-padT-padB;
+  const X=i=>padL+(days.length>1?i/(days.length-1):0.5)*pw,Y=val=>padT+(1-val/mx)*ph;
+  const grid=[0,mx/2,mx].map(g=>`<line x1="${padL}" y1="${Y(g).toFixed(1)}" x2="${W-padR}" y2="${Y(g).toFixed(1)}" style="stroke:var(--line)" stroke-width="1"/><text x="${padL-4}" y="${(Y(g)+3).toFixed(1)}" text-anchor="end" style="fill:var(--mut)" font-size="9">${g}%</text>`).join('');
+  const pts=days.map((d,i)=>`${X(i).toFixed(1)},${Y(vals[i]).toFixed(1)}`).join(' ');
+  const dots=days.map((d,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(vals[i]).toFixed(1)}" r="2.3" style="fill:var(--lost)"><title>${d}: ${vals[i].toFixed(1)}% lost (${by[d].l}/${by[d].el} eligible)</title></circle>`).join('');
+  const xlab=[0,days.length-1].map(i=>`<text x="${X(i).toFixed(1)}" y="${H-6}" text-anchor="${i===0?'start':'end'}" style="fill:var(--mut)" font-size="9">${days[i]}</text>`).join('');
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="160" preserveAspectRatio="none" style="display:block">${grid}<polyline points="${pts}" fill="none" vector-effect="non-scaling-stroke" style="stroke:var(--lost)" stroke-width="1.6"/>${dots}${xlab}</svg>`;
+  const sum=ds=>ds.reduce((a,d)=>({el:a.el+by[d].el,l:a.l+by[d].l}),{el:0,l:0}),p=o=>o.el?(o.l/o.el*100).toFixed(1)+'%':'—';
+  const last=days[days.length-1],cut=new Date(Date.now()-7*86400000).toISOString().slice(0,10);
+  hint.innerHTML=`Latest day ${last}: <b>${pctOf(last).toFixed(1)}%</b> · last 7 days: <b>${p(sum(days.filter(d=>d>=cut)))}</b> · whole range: <b>${p(sum(days))}</b> &nbsp;<span class="muted">(lost ÷ CRM-eligible; unqualified excluded)</span>`;
 }
 function brandChart(r){
   const by={};r.forEach(l=>{const o=by[l.brand]=by[l.brand]||{t:0,l:0};o.t++;if(l.status==='lost')o.l++;});
