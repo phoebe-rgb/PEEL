@@ -1,0 +1,45 @@
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -5,6 +5,7 @@
+ import { MustRead } from './mustread';
+ import { P06Keywords } from './keywords';
+ import { DIM_LABEL, label } from './lib/format';
++import { marketName } from './lib/names';
+ import { StoreCtx, useCtx } from './components';
+ import { PerformancePage } from './perf';
+ import { BudgetPage } from './budget';
+@@ -12,8 +13,12 @@
+ import { Comments, pageName } from './comments';
+ import { AskClaude } from './askclaude';
+ 
+-const FILTER_DIMS: Dim[] = ['school', 'channel', 'country'];
+-const SAVE_KEY = 'seg-dash-view-v2';
++// Filter by the campaign's target market (from the campaign name), not the user's geo country,
++// so the top filter matches the breakdown tables and Funnel (which report by target market).
++const FILTER_DIMS: Dim[] = ['school', 'channel', 'market'];
++const SAVE_KEY = 'seg-dash-view-v3';
++// Market values are ISO-ish codes (IN, US, AE); show them as names in the filter.
++const optLabel = (d: Dim, v: string) => (d === 'market' ? marketName(v) : label(v));
+ 
+ function useRoute() {
+   const [hash, setHash] = useState(location.hash || '#/performance');
+@@ -129,8 +134,8 @@
+         <label key={d}>{DIM_LABEL[d]}
+           <select value={view.dims[d]?.[0] ?? ''} onChange={(e) => setView({ ...view, dims: { ...view.dims, [d]: e.target.value === '' ? [] : [e.target.value] } })}>
+             <option value="">All</option>
+-            {view.dims[d]?.[0] && !options[d]?.includes(view.dims[d]![0]) && <option value={view.dims[d]![0]}>{label(view.dims[d]![0])}</option>}
+-            {options[d]?.map((v) => <option key={v} value={v}>{label(v)}</option>)}
++            {view.dims[d]?.[0] && !options[d]?.includes(view.dims[d]![0]) && <option value={view.dims[d]![0]}>{optLabel(d, view.dims[d]![0])}</option>}
++            {options[d]?.map((v) => <option key={v} value={v}>{optLabel(d, v)}</option>)}
+           </select>
+         </label>
+       ))}
+@@ -142,7 +147,7 @@
+         {s.fallback ? <span className="warn">Live feed unavailable: showing history snapshot to {s.historyTo}</span>
+           : <>Live window {s.liveWindow?.from}…{s.liveWindow?.to}</>}
+       </div>
+-      <div className="current-view">Current view: <b>{describe(view, filter)}</b>{Object.entries(view.dims).filter(([, v]) => v?.length).map(([k, v]) => <span key={k} className="pill">{DIM_LABEL[k as Dim]}: {label(v![0])}</span>)}</div>
++      <div className="current-view">Current view: <b>{describe(view, filter)}</b>{Object.entries(view.dims).filter(([, v]) => v?.length).map(([k, v]) => <span key={k} className="pill">{DIM_LABEL[k as Dim]}: {optLabel(k as Dim, v![0])}</span>)}</div>
+     </div>
+   );
+ }
