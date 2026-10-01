@@ -1,0 +1,28 @@
+# SEG Performance dashboard — Cloudflare Worker + Static Assets (SPA)
+# Live: https://seg-dashboard.seg-dashboard.workers.dev
+# Account: Phoebe@peel-digital.com (bbc8c9f67b33609ec79d39279749024d)
+#
+# NOTE: `public/` (the SPA frontend assets) is NOT yet in this repo — it was
+# never checked in and the build container that produced it was reclaimed.
+# It must be recovered from the live deployment before a redeploy is possible.
+# See RECOVERY.md → "What is still missing".
+
+name = "seg-dashboard"
+main = "worker/index.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[assets]
+directory = "public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = true
+
+[[kv_namespaces]]
+binding = "SEG_DATA"
+id = "003c141e9f4545afb5a6f9cbabc20415"
+
+# Secrets (set with `wrangler secret put <NAME>`, never committed):
+#   DASH_PASSWORD      — basic-auth password (realm "SEG Performance")
+#   DASH_KEY           — share key; open with ?k=<DASH_KEY> to set the seg_key cookie
+#   SLACK_WEBHOOK_URL  — used by POST /api/notify

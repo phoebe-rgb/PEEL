@@ -1,2 +1,8 @@
 __pycache__/
 *.pyc
+
+# Recovered KV data snapshots (business data) kept local only
+seg-dashboard/data-snapshots/
+
+# Claude personal settings (not committed)
+.claude/settings.local.json
