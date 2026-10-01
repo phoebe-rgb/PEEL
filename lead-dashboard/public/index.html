@@ -25,7 +25,7 @@ h1{font-size:19px;margin:0;color:var(--navy)}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) .ban.note{color:var(--gold)}}
 .bar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:14px 0}
 .card{background:var(--pan);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:14px 0}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
 .kpi .n{font-size:25px;font-weight:800;letter-spacing:-.5px}.kpi .l{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
 .kpi .s{font-size:11.5px;color:var(--mut);margin-top:2px}
@@ -46,7 +46,9 @@ th{color:var(--mut);position:sticky;top:0;background:var(--pan)}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) a.dl{color:var(--gold)}}
 .days{display:flex;align-items:flex-end;gap:3px;height:150px;margin-top:8px}
 .dcol{flex:1;display:flex;flex-direction:column-reverse;min-height:2px}
-.seg{width:100%}.seg.m{background:var(--incrm)}.seg.l{background:var(--lost)}.seg.p{background:var(--pend)}
+.seg{width:100%}.seg.m{background:var(--incrm)}.seg.l{background:var(--lost)}.seg.u{background:var(--gold)}.seg.p{background:var(--pend)}
+.rsn{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:600;background:rgba(184,144,47,.16);color:#8a6a1e}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .rsn{color:var(--gold)}}
 .crow{display:grid;grid-template-columns:58px 1fr 96px;align-items:center;gap:8px;font-size:12px;margin-bottom:7px}
 .track{background:var(--pan2);border-radius:6px;height:20px;overflow:hidden}.tf{height:100%}
 .lg{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:8px;flex-wrap:wrap}
@@ -64,13 +66,12 @@ th{color:var(--mut);position:sticky;top:0;background:var(--pan)}
   <span class="fld">From <input type="date" id="from"></span>
   <span class="fld">To <input type="date" id="to"></span>
   <button id="reset">Reset</button>
-  <a class="dl" id="dlBtn" href="#" style="margin-left:auto">⬇︎ Download lost leads (CSV)</a>
 </div>
 <div class="grid" id="kpis"></div>
 <div class="card" style="margin-bottom:12px">
-  <div class="sec-t">Leads per day — reached CRM vs lost</div>
+  <div class="sec-t">Leads per day — in CRM vs unqualified vs lost</div>
   <div class="days" id="cDays"></div>
-  <div class="lg"><span><span class="dot" style="background:var(--incrm)"></span>In CRM</span><span><span class="dot" style="background:var(--lost)"></span>Lost</span></div>
+  <div class="lg"><span><span class="dot" style="background:var(--incrm)"></span>In CRM</span><span><span class="dot" style="background:var(--gold)"></span>Unqualified (filtered)</span><span><span class="dot" style="background:var(--lost)"></span>Lost (to investigate)</span></div>
   <div class="hint" id="daysHint"></div>
 </div>
 <div class="row2">
@@ -78,9 +79,19 @@ th{color:var(--mut);position:sticky;top:0;background:var(--pan)}
   <div class="card"><div class="sec-t">Lost leads by channel</div><div id="cChan"></div></div>
 </div>
 <div class="card" style="margin-bottom:12px"><div class="sec-t">Lost leads by country</div><div id="cCountry"></div></div>
-<div class="card">
-  <div class="sec-t" id="tblTitle" style="margin-bottom:8px"></div>
+<div class="card" style="margin-bottom:12px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div class="sec-t" id="tblTitle" style="margin:0"></div>
+    <a class="dl" id="dlLost" href="#">⬇︎ CSV</a>
+  </div>
   <div id="tblArea"></div>
+</div>
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div class="sec-t" id="uTitle" style="margin:0;color:var(--gold)"></div>
+    <a class="dl" id="dlUnq" href="#">⬇︎ CSV</a>
+  </div>
+  <div id="uArea"></div>
 </div>
 <p class="hint" id="foot"></p>
 </div>
@@ -95,7 +106,7 @@ const ageDays=iso=>(Date.now()-new Date(iso).getTime())/86400000;
 
 fetch('/.netlify/functions/leads').then(r=>r.json()).then(d=>{
   M=d;
-  LEADS=(d.leads||[]).map(l=>({...l, status: l.is_test?'test':(l.in_crm?'matched':'lost')}));
+  LEADS=(d.leads||[]).map(l=>({...l, status: l.is_test?'test':(l.in_crm?'matched':(l.unqualified?'unqualified':'lost'))}));
   if(!LEADS.length){document.getElementById('sub').textContent='No leads returned. Check function config (NETLIFY_API_TOKEN / SALESFORCE_CSV_URL).';return;}
   const ds=LEADS.map(l=>l.created_at.slice(0,10)).sort();
   M.nl_from=ds[0];M.nl_to=ds[ds.length-1];
@@ -112,7 +123,7 @@ function init(){
   ['hideTest','brandF','countryF','chanF','from','to'].forEach(id=>document.getElementById(id).addEventListener('change',render));
   document.getElementById('reset').onclick=()=>{['brandF','countryF','chanF'].forEach(i=>document.getElementById(i).value='');document.getElementById('from').value=M.nl_from;document.getElementById('to').value=M.nl_to;document.getElementById('hideTest').checked=true;render();};
   document.getElementById('sub').textContent=LEADS.length+' Netlify leads ('+M.nl_from+' → '+M.nl_to+') · '+(M.crm_connected?('CRM connected — '+(M.crm_count||0).toLocaleString()+' emails'):'⚠️ CRM not connected')+' · refreshed '+new Date(M.generated_at).toLocaleString();
-  document.getElementById('method').innerHTML='<b>Lost</b> = a Netlify lead (by email) not found in the all-time Salesforce export. Returning applicants are counted as reached. Test leads (name/email contains "test") hidden by default.';
+  document.getElementById('method').innerHTML='<b>In CRM</b> = email found in the all-time Salesforce export. <b>Unqualified</b> = not in CRM but intentionally filtered out (English: Beginner, or Finance: “Will work while studying” / “Need a full scholarship”) — not a loss. <b>Lost</b> = not in CRM and not unqualified — the real leads to investigate. Returning applicants count as reached; test leads hidden by default.';
 }
 function rows(){
   const b=v('brandF'),c=v('countryF'),ch=v('chanF'),ht=document.getElementById('hideTest').checked,f=v('from'),t=v('to');
@@ -126,29 +137,36 @@ function rows(){
     return true;
   });
 }
+const DISQ_FIN=new Set(['will work while studying','need a full scholarship']);
+function reasonsOf(l){const r=[];if((l.english_level||'').trim().toLowerCase()==='beginner')r.push('English: Beginner');const f=(l.financing||'').trim();if(DISQ_FIN.has(f.toLowerCase()))r.push('Finance: '+f);return r;}
 function render(){
   const r=rows().filter(l=>l.status!=='test');
-  const matched=r.filter(l=>l.status==='matched'),lost=r.filter(l=>l.status==='lost');
-  const den=r.length, rate=den?(lost.length/den*100):0;
+  const matched=r.filter(l=>l.status==='matched'),unq=r.filter(l=>l.status==='unqualified'),lost=r.filter(l=>l.status==='lost');
+  const den=matched.length+lost.length, rate=den?(lost.length/den*100):0;
   document.getElementById('kpis').innerHTML=[
     kpi(r.length.toLocaleString(),'Netlify leads',''),
     kpi(matched.length.toLocaleString(),'In CRM','','var(--incrm)'),
-    kpi(lost.length.toLocaleString(),'Lost','not found in CRM','var(--lost)'),
-    kpi(rate.toFixed(0)+'%','Lost rate','of all leads','var(--lost)')
+    kpi(unq.length.toLocaleString(),'Unqualified','filtered out (not lost)','var(--gold)'),
+    kpi(lost.length.toLocaleString(),'Lost','real — to investigate','var(--lost)'),
+    kpi(rate.toFixed(0)+'%','Lost rate','of CRM-eligible','var(--lost)')
   ].join('');
   dayChart(r);brandChart(r);barChart('cChan',tally(lost,l=>l.source||'—'),'--lost');barChart('cCountry',tally(lost,ctryOf),'--lost');
-  document.getElementById('tblTitle').textContent='Lost leads — follow up ('+lost.length+')';
+  document.getElementById('tblTitle').textContent='Lost leads — to investigate ('+lost.length+')';
   document.getElementById('tblArea').innerHTML=lost.length?tbl(lost):'<div class="muted" style="padding:16px">No lost leads in this filter.</div>';
-  document.getElementById('dlBtn').style.display=lost.length?'':'none';
-  document.getElementById('dlBtn').onclick=e=>{e.preventDefault();csv(lost);};
+  document.getElementById('dlLost').style.display=lost.length?'':'none';
+  document.getElementById('dlLost').onclick=e=>{e.preventDefault();csv(lost,'lost_leads.csv');};
+  document.getElementById('uTitle').textContent='Unqualified leads — filtered out ('+unq.length+')';
+  document.getElementById('uArea').innerHTML=unq.length?tbl(unq,true):'<div class="muted" style="padding:16px">No unqualified leads in this filter.</div>';
+  document.getElementById('dlUnq').style.display=unq.length?'':'none';
+  document.getElementById('dlUnq').onclick=e=>{e.preventDefault();csv(unq,'unqualified_leads.csv',true);};
 }
 function kpi(n,l,s,c){return `<div class="card kpi"><div class="n" style="${c?'color:'+c:''}">${n}</div><div class="l">${l}</div><div class="s">${s||''}</div></div>`;}
 function tally(arr,fn){const m={};arr.forEach(x=>{const k=fn(x)||'—';m[k]=(m[k]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
 function dayChart(r){
-  const by={};r.forEach(l=>{const d=l.created_at.slice(0,10);(by[d]=by[d]||{m:0,l:0})[l.status==='matched'?'m':'l']++;});
-  const days=Object.keys(by).sort(),mx=Math.max(1,...days.map(d=>by[d].m+by[d].l));
+  const by={};r.forEach(l=>{const o=(by[l.created_at.slice(0,10)]=by[l.created_at.slice(0,10)]||{m:0,u:0,l:0});o[l.status==='matched'?'m':l.status==='unqualified'?'u':'l']++;});
+  const days=Object.keys(by).sort(),mx=Math.max(1,...days.map(d=>by[d].m+by[d].u+by[d].l));
   document.getElementById('cDays').innerHTML=days.map(d=>{const o=by[d],h=x=>x/mx*150;
-    return `<div class="dcol" title="${d}  in CRM ${o.m} · lost ${o.l}"><div class="seg m" style="height:${h(o.m)}px"></div><div class="seg l" style="height:${h(o.l)}px"></div></div>`;}).join('');
+    return `<div class="dcol" title="${d}  in CRM ${o.m} · unqualified ${o.u} · lost ${o.l}"><div class="seg m" style="height:${h(o.m)}px"></div><div class="seg u" style="height:${h(o.u)}px"></div><div class="seg l" style="height:${h(o.l)}px"></div></div>`;}).join('');
   document.getElementById('daysHint').textContent=days.length?(days[0]+' → '+days[days.length-1]):'';
 }
 function brandChart(r){
@@ -160,10 +178,12 @@ function barChart(id,items,colorVar){
   items=items.slice(0,8);const mx=Math.max(1,...items.map(i=>i[1]));
   document.getElementById(id).innerHTML=items.map(([k,val])=>`<div class="crow"><span class="muted" style="overflow:hidden;text-overflow:ellipsis" title="${esc(k)}">${esc(k)}</span><div class="track"><div class="tf" style="width:${val/mx*100}%;background:${cssv(colorVar)}"></div></div><b>${val}</b></div>`).join('')||'<span class="muted">—</span>';
 }
-function tbl(rows){return '<div class="tbox"><table><thead><tr><th>Date</th><th>School</th><th>Name</th><th>Email</th><th>Phone</th><th>Program</th><th>Country</th><th>Channel</th></tr></thead><tbody>'+
-  rows.map(l=>`<tr><td>${l.created_at.slice(0,10)}</td><td><span class="pill p-${l.brand.toLowerCase()}">${l.brand}</span></td><td>${esc((l.first_name+' '+l.last_name).trim())}</td><td>${esc(l.email)}</td><td>${esc(l.phone)}</td><td>${esc(l.program)}</td><td>${esc(ctryOf(l))}</td><td>${esc(l.source)}</td></tr>`).join('')+'</tbody></table></div>';}
-function csv(rows){const c=['created_at','brand','first_name','last_name','email','phone','program','market','country','source','utm_campaign','event_id'];
+function tbl(rows,withReason){
+  const head='<tr><th>Date</th><th>School</th><th>Name</th><th>Email</th><th>Phone</th><th>Program</th><th>Country</th><th>Channel</th>'+(withReason?'<th>Reason (unqualified)</th>':'')+'</tr>';
+  return '<div class="tbox"><table><thead>'+head+'</thead><tbody>'+
+  rows.map(l=>`<tr><td>${l.created_at.slice(0,10)}</td><td><span class="pill p-${l.brand.toLowerCase()}">${l.brand}</span></td><td>${esc((l.first_name+' '+l.last_name).trim())}</td><td>${esc(l.email)}</td><td>${esc(l.phone)}</td><td>${esc(l.program)}</td><td>${esc(ctryOf(l))}</td><td>${esc(l.source)}</td>`+(withReason?`<td>${reasonsOf(l).map(x=>'<span class="rsn">'+esc(x)+'</span>').join(' ')}</td>`:'')+`</tr>`).join('')+'</tbody></table></div>';}
+function csv(rows,fname,withReason){const c=['created_at','brand','first_name','last_name','email','phone','program','market','country','source','utm_campaign','event_id'].concat(withReason?['english_level','financing']:[]);
   const q=s=>'"'+(''+(s==null?'':s)).replace(/"/g,'""')+'"';
   const t=[c.join(',')].concat(rows.map(r=>c.map(k=>q(r[k])).join(','))).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='lost_leads.csv';a.click();}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download=fname||'leads.csv';a.click();}
 </script></body></html>

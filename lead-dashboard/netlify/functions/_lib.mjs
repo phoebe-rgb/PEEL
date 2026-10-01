@@ -51,14 +51,32 @@ function slim(sub, brand) {
     program: d.program || "",
     market: d.market || "",
     country: d.country || "",
+    english_level: (d.english_level || "").trim(),
+    financing: (d.financing || "").trim(),
     utm_source: us,
     utm_campaign: d.utm_campaign || "",
     source,
     page_url: d.page_url || "",
   };
   l.is_test = isTest(l);
+  l.unqualified = isUnqualified(l);
   delete l.page_url;
   return l;
+}
+
+// Leads intentionally NOT passed to the CRM because they fail qualification
+// (English too low, or financing that disqualifies). Returned as its own bucket,
+// not counted as "lost". Reasons are exposed for the dashboard's unqualified table.
+const DISQUALIFYING_FINANCE = new Set(["will work while studying", "need a full scholarship"]);
+export function unqualifiedReasons(l) {
+  const r = [];
+  if ((l.english_level || "").trim().toLowerCase() === "beginner") r.push("English: Beginner");
+  const fin = (l.financing || "").trim();
+  if (DISQUALIFYING_FINANCE.has(fin.toLowerCase())) r.push("Finance: " + fin);
+  return r;
+}
+export function isUnqualified(l) {
+  return unqualifiedReasons(l).length > 0;
 }
 
 // Pull every admissions-form submission across the four sites.
@@ -124,15 +142,18 @@ export async function getCrmKeys() {
   return { emails, ids };
 }
 
-// Split leads into matched / lost against the CRM keys.
-// A lead is matched if its email (or event_id, when the export carries one) is in the
-// all-time CRM export; otherwise it is lost. (No pending/lag bucket — lost is lost.)
+// Split leads into matched / unqualified / lost against the CRM keys.
+//  - matched: email (or event_id) is in the all-time CRM export.
+//  - unqualified: not in CRM but fails qualification (intentionally filtered out, not lost).
+//  - lost: not in CRM and not unqualified — the real problem leads.
 export function classify(leads, keys) {
-  const matched = [], lost = [];
+  const matched = [], unqualified = [], lost = [];
   for (const l of leads) {
     const hit = keys.emails.has((l.email || "").trim().toLowerCase()) ||
                 keys.ids.has((l.event_id || "").toLowerCase());
-    (hit ? matched : lost).push(l);
+    if (hit) matched.push(l);
+    else if (isUnqualified(l)) unqualified.push(l);
+    else lost.push(l);
   }
-  return { matched, lost };
+  return { matched, unqualified, lost };
 }

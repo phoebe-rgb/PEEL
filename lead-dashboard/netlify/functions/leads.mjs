@@ -9,8 +9,8 @@ export default async () => {
   if (keys) {
     crm_count = keys.emails.size;
     const real = leads.filter((l) => !l.is_test);
-    const { matched, lost } = classify(real, keys);
-    summary = { total: real.length, matched: matched.length, lost: lost.length };
+    const { matched, unqualified, lost } = classify(real, keys);
+    summary = { total: real.length, matched: matched.length, unqualified: unqualified.length, lost: lost.length };
     for (const l of leads)
       l.in_crm = keys.emails.has((l.email || "").trim().toLowerCase()) || keys.ids.has((l.event_id || "").toLowerCase());
   }
