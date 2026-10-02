@@ -6,7 +6,7 @@ import { classify } from './lib/analysis';
 import { baseAd, googleReview, metaReview, refDate } from './lib/rules';
 import { marketName } from './lib/names';
 import { useShared, type Entry } from './lib/shared';
-import { KINDS, KIND_HELP, SETUP_WORDS, storedKind, withPriority, type Kind, type Priority } from './lib/kinds';
+import { KINDS, KIND_HELP, SETUP_WORDS, pickWeek, platformOfChannel, storedBudget, storedKind, storedPlatform, withPriority, type Kind, type Platform, type Priority } from './lib/kinds';
 import type { Comment } from './comments';
 import { useCtx } from './components';
 import { useRefData } from './actions';
@@ -15,8 +15,7 @@ import { negativeReview, reviewWindow, useKeywords, useNegBaseline } from './key
 import type { BaseNeg } from './lib/negatives';
 import { Block } from './perf';
 
-type Platform = 'Google Ads' | 'Meta' | 'Budget' | 'Search keywords' | 'Tracking';
-interface Action { commentId?: string; id: string; platform: Platform; kind: Kind; priority: Priority; school: string; country: string; entity: string; text: string; dims: Partial<Record<Dim, string[]>>; source?: string }
+interface Action { commentId?: string; id: string; platform: Platform; kind: Kind; budget?: boolean; priority: Priority; school: string; country: string; entity: string; text: string; dims: Partial<Record<Dim, string[]>>; source?: string }
 
 const hash = (s: string) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
 const addD = (d: string, n: number) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
@@ -27,7 +26,8 @@ function adVariants(s: Store, name: string) { return s.dicts.ad.filter((a) => a 
 /** Build this week's action list from the same rules the analysis uses. Only actions, no data. */
 function buildActions(s: Store, bench: Parameters<typeof googleReview>[1], setup: Parameters<typeof googleReview>[2], plan: ReturnType<typeof usePlan>, kw: ReturnType<typeof useKeywords>, cycle: string, negBase: Record<string, BaseNeg[]> | null = null): Action[] {
   const out: Action[] = [];
-  const push = (a: Omit<Action, 'id'>, key: string) => out.push(withPriority({ ...a, id: hash(`${a.platform}|${key}`) }));
+  // `idNs` keeps the id an action had when budget and search terms were their own platforms, so done / dismissed state is not lost
+  const push = (a: Omit<Action, 'id'>, key: string, idNs: string = a.platform) => out.push(withPriority({ ...a, id: hash(`${idNs}|${key}`) }));
   const g = googleReview(s, bench, setup);
   for (const r of g.critical) {
     for (const act of [...new Set(r.alerts.map((a) => a.action))]) push({ platform: 'Google Ads', kind: 'Performance', priority: 'High', school: r.school, country: marketName(r.country), entity: r.campaign, text: act, dims: { channel: ['Google'], campaign: [r.campaign] } }, `${r.campaign}|${act}`);
@@ -52,8 +52,8 @@ function buildActions(s: Store, bench: Parameters<typeof googleReview>[1], setup
     for (const r of paceByCountry(s, bf, bm, today)) {
       const cut = r.target < r.r7 - 0.5;
       // no plan line / plan not launched = the budget is not set up right; under / over pace = pacing
-      push({ platform: 'Budget', kind: r.st === 'No plan' || r.st === 'Not started' ? 'Setup' : 'Budget pacing', priority: r.st === 'No plan' || r.st === 'Over pace' || cut ? 'High' : 'Medium', school: r.school, country: r.market ? marketName(r.market) : '', entity: `${label(r.school)} · ${r.market ? `${marketName(r.market)} · ` : ''}${subName(r.sub)}${r.activity ? ` · ${r.activity}` : ''}`, text: r.action,
-        dims: { school: [r.school], channel: [r.channel], ...(r.market ? { market: [r.market], subchannel: [r.sub] } : {}), ...(r.activity ? { activity: [r.activity] } : {}) } }, `${r.school}|${r.market}|${r.sub}|${r.activity}|${r.st}|${cut ? 'cut' : 'raise'}`);
+      push({ platform: platformOfChannel(r.channel), budget: true, kind: r.st === 'No plan' || r.st === 'Not started' ? 'Setup' : 'Budget pacing', priority: r.st === 'No plan' || r.st === 'Over pace' || cut ? 'High' : 'Medium', school: r.school, country: r.market ? marketName(r.market) : '', entity: `${label(r.school)} · ${r.market ? `${marketName(r.market)} · ` : ''}${subName(r.sub)}${r.activity ? ` · ${r.activity}` : ''}`, text: r.action,
+        dims: { school: [r.school], channel: [r.channel], ...(r.market ? { market: [r.market], subchannel: [r.sub] } : {}), ...(r.activity ? { activity: [r.activity] } : {}) } }, `${r.school}|${r.market}|${r.sub}|${r.activity}|${r.st}|${cut ? 'cut' : 'raise'}`, 'Budget');
     }
   }
   if (kw && negBase) {
@@ -64,8 +64,8 @@ function buildActions(s: Store, bench: Parameters<typeof googleReview>[1], setup
       const x = bySchool.get(c.school) ?? { n: 0, cost: 0, cats: new Map() };
       x.n++; x.cost += c.cost; x.cats.set(c.category, (x.cats.get(c.category) ?? 0) + 1); bySchool.set(c.school, x);
     }
-    for (const [school, x] of bySchool) push({ platform: 'Search keywords', kind: 'Keywords', priority: x.cost >= 100 ? 'High' : 'Low', school, country: '', entity: `${school} negative keywords (${from} → ${to})`,
-      text: `Review ${x.n} new negative keyword${x.n > 1 ? 's' : ''} (${[...x.cats].map(([k, n]) => `${k} ${n}`).join(', ')}; CHF ${x.cost.toFixed(0)} spent) on the Search Keywords page, apply, then add them to SEG_Negative_Keywords.`, dims: { channel: ['Google'], school: [school] } }, `neg|${school}|${to}`);
+    for (const [school, x] of bySchool) push({ platform: 'Google Ads', kind: 'Keywords', priority: x.cost >= 100 ? 'High' : 'Low', school, country: '', entity: `${school} negative keywords (${from} → ${to})`,
+      text: `Review ${x.n} new negative keyword${x.n > 1 ? 's' : ''} (${[...x.cats].map(([k, n]) => `${k} ${n}`).join(', ')}; CHF ${x.cost.toFixed(0)} spent) on the Search Keywords page, apply, then add them to SEG_Negative_Keywords.`, dims: { channel: ['Google'], school: [school] } }, `neg|${school}|${to}`, 'Search keywords');
   }
   const order = { High: 0, Medium: 1, Low: 2 };
   return out.sort((a, b) => order[a.priority] - order[b.priority] || a.school.localeCompare(b.school));
@@ -87,11 +87,12 @@ function impact(s: Store, dims: Partial<Record<Dim, string[]>>, resolvedAt: stri
   return { verdict: v, text: `Spend/day ${(b.cost / 7).toFixed(0)} → ${(a.cost / after.length).toFixed(0)}; leads/day ${(b.leads / 7).toFixed(1)} → ${(a.leads / after.length).toFixed(1)}; CPL ${d(cpl(a), cpl(b))}; CPGL ${d(cpgl(a), cpgl(b))} (${after.length} days after vs 7 before).`, a, b };
 }
 
-const PLATFORMS: Platform[] = ['Google Ads', 'Meta', 'Budget', 'Search keywords'];
+// One tab per channel; LinkedIn only appears when it has actions. Budget and search-term actions sit in their channel.
+const PLATFORMS: Platform[] = ['Google Ads', 'Meta', 'LinkedIn'];
 
 // Owners (Slack): Google Ads → John Martin, Meta → Phoebe.
 export const OWNERS = { google: { name: 'John', slack: 'U0BGSG23SBZ' }, meta: { name: 'Phoebe', slack: 'U09EUG9LFA7' } };
-const ownerOf = (a: Action) => (a.platform === 'Google Ads' || a.platform === 'Search keywords' || (a.platform === 'Budget' && a.dims.channel?.[0] === 'Google') ? OWNERS.google : OWNERS.meta);
+const ownerOf = (a: Action) => (a.platform === 'Google Ads' ? OWNERS.google : OWNERS.meta);
 /** Deadline = Wednesday of the week the action is raised (Hanoi calendar week). */
 const wednesday = (d: string) => addD(weekDays(isoWeek(d))[0], 2);
 const fmtDay = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
@@ -129,19 +130,20 @@ export function ActionsPage() {
   // Comments flagged "Needs action" in the 💬 Comments panel become actions.
   const cm = useShared('/api/comments');
   const feedback: Action[] = Object.entries(cm.data as Record<string, Comment>).filter(([, c]) => c.needsAction && !c.resolved && !c.deleted && (c.text ?? '').trim()).map(([id, c]) => ({
-    id: hash(`comment|${id}`), commentId: id, source: `Comment · ${c.name}`, kind: (SETUP_WORDS.test(String(c.text)) ? 'Setup' : 'Feedback') as Kind, platform: (/meta/i.test(`${c.anchor} ${c.text}`) ? 'Meta' : /google|adwords|pmax|search/i.test(`${c.anchor} ${c.text}`) ? 'Google Ads' : /budget|pac/i.test(`${c.page} ${c.anchor}`) ? 'Budget' : 'Tracking') as Platform,
+    id: hash(`comment|${id}`), commentId: id, source: `Comment · ${c.name}`, kind: (SETUP_WORDS.test(String(c.text)) ? 'Setup' : 'Feedback') as Kind, platform: (/meta/i.test(`${c.anchor} ${c.text}`) ? 'Meta' : /google|adwords|pmax|search/i.test(`${c.anchor} ${c.text}`) ? 'Google Ads' : /linkedin/i.test(`${c.anchor} ${c.text}`) ? 'LinkedIn' : 'Tracking') as Platform,
     priority: 'High' as const, school: ['CAAS', 'SHMS', 'HIM', 'CRCS'].find((x) => `${c.anchor} ${c.text}`.includes(x)) ?? 'All', country: '', entity: `${c.page} › ${c.anchor ?? ''}`, text: String(c.text), dims: {},
   }));
   const known = new Map([...actions, ...feedback].map((a) => [a.id, a]));
   // done / dismissed actions that no longer fire still show (from storage)
-  const stored: Action[] = Object.entries(st).filter(([id, e]) => !known.has(id) && (e.resolved || e.dismissed || (e.source === 'realloc' && e.approved))).map(([id, e]) => ({ id, platform: e.platform as Platform, kind: storedKind(e), priority: (e.priority as Action['priority']) ?? 'Medium', school: String(e.school ?? ''), country: e.country ? marketName(String(e.country)) : '', entity: String(e.entity ?? ''), text: String(e.actionText ?? ''), dims: (e.dims as Action['dims']) ?? {}, source: e.source === 'realloc' ? `Approved reallocation${e.note ? ` · "${String(e.note)}"` : ''}` : String(e.source ?? '') }));
+  const stored: Action[] = Object.entries(st).filter(([id, e]) => !known.has(id) && (e.resolved || e.dismissed || (e.source === 'realloc' && e.approved))).map(([id, e]) => ({ id, platform: storedPlatform(e), kind: storedKind(e), budget: storedBudget(e), priority: (e.priority as Action['priority']) ?? 'Medium', school: String(e.school ?? ''), country: e.country ? marketName(String(e.country)) : '', entity: String(e.entity ?? ''), text: String(e.actionText ?? ''), dims: (e.dims as Action['dims']) ?? {}, source: e.source === 'realloc' ? `Approved reallocation${e.note ? ` · "${String(e.note)}"` : ''}` : String(e.source ?? '') }));
   const all = [...actions.map((a) => ({ ...a, source: a.source ?? 'Rule' })), ...feedback, ...stored].map(withPriority).filter((a) => (!filter.dims.school?.length || filter.dims.school.includes(a.school) || a.school === 'All'));
   const isDone = (a: Action) => !!st[a.id]?.resolved, isDis = (a: Action) => !!st[a.id]?.dismissed;
   const isOpen = (a: Action) => !isDone(a) && !isDis(a);
   // platform and type filters narrow each other, so the counts on one row follow the choice on the other
   const kindOk = (a: Action) => kindTab === 'All' || a.kind === kindTab, platOk = (a: Action) => tab === 'All' || a.platform === tab;
   const shown = all.filter((a) => platOk(a) && kindOk(a));
-  // money at stake = the entity's spend in the last 14 days; each owner gets the top 8 this week, the rest wait in the backlog
+  const platformTabs = PLATFORMS.filter((p) => p !== 'LinkedIn' || all.some((a) => a.platform === p));
+  // money at stake = the entity's spend in the last 14 days; every budget action is in this week's table, each owner also gets the top 8 others, the rest wait in the backlog
   const stakeOf = useMemo(() => {
     const y = refDate(store.lastDate), dates = Array.from({ length: 14 }, (_, i) => addD(y, -i));
     const cache = new Map<string, number>();
@@ -156,8 +158,7 @@ export function ActionsPage() {
   const byUrgency = (a: Action, b: Action) => PR[a.priority] - PR[b.priority] || Number(b.kind === 'Setup') - Number(a.kind === 'Setup') || stakeOf(b) - stakeOf(a);
   const allOpen = all.filter(isOpen).sort(byUrgency);
   const TOP = 8;
-  const weekSet = new Set<string>();
-  for (const o of [OWNERS.google, OWNERS.meta]) allOpen.filter((a) => ownerOf(a) === o).slice(0, TOP).forEach((a) => weekSet.add(a.id));
+  const weekSet = pickWeek(allOpen, (a) => ownerOf(a).name, TOP); // budget actions are never in the backlog
   const [showBacklog, setShowBacklog] = useState(false);
   const open = shown.filter((a) => isOpen(a) && weekSet.has(a.id)).sort(byUrgency);
   const backlog = shown.filter((a) => isOpen(a) && !weekSet.has(a.id)).sort(byUrgency);
@@ -173,7 +174,7 @@ export function ActionsPage() {
     const verdict = actual >= expected * 0.5 ? 'Better' : actual < 0 ? 'Worse' : 'Mixed';
     return { verdict, text: `Forecast for 2 weeks: +${expected.toFixed(1)} GL · actual: ${actual >= 0 ? '+' : ''}${actual} GL (${before} → ${after}). ${verdict === 'Better' ? 'Forecast held.' : verdict === 'Worse' ? 'Went the wrong way — review the rule.' : 'Weaker than forecast.'}` };
   };
-  const meta = (a: Action) => ({ platform: a.platform, kind: a.kind, priority: a.priority, school: a.school, country: a.country, entity: a.entity, actionText: a.text, dims: a.dims });
+  const meta = (a: Action) => ({ platform: a.platform, kind: a.kind, budget: !!a.budget, priority: a.priority, school: a.school, country: a.country, entity: a.entity, actionText: a.text, dims: a.dims });
   const save = (a: Action) => {
     if (!edit || !f1.trim() || (edit.mode === 'done' && !f2.trim())) return;
     if (edit.mode === 'done') {
@@ -219,7 +220,7 @@ export function ActionsPage() {
   const origin = typeof location !== 'undefined' ? location.origin : '';
   const ownerMsg = (plat: 'google' | 'meta') => {
     const o = OWNERS[plat], ch = plat === 'google' ? 'Google' : 'Meta', sum = weekSummary(store, ch);
-    const mine = allOpen.filter((a) => ownerOf(a) === o).slice(0, TOP);
+    const mine = allOpen.filter((a) => ownerOf(a) === o && weekSet.has(a.id)); // same list as this week's table
     const lines: string[] = [];
     if (ref && plat === 'google') {
       for (const r of googleReview(store, ref.bench, ref.setup).critical.slice(0, 6)) lines.push(`• *${r.campaign}* (${r.school} ${marketName(r.country)})\n   _What:_ ${r.alerts[0].title}. _Why:_ ${r.alerts[0].detail} _Next:_ ${r.alerts[0].action}`);
@@ -259,8 +260,8 @@ export function ActionsPage() {
     <>
       <div className="pagehead"><div><h2 className="page">Actions</h2><p className="lede">This week's actions ({weekRange(week)}) per platform. Owners: Google Ads → John, Meta → Phoebe; deadline <b>{fmtDay(deadline)}</b>. <b>✓ Done</b> needs what changed and why; <b>✕ Dismiss</b> needs a reason. Next week each change is checked against its results. <a href="#/must-read">Rules</a></p></div></div>
       {shared.error && <p className="warnbox">{shared.error}</p>}
-      <Block tone="tables" n="To do" title={`This week · ${open.length} actions`} sub={`Top ${TOP} per owner, by priority (set-up problems first) and the spend behind each one (last 14 days). The rest waits in the backlog below. The platform and type filters apply to every list on this page.`} right={
-        <div className="seg">{(['All', ...PLATFORMS] as const).map((p) => <button key={p} className={tab === p ? 'on' : ''} onClick={() => setTab(p)}>{p} <span className="count">{all.filter((a) => (p === 'All' || a.platform === p) && kindOk(a) && isOpen(a)).length}</span></button>)}</div>}>
+      <Block tone="tables" n="To do" title={`This week · ${open.length} actions`} sub={`Every budget action, plus the top ${TOP} other actions per owner. Sorted by priority (set-up problems first), then the spend behind each one (last 14 days). The rest waits in the backlog below. The platform and type filters apply to every list on this page.`} right={
+        <div className="seg">{(['All', ...platformTabs] as const).map((p) => <button key={p} className={tab === p ? 'on' : ''} onClick={() => setTab(p)}>{p} <span className="count">{all.filter((a) => (p === 'All' || a.platform === p) && kindOk(a) && isOpen(a)).length}</span></button>)}</div>}>
         <div className="kindbar"><span className="dim">Type</span>
           <div className="seg">{(['All', ...KINDS] as const).map((k) => <button key={k} className={kindTab === k ? 'on' : ''} title={k === 'All' ? 'Every type of problem' : KIND_HELP[k]} onClick={() => setKindTab(k)}>{k} <span className="count">{all.filter((a) => (k === 'All' || a.kind === k) && platOk(a) && isOpen(a)).length}</span></button>)}</div>
         </div>

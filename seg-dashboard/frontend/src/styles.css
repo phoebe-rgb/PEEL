@@ -308,6 +308,7 @@ table.t.matrix td:first-child { font-weight: 500; }
 .p-High { background: var(--down-bg); color: var(--bad); } .p-Medium { background: var(--chip-mixed); color: var(--warn); } .p-Low { background: var(--flat-bg); color: var(--text-2); }
 .plat { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--surface-2); }
 .plat-GoogleAds { background: #e8f0fe; color: #1a56c4; } .plat-Meta { background: #eef0ff; color: #4a3aa7; }
+.plat-LinkedIn { background: #e4f0fa; color: #0a66c2; }
 .plat-Budget { background: #e8f6ee; color: #1a7f37; } .plat-Searchkeywords { background: #fff4de; color: #a86400; } .plat-Tracking { background: #f1f1ee; color: #52514e; }
 .kind { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); white-space: nowrap; }
 .k-Setup { background: #fde8e6; color: #b3261e; } .k-Performance { background: #e8f0fe; color: #1a56c4; } .k-Scale { background: #e8f6ee; color: #1a7f37; }

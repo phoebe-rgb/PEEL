@@ -4,25 +4,27 @@
  import { baseAd, googleReview, metaReview, refDate } from './lib/rules';
  import { marketName } from './lib/names';
  import { useShared, type Entry } from './lib/shared';
-+import { KINDS, KIND_HELP, SETUP_WORDS, storedKind, withPriority, type Kind, type Priority } from './lib/kinds';
++import { KINDS, KIND_HELP, SETUP_WORDS, pickWeek, platformOfChannel, storedBudget, storedKind, storedPlatform, withPriority, type Kind, type Platform, type Priority } from './lib/kinds';
  import type { Comment } from './comments';
  import { useCtx } from './components';
  import { useRefData } from './actions';
-@@ -15,7 +16,7 @@
+@@ -14,8 +15,7 @@
+ import type { BaseNeg } from './lib/negatives';
  import { Block } from './perf';
  
- type Platform = 'Google Ads' | 'Meta' | 'Budget' | 'Search keywords' | 'Tracking';
+-type Platform = 'Google Ads' | 'Meta' | 'Budget' | 'Search keywords' | 'Tracking';
 -interface Action { commentId?: string; id: string; platform: Platform; priority: 'High' | 'Medium' | 'Low'; school: string; country: string; entity: string; text: string; dims: Partial<Record<Dim, string[]>>; source?: string }
-+interface Action { commentId?: string; id: string; platform: Platform; kind: Kind; priority: Priority; school: string; country: string; entity: string; text: string; dims: Partial<Record<Dim, string[]>>; source?: string }
++interface Action { commentId?: string; id: string; platform: Platform; kind: Kind; budget?: boolean; priority: Priority; school: string; country: string; entity: string; text: string; dims: Partial<Record<Dim, string[]>>; source?: string }
  
  const hash = (s: string) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
  const addD = (d: string, n: number) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
-@@ -26,23 +27,23 @@
+@@ -26,23 +26,24 @@
  /** Build this week's action list from the same rules the analysis uses. Only actions, no data. */
  function buildActions(s: Store, bench: Parameters<typeof googleReview>[1], setup: Parameters<typeof googleReview>[2], plan: ReturnType<typeof usePlan>, kw: ReturnType<typeof useKeywords>, cycle: string, negBase: Record<string, BaseNeg[]> | null = null): Action[] {
    const out: Action[] = [];
 -  const push = (a: Omit<Action, 'id'>, key: string) => out.push({ ...a, id: hash(`${a.platform}|${key}`) });
-+  const push = (a: Omit<Action, 'id'>, key: string) => out.push(withPriority({ ...a, id: hash(`${a.platform}|${key}`) }));
++  // `idNs` keeps the id an action had when budget and search terms were their own platforms, so done / dismissed state is not lost
++  const push = (a: Omit<Action, 'id'>, key: string, idNs: string = a.platform) => out.push(withPriority({ ...a, id: hash(`${idNs}|${key}`) }));
    const g = googleReview(s, bench, setup);
    for (const r of g.critical) {
 -    for (const act of [...new Set(r.alerts.map((a) => a.action))]) push({ platform: 'Google Ads', priority: 'High', school: r.school, country: marketName(r.country), entity: r.campaign, text: act, dims: { channel: ['Google'], campaign: [r.campaign] } }, `${r.campaign}|${act}`);
@@ -47,26 +49,45 @@
      }
    }
    if (plan) {
-@@ -50,7 +51,8 @@
+@@ -50,8 +51,9 @@
      const bm = budgetModel(s, bf, plan, today);
      for (const r of paceByCountry(s, bf, bm, today)) {
        const cut = r.target < r.r7 - 0.5;
 -      push({ platform: 'Budget', priority: r.st === 'No plan' || r.st === 'Over pace' || cut ? 'High' : 'Medium', school: r.school, country: r.market ? marketName(r.market) : '', entity: `${label(r.school)} · ${r.market ? `${marketName(r.market)} · ` : ''}${subName(r.sub)}${r.activity ? ` · ${r.activity}` : ''}`, text: r.action,
+-        dims: { school: [r.school], channel: [r.channel], ...(r.market ? { market: [r.market], subchannel: [r.sub] } : {}), ...(r.activity ? { activity: [r.activity] } : {}) } }, `${r.school}|${r.market}|${r.sub}|${r.activity}|${r.st}|${cut ? 'cut' : 'raise'}`);
 +      // no plan line / plan not launched = the budget is not set up right; under / over pace = pacing
-+      push({ platform: 'Budget', kind: r.st === 'No plan' || r.st === 'Not started' ? 'Setup' : 'Budget pacing', priority: r.st === 'No plan' || r.st === 'Over pace' || cut ? 'High' : 'Medium', school: r.school, country: r.market ? marketName(r.market) : '', entity: `${label(r.school)} · ${r.market ? `${marketName(r.market)} · ` : ''}${subName(r.sub)}${r.activity ? ` · ${r.activity}` : ''}`, text: r.action,
-         dims: { school: [r.school], channel: [r.channel], ...(r.market ? { market: [r.market], subchannel: [r.sub] } : {}), ...(r.activity ? { activity: [r.activity] } : {}) } }, `${r.school}|${r.market}|${r.sub}|${r.activity}|${r.st}|${cut ? 'cut' : 'raise'}`);
++      push({ platform: platformOfChannel(r.channel), budget: true, kind: r.st === 'No plan' || r.st === 'Not started' ? 'Setup' : 'Budget pacing', priority: r.st === 'No plan' || r.st === 'Over pace' || cut ? 'High' : 'Medium', school: r.school, country: r.market ? marketName(r.market) : '', entity: `${label(r.school)} · ${r.market ? `${marketName(r.market)} · ` : ''}${subName(r.sub)}${r.activity ? ` · ${r.activity}` : ''}`, text: r.action,
++        dims: { school: [r.school], channel: [r.channel], ...(r.market ? { market: [r.market], subchannel: [r.sub] } : {}), ...(r.activity ? { activity: [r.activity] } : {}) } }, `${r.school}|${r.market}|${r.sub}|${r.activity}|${r.st}|${cut ? 'cut' : 'raise'}`, 'Budget');
      }
    }
-@@ -62,7 +64,7 @@
+   if (kw && negBase) {
+@@ -62,8 +64,8 @@
        const x = bySchool.get(c.school) ?? { n: 0, cost: 0, cats: new Map() };
        x.n++; x.cost += c.cost; x.cats.set(c.category, (x.cats.get(c.category) ?? 0) + 1); bySchool.set(c.school, x);
      }
 -    for (const [school, x] of bySchool) push({ platform: 'Search keywords', priority: x.cost >= 100 ? 'High' : 'Low', school, country: '', entity: `${school} negative keywords (${from} → ${to})`,
-+    for (const [school, x] of bySchool) push({ platform: 'Search keywords', kind: 'Keywords', priority: x.cost >= 100 ? 'High' : 'Low', school, country: '', entity: `${school} negative keywords (${from} → ${to})`,
-       text: `Review ${x.n} new negative keyword${x.n > 1 ? 's' : ''} (${[...x.cats].map(([k, n]) => `${k} ${n}`).join(', ')}; CHF ${x.cost.toFixed(0)} spent) on the Search Keywords page, apply, then add them to SEG_Negative_Keywords.`, dims: { channel: ['Google'], school: [school] } }, `neg|${school}|${to}`);
+-      text: `Review ${x.n} new negative keyword${x.n > 1 ? 's' : ''} (${[...x.cats].map(([k, n]) => `${k} ${n}`).join(', ')}; CHF ${x.cost.toFixed(0)} spent) on the Search Keywords page, apply, then add them to SEG_Negative_Keywords.`, dims: { channel: ['Google'], school: [school] } }, `neg|${school}|${to}`);
++    for (const [school, x] of bySchool) push({ platform: 'Google Ads', kind: 'Keywords', priority: x.cost >= 100 ? 'High' : 'Low', school, country: '', entity: `${school} negative keywords (${from} → ${to})`,
++      text: `Review ${x.n} new negative keyword${x.n > 1 ? 's' : ''} (${[...x.cats].map(([k, n]) => `${k} ${n}`).join(', ')}; CHF ${x.cost.toFixed(0)} spent) on the Search Keywords page, apply, then add them to SEG_Negative_Keywords.`, dims: { channel: ['Google'], school: [school] } }, `neg|${school}|${to}`, 'Search keywords');
    }
    const order = { High: 0, Medium: 1, Low: 2 };
-@@ -114,6 +116,7 @@
+   return out.sort((a, b) => order[a.priority] - order[b.priority] || a.school.localeCompare(b.school));
+@@ -85,11 +87,12 @@
+   return { verdict: v, text: `Spend/day ${(b.cost / 7).toFixed(0)} → ${(a.cost / after.length).toFixed(0)}; leads/day ${(b.leads / 7).toFixed(1)} → ${(a.leads / after.length).toFixed(1)}; CPL ${d(cpl(a), cpl(b))}; CPGL ${d(cpgl(a), cpgl(b))} (${after.length} days after vs 7 before).`, a, b };
+ }
+ 
+-const PLATFORMS: Platform[] = ['Google Ads', 'Meta', 'Budget', 'Search keywords'];
++// One tab per channel; LinkedIn only appears when it has actions. Budget and search-term actions sit in their channel.
++const PLATFORMS: Platform[] = ['Google Ads', 'Meta', 'LinkedIn'];
+ 
+ // Owners (Slack): Google Ads → John Martin, Meta → Phoebe.
+ export const OWNERS = { google: { name: 'John', slack: 'U0BGSG23SBZ' }, meta: { name: 'Phoebe', slack: 'U09EUG9LFA7' } };
+-const ownerOf = (a: Action) => (a.platform === 'Google Ads' || a.platform === 'Search keywords' || (a.platform === 'Budget' && a.dims.channel?.[0] === 'Google') ? OWNERS.google : OWNERS.meta);
++const ownerOf = (a: Action) => (a.platform === 'Google Ads' ? OWNERS.google : OWNERS.meta);
+ /** Deadline = Wednesday of the week the action is raised (Hanoi calendar week). */
+ const wednesday = (d: string) => addD(weekDays(isoWeek(d))[0], 2);
+ const fmtDay = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+@@ -114,6 +117,7 @@
    const negBase = useNegBaseline();
    const shared = useShared('/api/actions');
    const [tab, setTab] = useState<Platform | 'All'>('All');
@@ -74,30 +95,33 @@
    const [edit, setEdit] = useState<{ id: string; mode: 'done' | 'dismiss' } | null>(null);
    const [f1, setF1] = useState(''), [f2, setF2] = useState('');
    const today = todayHanoi();
-@@ -126,15 +129,18 @@
+@@ -126,16 +130,20 @@
    // Comments flagged "Needs action" in the 💬 Comments panel become actions.
    const cm = useShared('/api/comments');
    const feedback: Action[] = Object.entries(cm.data as Record<string, Comment>).filter(([, c]) => c.needsAction && !c.resolved && !c.deleted && (c.text ?? '').trim()).map(([id, c]) => ({
 -    id: hash(`comment|${id}`), commentId: id, source: `Comment · ${c.name}`, platform: (/meta/i.test(`${c.anchor} ${c.text}`) ? 'Meta' : /google|adwords|pmax|search/i.test(`${c.anchor} ${c.text}`) ? 'Google Ads' : /budget|pac/i.test(`${c.page} ${c.anchor}`) ? 'Budget' : 'Tracking') as Platform,
-+    id: hash(`comment|${id}`), commentId: id, source: `Comment · ${c.name}`, kind: (SETUP_WORDS.test(String(c.text)) ? 'Setup' : 'Feedback') as Kind, platform: (/meta/i.test(`${c.anchor} ${c.text}`) ? 'Meta' : /google|adwords|pmax|search/i.test(`${c.anchor} ${c.text}`) ? 'Google Ads' : /budget|pac/i.test(`${c.page} ${c.anchor}`) ? 'Budget' : 'Tracking') as Platform,
++    id: hash(`comment|${id}`), commentId: id, source: `Comment · ${c.name}`, kind: (SETUP_WORDS.test(String(c.text)) ? 'Setup' : 'Feedback') as Kind, platform: (/meta/i.test(`${c.anchor} ${c.text}`) ? 'Meta' : /google|adwords|pmax|search/i.test(`${c.anchor} ${c.text}`) ? 'Google Ads' : /linkedin/i.test(`${c.anchor} ${c.text}`) ? 'LinkedIn' : 'Tracking') as Platform,
      priority: 'High' as const, school: ['CAAS', 'SHMS', 'HIM', 'CRCS'].find((x) => `${c.anchor} ${c.text}`.includes(x)) ?? 'All', country: '', entity: `${c.page} › ${c.anchor ?? ''}`, text: String(c.text), dims: {},
    }));
    const known = new Map([...actions, ...feedback].map((a) => [a.id, a]));
    // done / dismissed actions that no longer fire still show (from storage)
 -  const stored: Action[] = Object.entries(st).filter(([id, e]) => !known.has(id) && (e.resolved || e.dismissed || (e.source === 'realloc' && e.approved))).map(([id, e]) => ({ id, platform: e.platform as Platform, priority: (e.priority as Action['priority']) ?? 'Medium', school: String(e.school ?? ''), country: e.country ? marketName(String(e.country)) : '', entity: String(e.entity ?? ''), text: String(e.actionText ?? ''), dims: (e.dims as Action['dims']) ?? {}, source: e.source === 'realloc' ? `Approved reallocation${e.note ? ` · "${String(e.note)}"` : ''}` : String(e.source ?? '') }));
 -  const all = [...actions.map((a) => ({ ...a, source: a.source ?? 'Rule' })), ...feedback, ...stored].filter((a) => (!filter.dims.school?.length || filter.dims.school.includes(a.school) || a.school === 'All'));
-+  const stored: Action[] = Object.entries(st).filter(([id, e]) => !known.has(id) && (e.resolved || e.dismissed || (e.source === 'realloc' && e.approved))).map(([id, e]) => ({ id, platform: e.platform as Platform, kind: storedKind(e), priority: (e.priority as Action['priority']) ?? 'Medium', school: String(e.school ?? ''), country: e.country ? marketName(String(e.country)) : '', entity: String(e.entity ?? ''), text: String(e.actionText ?? ''), dims: (e.dims as Action['dims']) ?? {}, source: e.source === 'realloc' ? `Approved reallocation${e.note ? ` · "${String(e.note)}"` : ''}` : String(e.source ?? '') }));
++  const stored: Action[] = Object.entries(st).filter(([id, e]) => !known.has(id) && (e.resolved || e.dismissed || (e.source === 'realloc' && e.approved))).map(([id, e]) => ({ id, platform: storedPlatform(e), kind: storedKind(e), budget: storedBudget(e), priority: (e.priority as Action['priority']) ?? 'Medium', school: String(e.school ?? ''), country: e.country ? marketName(String(e.country)) : '', entity: String(e.entity ?? ''), text: String(e.actionText ?? ''), dims: (e.dims as Action['dims']) ?? {}, source: e.source === 'realloc' ? `Approved reallocation${e.note ? ` · "${String(e.note)}"` : ''}` : String(e.source ?? '') }));
 +  const all = [...actions.map((a) => ({ ...a, source: a.source ?? 'Rule' })), ...feedback, ...stored].map(withPriority).filter((a) => (!filter.dims.school?.length || filter.dims.school.includes(a.school) || a.school === 'All'));
    const isDone = (a: Action) => !!st[a.id]?.resolved, isDis = (a: Action) => !!st[a.id]?.dismissed;
 -  const shown = all.filter((a) => (tab === 'All' || a.platform === tab));
+-  // money at stake = the entity's spend in the last 14 days; each owner gets the top 8 this week, the rest wait in the backlog
 +  const isOpen = (a: Action) => !isDone(a) && !isDis(a);
 +  // platform and type filters narrow each other, so the counts on one row follow the choice on the other
 +  const kindOk = (a: Action) => kindTab === 'All' || a.kind === kindTab, platOk = (a: Action) => tab === 'All' || a.platform === tab;
 +  const shown = all.filter((a) => platOk(a) && kindOk(a));
-   // money at stake = the entity's spend in the last 14 days; each owner gets the top 8 this week, the rest wait in the backlog
++  const platformTabs = PLATFORMS.filter((p) => p !== 'LinkedIn' || all.some((a) => a.platform === p));
++  // money at stake = the entity's spend in the last 14 days; every budget action is in this week's table, each owner also gets the top 8 others, the rest wait in the backlog
    const stakeOf = useMemo(() => {
      const y = refDate(store.lastDate), dates = Array.from({ length: 14 }, (_, i) => addD(y, -i));
-@@ -146,13 +152,15 @@
+     const cache = new Map<string, number>();
+@@ -146,13 +154,14 @@
      };
    }, [store]);
    const PR = { High: 0, Medium: 1, Low: 2 };
@@ -106,8 +130,9 @@
 +  const byUrgency = (a: Action, b: Action) => PR[a.priority] - PR[b.priority] || Number(b.kind === 'Setup') - Number(a.kind === 'Setup') || stakeOf(b) - stakeOf(a);
 +  const allOpen = all.filter(isOpen).sort(byUrgency);
    const TOP = 8;
-   const weekSet = new Set<string>();
-   for (const o of [OWNERS.google, OWNERS.meta]) allOpen.filter((a) => ownerOf(a) === o).slice(0, TOP).forEach((a) => weekSet.add(a.id));
+-  const weekSet = new Set<string>();
+-  for (const o of [OWNERS.google, OWNERS.meta]) allOpen.filter((a) => ownerOf(a) === o).slice(0, TOP).forEach((a) => weekSet.add(a.id));
++  const weekSet = pickWeek(allOpen, (a) => ownerOf(a).name, TOP); // budget actions are never in the backlog
    const [showBacklog, setShowBacklog] = useState(false);
 -  const open = shown.filter((a) => !isDone(a) && !isDis(a) && weekSet.has(a.id)).sort((a, b) => PR[a.priority] - PR[b.priority] || stakeOf(b) - stakeOf(a));
 -  const backlog = shown.filter((a) => !isDone(a) && !isDis(a) && !weekSet.has(a.id)).sort((a, b) => PR[a.priority] - PR[b.priority] || stakeOf(b) - stakeOf(a));
@@ -116,16 +141,16 @@
    const done = shown.filter(isDone), dismissed = shown.filter((a) => isDis(a) && !isDone(a));
    // approved budget moves: 2 weeks after approval, compare the forecast with what happened to the two options
    const forecastCheck = (a: Action) => {
-@@ -165,7 +173,7 @@
+@@ -165,7 +174,7 @@
      const verdict = actual >= expected * 0.5 ? 'Better' : actual < 0 ? 'Worse' : 'Mixed';
      return { verdict, text: `Forecast for 2 weeks: +${expected.toFixed(1)} GL · actual: ${actual >= 0 ? '+' : ''}${actual} GL (${before} → ${after}). ${verdict === 'Better' ? 'Forecast held.' : verdict === 'Worse' ? 'Went the wrong way — review the rule.' : 'Weaker than forecast.'}` };
    };
 -  const meta = (a: Action) => ({ platform: a.platform, priority: a.priority, school: a.school, country: a.country, entity: a.entity, actionText: a.text, dims: a.dims });
-+  const meta = (a: Action) => ({ platform: a.platform, kind: a.kind, priority: a.priority, school: a.school, country: a.country, entity: a.entity, actionText: a.text, dims: a.dims });
++  const meta = (a: Action) => ({ platform: a.platform, kind: a.kind, budget: !!a.budget, priority: a.priority, school: a.school, country: a.country, entity: a.entity, actionText: a.text, dims: a.dims });
    const save = (a: Action) => {
      if (!edit || !f1.trim() || (edit.mode === 'done' && !f2.trim())) return;
      if (edit.mode === 'done') {
-@@ -187,7 +195,7 @@
+@@ -187,7 +196,7 @@
      <Fragment key={a.id}>
        <tr data-cmt={`${a.platform} · ${a.entity.slice(0, 40)}: ${a.text.slice(0, 50)}`}>
          <td><span className={`prio p-${a.priority}`}>{a.priority}</span></td>
@@ -134,7 +159,16 @@
          <td>{label(a.school)}{a.country && <div className="dim">{a.country}</div>}</td>
          <td className="act-text"><b>{a.text}</b><div className="dim ent">{a.entity}</div><div className={`src ${a.source?.startsWith('Comment') ? 'boss' : a.source?.startsWith('Approved') ? 'appr' : ''}`}>{a.source}</div></td>
          <td>{ownerOf(a).name}</td><td>{stakeOf(a) ? `CHF ${f0(stakeOf(a))}` : '–'}</td><td className={today > deadline ? 'bad' : ''}>{fmtDay(deadline)}</td>
-@@ -246,14 +254,17 @@
+@@ -211,7 +220,7 @@
+   const origin = typeof location !== 'undefined' ? location.origin : '';
+   const ownerMsg = (plat: 'google' | 'meta') => {
+     const o = OWNERS[plat], ch = plat === 'google' ? 'Google' : 'Meta', sum = weekSummary(store, ch);
+-    const mine = allOpen.filter((a) => ownerOf(a) === o).slice(0, TOP);
++    const mine = allOpen.filter((a) => ownerOf(a) === o && weekSet.has(a.id)); // same list as this week's table
+     const lines: string[] = [];
+     if (ref && plat === 'google') {
+       for (const r of googleReview(store, ref.bench, ref.setup).critical.slice(0, 6)) lines.push(`• *${r.campaign}* (${r.school} ${marketName(r.country)})\n   _What:_ ${r.alerts[0].title}. _Why:_ ${r.alerts[0].detail} _Next:_ ${r.alerts[0].action}`);
+@@ -246,14 +255,17 @@
    const MSGS: [string, string, string][] = [['tue-google', 'Tuesday · Google Ads (→ John)', ownerMsg('google')], ['tue-meta', 'Tuesday · Meta (→ Phoebe)', ownerMsg('meta')], ['thu-review', 'Thursday · review', thursday], ['mon-team', 'Monday · team review call', monday2]];
    const [msgTab, setMsgTab] = useState('tue-google');
  
@@ -147,8 +181,8 @@
 -      <Block tone="tables" n="To do" title={`This week · ${open.length} actions`} sub={`Top ${TOP} per owner, by priority and the spend behind each one (last 14 days). The rest waits in the backlog below.`} right={
 -        <div className="seg">{(['All', ...PLATFORMS] as const).map((p) => <button key={p} className={tab === p ? 'on' : ''} onClick={() => setTab(p)}>{p} <span className="count">{all.filter((a) => (p === 'All' || a.platform === p) && !isDone(a) && !isDis(a)).length}</span></button>)}</div>}>
 -        {!ref ? <p className="note">Loading…</p> : open.length === 0 ? <p className="good">Nothing open. 🎉</p> : (
-+      <Block tone="tables" n="To do" title={`This week · ${open.length} actions`} sub={`Top ${TOP} per owner, by priority (set-up problems first) and the spend behind each one (last 14 days). The rest waits in the backlog below. The platform and type filters apply to every list on this page.`} right={
-+        <div className="seg">{(['All', ...PLATFORMS] as const).map((p) => <button key={p} className={tab === p ? 'on' : ''} onClick={() => setTab(p)}>{p} <span className="count">{all.filter((a) => (p === 'All' || a.platform === p) && kindOk(a) && isOpen(a)).length}</span></button>)}</div>}>
++      <Block tone="tables" n="To do" title={`This week · ${open.length} actions`} sub={`Every budget action, plus the top ${TOP} other actions per owner. Sorted by priority (set-up problems first), then the spend behind each one (last 14 days). The rest waits in the backlog below. The platform and type filters apply to every list on this page.`} right={
++        <div className="seg">{(['All', ...platformTabs] as const).map((p) => <button key={p} className={tab === p ? 'on' : ''} onClick={() => setTab(p)}>{p} <span className="count">{all.filter((a) => (p === 'All' || a.platform === p) && kindOk(a) && isOpen(a)).length}</span></button>)}</div>}>
 +        <div className="kindbar"><span className="dim">Type</span>
 +          <div className="seg">{(['All', ...KINDS] as const).map((k) => <button key={k} className={kindTab === k ? 'on' : ''} title={k === 'All' ? 'Every type of problem' : KIND_HELP[k]} onClick={() => setKindTab(k)}>{k} <span className="count">{all.filter((a) => (k === 'All' || a.kind === k) && platOk(a) && isOpen(a)).length}</span></button>)}</div>
 +        </div>
@@ -156,7 +190,7 @@
            <div className="tablewrap"><table className="t actions-t">{HEAD}<tbody>{open.map(openRow)}</tbody></table></div>
          )}
        </Block>
-@@ -264,7 +275,7 @@
+@@ -264,7 +276,7 @@
          {done.length ? <div className="tablewrap"><table className="t actions-t">
            <thead><tr><th style={{ textAlign: 'left' }}>Action</th><th style={{ textAlign: 'left' }}>What changed</th><th style={{ textAlign: 'left' }}>Why</th><th>Done</th><th style={{ textAlign: 'left' }}>Effect after the change</th><th style={{ textAlign: 'left' }}>Budget move: forecast vs actual</th><th /></tr></thead>
            <tbody>{done.map((a) => { const e = st[a.id]; return (
@@ -165,7 +199,7 @@
                <td>{String(e?.resolvedAt ?? '')}<div className="dim">by {String(e?.by ?? '')}</div></td>{resultCell(a, String(e?.resolvedAt))}
                <td style={{ textAlign: 'left', whiteSpace: 'normal', minWidth: 220 }}>{(() => { const fc = forecastCheck(a); return fc ? <><span className={`chip ${fc.verdict.split(' ')[0]}`}>{fc.verdict === 'Better' ? 'Held' : fc.verdict === 'Worse' ? 'Wrong' : fc.verdict === 'Mixed' ? 'Weaker' : fc.verdict}</span><div className="dim">{fc.text}</div></> : <span className="dim">—</span>; })()}</td>
                <td><button className="linkbtn" onClick={() => reopen(a)}>Reopen</button></td></tr>); })}</tbody>
-@@ -274,7 +285,7 @@
+@@ -274,7 +286,7 @@
          {dismissed.length ? <div className="tablewrap"><table className="t actions-t">
            <thead><tr><th style={{ textAlign: 'left' }}>Action</th><th style={{ textAlign: 'left' }}>Reason</th><th>Dismissed</th><th style={{ textAlign: 'left' }}>Results since</th><th /></tr></thead>
            <tbody>{dismissed.map((a) => { const e = st[a.id]; return (
@@ -176,9 +210,11 @@
        </Block>
 --- a/src/styles.css
 +++ b/src/styles.css
-@@ -309,6 +309,11 @@
+@@ -308,7 +308,13 @@
+ .p-High { background: var(--down-bg); color: var(--bad); } .p-Medium { background: var(--chip-mixed); color: var(--warn); } .p-Low { background: var(--flat-bg); color: var(--text-2); }
  .plat { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--surface-2); }
  .plat-GoogleAds { background: #e8f0fe; color: #1a56c4; } .plat-Meta { background: #eef0ff; color: #4a3aa7; }
++.plat-LinkedIn { background: #e4f0fa; color: #0a66c2; }
  .plat-Budget { background: #e8f6ee; color: #1a7f37; } .plat-Searchkeywords { background: #fff4de; color: #a86400; } .plat-Tracking { background: #f1f1ee; color: #52514e; }
 +.kind { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); white-space: nowrap; }
 +.k-Setup { background: #fde8e6; color: #b3261e; } .k-Performance { background: #e8f0fe; color: #1a56c4; } .k-Scale { background: #e8f6ee; color: #1a7f37; }
@@ -190,10 +226,12 @@
  .act-text .ent { font-size: 11px; word-break: break-all; }
 --- a/src/lib/kinds.ts
 +++ b/src/lib/kinds.ts
-@@ -0,0 +1,36 @@
-+// What kind of problem an action is about (the platform says where it is). Used by the Actions page.
+@@ -0,0 +1,72 @@
++// Where an action is (platform = its channel) and what kind of problem it is. Used by the Actions page.
 +import type { Entry } from './shared';
 +
++/** Platform follows the channel. Budget and search-term actions belong to their channel; 'Tracking' is only for comments that name none. */
++export type Platform = 'Google Ads' | 'Meta' | 'LinkedIn' | 'Tracking';
 +export type Kind = 'Setup' | 'Performance' | 'Scale' | 'Budget pacing' | 'Keywords' | 'Feedback' | 'Reallocation';
 +export type Priority = 'High' | 'Medium' | 'Low';
 +
@@ -202,14 +240,48 @@
 +  Setup: 'Something is not set up right: a budget line missing or not launched, tracking, URL, target location. Always High.',
 +  Performance: 'Results are off: no leads, CPL / cost per good lead too high, ads to pause.',
 +  Scale: 'Doing well: room to give more budget.',
-+  'Budget pacing': 'Spend is ahead of or behind the plan.',
-+  Keywords: 'New negative keywords to review.',
++  'Budget pacing': 'Daily budget is ahead of or behind the plan. Always in the main table.',
++  Keywords: 'New negative keywords (search terms) to review.',
 +  Feedback: 'Comments someone flagged "Needs action".',
-+  Reallocation: 'Approved budget moves between campaigns or audiences.',
++  Reallocation: 'Approved budget moves between campaigns or audiences. Always in the main table.',
 +};
 +
 +/** Anything about set-up is High, whatever priority the rule that raised it gave. */
 +export const withPriority = <T extends { kind: Kind; priority: Priority }>(a: T): T => (a.kind === 'Setup' ? { ...a, priority: 'High' } : a);
++
++/** Budget actions (pacing, a plan line missing or not launched, approved budget moves) are never pushed down to the backlog. */
++export const isBudgetAction = (a: { kind: Kind; budget?: boolean }) => !!a.budget || a.kind === 'Budget pacing' || a.kind === 'Reallocation';
++
++/**
++ * This week's table: every budget action, plus the top `top` other actions per owner.
++ * `open` must already be sorted by urgency; everything not picked waits in the backlog.
++ */
++export function pickWeek<T extends { id: string; kind: Kind; budget?: boolean }>(open: T[], ownerOf: (a: T) => string, top: number): Set<string> {
++  const picked = new Set<string>(), perOwner = new Map<string, number>();
++  for (const a of open) {
++    if (isBudgetAction(a)) { picked.add(a.id); continue; }
++    const o = ownerOf(a), n = perOwner.get(o) ?? 0;
++    if (n < top) { picked.add(a.id); perOwner.set(o, n + 1); }
++  }
++  return picked;
++}
++
++/** The platform of a channel name as it appears in the data. */
++export const platformOfChannel = (channel: string): Platform => (channel === 'Google' ? 'Google Ads' : channel === 'Meta' ? 'Meta' : channel === 'LinkedIn' ? 'LinkedIn' : 'Tracking');
++
++const PLATFORMS: string[] = ['Google Ads', 'Meta', 'LinkedIn', 'Tracking'];
++/**
++ * Platform of an action saved earlier. Old saves used 'Budget' (now the channel in its dims) and 'Search keywords' (now Google Ads).
++ */
++export function storedPlatform(e: Entry): Platform {
++  const p = String(e.platform);
++  if (p === 'Search keywords') return 'Google Ads';
++  if (p === 'Budget') return platformOfChannel(String((e.dims as { channel?: string[] } | undefined)?.channel?.[0] ?? ''));
++  return PLATFORMS.includes(p) ? (p as Platform) : 'Tracking';
++}
++
++/** Was this saved action a budget action? */
++export const storedBudget = (e: Entry) => e.budget === true || e.platform === 'Budget' || e.source === 'realloc';
 +
 +/** A comment (or saved action text) that talks about set-up or tracking. */
 +export const SETUP_WORDS = /\bset ?-?up\b|tracking|\butm\b|pixel|final url|target location/i;
@@ -220,8 +292,8 @@
 +  if (e.source === 'realloc') return 'Reallocation';
 +  const t = String(e.actionText ?? '');
 +  switch (e.platform) {
-+    // the action text of a "No plan" line / a "Not started" line (see paceByCountry in budget.tsx)
-+    case 'Budget': return /without a plan line|launch it or confirm it starts later/i.test(t) ? 'Setup' : 'Budget pacing';
++    // a "Not started" plan line says to launch it; the text of a "No plan" line is a cut, so it can only be told apart when the kind was saved
++    case 'Budget': return /launch it or confirm it starts later/i.test(t) ? 'Setup' : 'Budget pacing';
 +    case 'Search keywords': return 'Keywords';
 +    case 'Tracking': return SETUP_WORDS.test(t) ? 'Setup' : 'Feedback';
 +    default: return /^(scale budget|increase budget|consider scaling|give .+ more budget)/i.test(t) ? 'Scale' : 'Performance';
@@ -229,9 +301,9 @@
 +}
 --- a/src/lib/kinds.test.ts
 +++ b/src/lib/kinds.test.ts
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,120 @@
 +import { describe, expect, it } from 'vitest';
-+import { KINDS, SETUP_WORDS, storedKind, withPriority, type Kind, type Priority } from './kinds';
++import { KINDS, SETUP_WORDS, isBudgetAction, pickWeek, platformOfChannel, storedBudget, storedKind, storedPlatform, withPriority, type Kind, type Priority } from './kinds';
 +
 +const act = (kind: Kind, priority: Priority) => ({ id: 'x', kind, priority });
 +
@@ -251,6 +323,73 @@
 +  });
 +});
 +
++describe('platform follows the channel', () => {
++  it('maps channel names', () => {
++    expect(platformOfChannel('Google')).toBe('Google Ads');
++    expect(platformOfChannel('Meta')).toBe('Meta');
++    expect(platformOfChannel('LinkedIn')).toBe('LinkedIn');
++    expect(platformOfChannel('TikTok')).toBe('Tracking');
++  });
++  it('old "Search keywords" saves are Google Ads', () => {
++    expect(storedPlatform({ platform: 'Search keywords' })).toBe('Google Ads');
++  });
++  it('old "Budget" saves take the channel from their dims', () => {
++    expect(storedPlatform({ platform: 'Budget', dims: { channel: ['Google'] } })).toBe('Google Ads');
++    expect(storedPlatform({ platform: 'Budget', dims: { channel: ['Meta'] } })).toBe('Meta');
++    expect(storedPlatform({ platform: 'Budget', dims: { channel: ['LinkedIn'] } })).toBe('LinkedIn');
++    expect(storedPlatform({ platform: 'Budget', dims: {} })).toBe('Tracking');
++    expect(storedPlatform({ platform: 'Budget' })).toBe('Tracking');
++  });
++  it('current platforms stay as they are; anything unknown is Tracking', () => {
++    for (const p of ['Google Ads', 'Meta', 'LinkedIn', 'Tracking']) expect(storedPlatform({ platform: p })).toBe(p);
++    expect(storedPlatform({ platform: 'nonsense' })).toBe('Tracking');
++    expect(storedPlatform({})).toBe('Tracking');
++  });
++});
++
++describe('budget actions', () => {
++  it('pacing, approved moves and flagged set-up lines are budget actions', () => {
++    expect(isBudgetAction({ kind: 'Budget pacing' })).toBe(true);
++    expect(isBudgetAction({ kind: 'Reallocation' })).toBe(true);
++    expect(isBudgetAction({ kind: 'Setup', budget: true })).toBe(true); // plan line missing / not launched
++  });
++  it('other actions are not', () => {
++    for (const k of ['Performance', 'Scale', 'Keywords', 'Feedback', 'Setup'] as const) expect(isBudgetAction({ kind: k })).toBe(false);
++    expect(isBudgetAction({ kind: 'Setup', budget: false })).toBe(false);
++  });
++  it('old saves: Budget platform, approved reallocations and the saved flag', () => {
++    expect(storedBudget({ platform: 'Budget' })).toBe(true);
++    expect(storedBudget({ platform: 'Google Ads', source: 'realloc' })).toBe(true);
++    expect(storedBudget({ platform: 'Meta', budget: true })).toBe(true);
++    expect(storedBudget({ platform: 'Google Ads' })).toBe(false);
++  });
++});
++
++describe('pickWeek: budget is never in the backlog', () => {
++  const mk = (id: string, owner: string, kind: Kind = 'Performance', budget = false) => ({ id, owner, kind, budget });
++  const owner = (a: { owner: string }) => a.owner;
++
++  it('takes the top N others per owner, in the order given', () => {
++    const open = ['a1', 'a2', 'a3'].map((id) => mk(id, 'John')).concat(['b1', 'b2', 'b3'].map((id) => mk(id, 'Phoebe')));
++    expect([...pickWeek(open, owner, 2)].sort()).toEqual(['a1', 'a2', 'b1', 'b2']);
++  });
++  it('adds every budget action on top of the cap, whoever owns it', () => {
++    const open = [mk('p1', 'John'), mk('p2', 'John'), mk('p3', 'John'), ...Array.from({ length: 12 }, (_, i) => mk(`b${i}`, i % 2 ? 'John' : 'Phoebe', 'Budget pacing', true)), mk('s1', 'Phoebe', 'Setup', true)];
++    const week = pickWeek(open, owner, 2);
++    for (const a of open.filter((a) => a.kind === 'Budget pacing' || a.id === 's1')) expect(week.has(a.id)).toBe(true);
++    expect(week.has('p1')).toBe(true);
++    expect(week.has('p2')).toBe(true);
++    expect(week.has('p3')).toBe(false); // the cap still holds for non-budget actions
++  });
++  it('budget actions do not use up the cap of the others', () => {
++    const open = [mk('b1', 'John', 'Budget pacing', true), mk('b2', 'John', 'Budget pacing', true), mk('p1', 'John'), mk('p2', 'John')];
++    expect([...pickWeek(open, owner, 2)].sort()).toEqual(['b1', 'b2', 'p1', 'p2']);
++  });
++  it('an empty list gives an empty week', () => {
++    expect(pickWeek([], owner, 8).size).toBe(0);
++  });
++});
++
 +describe('storedKind: actions saved as done / dismissed', () => {
 +  it('uses the kind that was saved with the action', () => {
 +    expect(storedKind({ kind: 'Setup', platform: 'Meta' })).toBe('Setup');
@@ -262,9 +401,9 @@
 +  it('approved reallocations are Reallocation', () => {
 +    expect(storedKind({ source: 'realloc', platform: 'Google Ads', actionText: 'Move CHF 50/week from A to B' })).toBe('Reallocation');
 +  });
-+  it('old Budget actions: no plan line / not launched are Setup, pacing is pacing', () => {
-+    expect(storedKind({ platform: 'Budget', actionText: 'Spending without a plan line — add it to the budget sheet or stop.' })).toBe('Setup');
++  it('old Budget actions: a plan line that was not launched is Setup, the rest is pacing', () => {
 +    expect(storedKind({ platform: 'Budget', actionText: 'Launch it or confirm it starts later — the plan needs ≈CHF 40/day.' })).toBe('Setup');
++    expect(storedKind({ platform: 'Budget', actionText: 'Raise CAAS India Adwords (Search) from CHF 30 to CHF 45/day (+15).' })).toBe('Budget pacing');
 +    expect(storedKind({ platform: 'Budget', actionText: 'Account is over pace: cut to ≈CHF 30/day.' })).toBe('Budget pacing');
 +  });
 +  it('old Google / Meta actions: scale wording is Scale, everything else Performance', () => {
