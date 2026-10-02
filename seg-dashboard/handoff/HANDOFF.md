@@ -9,7 +9,7 @@
 > fails on `tracker.tsx` / `styles.css` means the local file changed: redo the change by hand from the
 > description). Nothing here has been deployed.
 
-This file is the full spec. For a ready-to-paste message use `LOCAL_PROMPT.md` (same folder).
+This file is the full spec (it also holds older items: the market filter, India YoY, Piers, Funnel IDs). The message to send to local is `LOCAL_PROMPT.md` (same folder): it covers only the Actions page and the Alert Setup page, §1b–1d.
 Everything is on branch `claude/hopeful-archimedes-7djwwm` of `phoebe-rgb/PEEL`. Nothing here was
 deployed — the live site is unchanged.
 
