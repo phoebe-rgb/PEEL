@@ -67,6 +67,58 @@ const noLink = ads.filter((a) => !(a.website || a.url || '').trim() && !isBooste
 // optional, low severity: "N boosted posts — the link cannot be read through the API, check the Learn more button"
 ```
 
+### 1d. Alert Setup: check live campaigns only; "ad engagement" is not Advantage+ creative
+
+Owner rules, 2 Oct (both in the Alert Setup page source, which only the local project has).
+
+**Live only.** The page today checks every campaign that is *configured* on: PPC `state === 'ENABLED'`,
+Meta `status === 'ACTIVE'`. That includes campaigns that deliver nothing. Check only live ones:
+live = spend > 0 in the last 7 days of the `live` cube (same campaign name, `+` ↔ space normalised
+for Meta). On 2 Oct (window 26 Sep – 2 Oct) this drops 9 of 126 ENABLED PPC campaigns and 1 of 25
+ACTIVE Meta campaigns:
+
+- PPC: `PL_CAAS_GA_ACT_Europe_FR_FR_BAC_Culinary_Programs`; SHMS `…UAE_EN_ALL_ALL_Hospitality-Switzerland`,
+  `…UAE_EN_ALL_ALL_Brand`, `…UAE_EN_SD_PD_Programs`, `…EMEA_GR_EN_ALL_ALL_Brand`, `…APAC_MM_EN_SD_PD_Programs`;
+  HIM `…APAC_MM_EN_ALL_ALL_Programs`, `…APAC_ID_EN_ALL_ALL_BusinessSchoolSwitzerland`,
+  `…Scandi_SE_EN_ALL_ALL_BusinessSchoolSwitzerland`.
+- Meta: `PL_CAAS_FB_ACT_Americas_US_SD_ALL`.
+
+```ts
+// spend7[campaign] from the live cube: sum of cost over the last 7 days up to the latest data day
+const isLive = (campaign: string) => (spend7.get(campaign.replace(/\+/g, ' ')) ?? 0) > 0;
+const ppcToCheck  = ppc.filter((r) => r.state === 'ENABLED' && isLive(r.campaign));
+const metaToCheck = metaCampaigns.filter((c) => c.status === 'ACTIVE' && isLive(c.name));
+// ad sets and ads inherit from their campaign; keep their own ACTIVE test as well.
+```
+
+Show a small grey line under the page title: "Checked: N live campaigns · M enabled campaigns with no spend in 7 days skipped"
+so a skipped campaign is never silently invisible. A campaign that has just been created and has not
+spent yet will be skipped until its first spend; that is the intended behaviour.
+
+**Indonesia, live campaigns only** (this replaces my earlier count): SHMS 5 Google/Meta ID campaigns,
+CAAS 6, HIM 1 are all live and spending. HIM `…ID_EN_ALL_ALL_BusinessSchoolSwitzerland` has no spend
+in 30 days, so it is skipped. The Landing page sheet now has Indonesia = Live for CAAS (E9) and HIM (E30);
+SHMS has no Indonesia row.
+
+**Ad engagement is not Advantage+ creative.** The `Advantage+` rule (`adv|${advOn}` in the bundle)
+flags any ad whose `advOn` is not `none…`. `advOn` is the list of `creative_features_spec` keys that
+are on. Ignore the engagement key, `inline_comment` ("relevant comments"), before testing and before
+printing the `found` text:
+
+```ts
+const IGNORED_ADV = new Set(['inline_comment']); // ad engagement: allowed, not an Advantage+ creative enhancement
+const advKeys = (e: { advOn?: string }) =>
+  (e.advOn ?? '').split(',').map((s) => s.trim()).filter((s) => s && !/^none/i.test(s) && !IGNORED_ADV.has(s));
+// rule: advKeys(e).length > 0  → key `adv|${advKeys(e).join(', ')}`, found: advKeys(e).join(', ')
+```
+
+Effect on today's data: 10 active ads carry `inline_comment`, but each also has other enhancements
+(`standard_enhancements`, `product_extensions`, `show_destination_blurbs`, `ads_with_benefits`, …),
+so they stay flagged for those; only the `found` text and the grouping change. If the owner means a
+different key by "ad engagement", add it to `IGNORED_ADV`. The `🎨 Ads` sheet has no such column
+(`adv_music`, `adv_image_*`, `adv_text_improvements`, `adv_related_videos`, `adv_3d_animation` only),
+so if the page ever reads the sheet instead of the API, nothing more is needed there.
+
 ### 1a. Market filter (fix #2)
 
 `fix2-market-filter.patch` (or the full `App.tsx` next to it) — `src/App.tsx` only.
