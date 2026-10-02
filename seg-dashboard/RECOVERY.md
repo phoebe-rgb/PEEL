@@ -1,5 +1,9 @@
 # SEG Performance dashboard — recovery notes
 
+> **Stale as of 2026-10-02.** This describes the 1 Oct source. The live Worker and page were deployed
+> again after that (new routes, new secrets, an Alert Setup page). Use it for history only; do not
+> deploy from this repo. See `handoff/HANDOFF.md`.
+
 This folder is a **recovery checkpoint** for the SEG (Swiss Education Group)
 performance dashboard. The original source was lost when the build container
 that produced it was reclaimed; everything here was pulled back from the **live

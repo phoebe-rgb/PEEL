@@ -1,3 +1,6 @@
+# !! STALE SNAPSHOT of the 1 Oct 2026 source. The live Worker and page have been deployed since
+# !! (more routes and secrets). DO NOT `wrangler deploy` from this repo — it would overwrite them.
+#
 # SEG Performance dashboard — Cloudflare Worker + Static Assets (SPA)
 # Live: https://seg-dashboard.seg-dashboard.workers.dev
 # Account: Phoebe@peel-digital.com (bbc8c9f67b33609ec79d39279749024d)

@@ -1,5 +1,14 @@
 # SEG dashboard — handoff from cloud session to local Claude
 
+> **READ FIRST (2026-10-02).** The live dashboard is newer than anything in this repo. Between
+> the 1 Oct upload and 2 Oct 04:36 UTC the local project deployed three more times; the live Worker
+> now has more routes and more secrets, and the live bundle is larger (it has the Alert Setup page).
+> The copy in this repo (`worker/`, `wrangler.toml`, `frontend/`) is a snapshot of the 1 Oct source.
+> **Do not deploy from this repo** — it would overwrite the newer Worker and page. The patches
+> below are against the 1 Oct snapshot; apply them to the current local source (a `patch` that
+> fails on `tracker.tsx` / `styles.css` means the local file changed: redo the change by hand from the
+> description). Nothing here has been deployed.
+
 Paste this whole file to the local Claude Code session that owns the dashboard project
 (the one that runs `npm run build` + `wrangler deploy`). Nothing here was deployed —
 the live site is unchanged. The cloud session could not push to GitHub, so these
@@ -14,7 +23,7 @@ patch -p1 < fix2-market-filter.patch                       # 1a, src/App.tsx
 patch -p1 < actions-setup-high-and-type-filter.patch       # 1b, Actions page
 ```
 Both were checked against the original uploaded zip: they apply cleanly, `tsc --strict` passes,
-42 tests pass, `vite build` is clean, and the Actions page was exercised in a browser.
+53 tests pass, `vite build` is clean, and the Actions page was exercised in a browser.
 
 ### 1b. Actions page: set-up is High + filter by type of problem
 
@@ -27,9 +36,36 @@ Both were checked against the original uploaded zip: they apply cleanly, `tsc --
   **Not started** (plan not launched), and comments flagged "Needs action" that mention
   set-up / tracking / UTM / pixel / final URL / target location. Older saved actions without a type
   are classified from their text (`storedKind`).
-- The Alert Setup checks (URL, target location, daily budget set up) do not exist yet. When they
-  are built, give their actions `kind: 'Setup'` and they will be High and filterable with no
-  other change.
+- **Platform follows the channel.** There is no separate Budget or Search keywords platform any
+  more: budget actions are Google Ads / Meta / LinkedIn by their channel (a LinkedIn tab only shows
+  when it has actions), negative-keyword actions are Google Ads. The action id is still hashed from the
+  old name (`idNs` in `push`), so Done / Dismiss saved before the change still applies (checked in a
+  browser: state saved by the old build stayed applied on the new one).
+- **Every budget action is in the main table, never the backlog** (`pickWeek` in `lib/kinds.ts`):
+  budget pacing, plan lines with no plan / not started, and approved budget moves. The top-8 per owner
+  cap only applies to the other actions. With today's data that is 43 budget rows + the others, so the
+  table is long (59 rows). Daily-budget changes count as Budget pacing, not Setup (owner decision).
+- Where this meets the newer local source: the Alert Setup page now exists locally. Any action it
+  creates must have `kind: 'Setup'` (then `withPriority` makes it High and it shows under the Setup
+  filter) and `platform` = its channel via `platformOfChannel()`.
+
+### 1c. False alert: "N active ads have no destination link" (boosted posts)
+
+Cause, checked on the live data (`setupcheck`, 2 Oct): 29 active ads have no link and **all 29 are
+boosted posts** (`urlSource = "boosted post (no link found)"`, ad name contains `BoostedPost`); the
+other 239 ads have a link. A boosted post keeps its link in the Page post (the "Learn more" button),
+so the Marketing API returns no `link_url` for it. Both ads in the report
+(`PL_CAAS_FB_NURT_APAC_IN_ALL_ALL`: `…StudentLifeBeyondKitchen=10Sep26`, `…SammyStory-10Sep26`)
+are boosted posts with call_to_action `LEARN_MORE`. What could not be checked: the URL behind the button.
+
+The rule in the live bundle only tests `!(ad.website || ad.url || '').trim()`. Search the source for
+`no destination link` and exempt boosted posts (the export already marks them):
+
+```ts
+const isBoostedPost = (a: { urlSource?: string }) => /^boosted post/i.test(a.urlSource ?? '');
+const noLink = ads.filter((a) => !(a.website || a.url || '').trim() && !isBoostedPost(a));
+// optional, low severity: "N boosted posts — the link cannot be read through the API, check the Learn more button"
+```
 
 ### 1a. Market filter (fix #2)
 
