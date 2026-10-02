@@ -85,7 +85,10 @@ async function slack(text) {
     return;
   }
   if (hook) {
-    await fetch(hook, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) });
+    // username/icon are honored by classic incoming webhooks so the alert reads as its own
+    // sender in a shared channel (ignored harmlessly by newer Slack-app webhooks).
+    await fetch(hook, { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text, username: "SEG Lead Tracking", icon_emoji: ":mag:" }) });
     return;
   }
   console.log("[no Slack config]\n" + text);
