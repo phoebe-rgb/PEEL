@@ -1,0 +1,285 @@
+--- a/src/tracker.tsx
++++ b/src/tracker.tsx
+@@ -6,6 +6,7 @@
+ import { baseAd, googleReview, metaReview, refDate } from './lib/rules';
+ import { marketName } from './lib/names';
+ import { useShared, type Entry } from './lib/shared';
++import { KINDS, KIND_HELP, SETUP_WORDS, storedKind, withPriority, type Kind, type Priority } from './lib/kinds';
+ import type { Comment } from './comments';
+ import { useCtx } from './components';
+ import { useRefData } from './actions';
+@@ -15,7 +16,7 @@
+ import { Block } from './perf';
+ 
+ type Platform = 'Google Ads' | 'Meta' | 'Budget' | 'Search keywords' | 'Tracking';
+-interface Action { commentId?: string; id: string; platform: Platform; priority: 'High' | 'Medium' | 'Low'; school: string; country: string; entity: string; text: string; dims: Partial<Record<Dim, string[]>>; source?: string }
++interface Action { commentId?: string; id: string; platform: Platform; kind: Kind; priority: Priority; school: string; country: string; entity: string; text: string; dims: Partial<Record<Dim, string[]>>; source?: string }
+ 
+ const hash = (s: string) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
+ const addD = (d: string, n: number) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
+@@ -26,23 +27,23 @@
+ /** Build this week's action list from the same rules the analysis uses. Only actions, no data. */
+ function buildActions(s: Store, bench: Parameters<typeof googleReview>[1], setup: Parameters<typeof googleReview>[2], plan: ReturnType<typeof usePlan>, kw: ReturnType<typeof useKeywords>, cycle: string, negBase: Record<string, BaseNeg[]> | null = null): Action[] {
+   const out: Action[] = [];
+-  const push = (a: Omit<Action, 'id'>, key: string) => out.push({ ...a, id: hash(`${a.platform}|${key}`) });
++  const push = (a: Omit<Action, 'id'>, key: string) => out.push(withPriority({ ...a, id: hash(`${a.platform}|${key}`) }));
+   const g = googleReview(s, bench, setup);
+   for (const r of g.critical) {
+-    for (const act of [...new Set(r.alerts.map((a) => a.action))]) push({ platform: 'Google Ads', priority: 'High', school: r.school, country: marketName(r.country), entity: r.campaign, text: act, dims: { channel: ['Google'], campaign: [r.campaign] } }, `${r.campaign}|${act}`);
++    for (const act of [...new Set(r.alerts.map((a) => a.action))]) push({ platform: 'Google Ads', kind: 'Performance', priority: 'High', school: r.school, country: marketName(r.country), entity: r.campaign, text: act, dims: { channel: ['Google'], campaign: [r.campaign] } }, `${r.campaign}|${act}`);
+   }
+-  for (const r of g.scale) if (r.scale) push({ platform: 'Google Ads', priority: 'Medium', school: r.school, country: marketName(r.country), entity: r.campaign, text: r.scale.action, dims: { channel: ['Google'], campaign: [r.campaign] } }, `${r.campaign}|scale`);
++  for (const r of g.scale) if (r.scale) push({ platform: 'Google Ads', kind: 'Scale', priority: 'Medium', school: r.school, country: marketName(r.country), entity: r.campaign, text: r.scale.action, dims: { channel: ['Google'], campaign: [r.campaign] } }, `${r.campaign}|scale`);
+   const m = metaReview(s, bench);
+   for (const e of m.markets) {
+     if (e.flag === 'none' || e.segment === 'Social Boosting') continue;
+     const dims = { channel: ['Meta'], school: [e.school], market: [e.country], activity: ['ACT'] };
+     if (e.flag !== 'green' || /benchmark/.test(e.action)) {
+       const first = e.action.split(/(?<=\.)\s+(?=Pause|Fund)/)[0];
+-      push({ platform: 'Meta', priority: e.flag === 'red' ? 'High' : 'Medium', school: e.school, country: marketName(e.country), entity: `${e.segment}`, text: first, dims }, `${e.school}|${e.country}|${e.segment}|main`);
++      push({ platform: 'Meta', kind: 'Performance', priority: e.flag === 'red' ? 'High' : 'Medium', school: e.school, country: marketName(e.country), entity: `${e.segment}`, text: first, dims }, `${e.school}|${e.country}|${e.segment}|main`);
+     }
+     for (const a of e.ads) {
+-      if (a.flag === 'red') push({ platform: 'Meta', priority: 'High', school: e.school, country: marketName(e.country), entity: a.ad, text: `Pause ${a.ad} (${a.verdict.replace(/^pause — /, '')}).`, dims: { channel: ['Meta'], ad: adVariants(s, a.ad) } }, `ad|${a.ad}|pause`);
+-      else if (a.flag === 'green' && /more budget/.test(a.verdict)) push({ platform: 'Meta', priority: 'Low', school: e.school, country: marketName(e.country), entity: a.ad, text: `Give ${a.ad} more budget — cheap good leads.`, dims: { channel: ['Meta'], ad: adVariants(s, a.ad) } }, `ad|${a.ad}|fund`);
++      if (a.flag === 'red') push({ platform: 'Meta', kind: 'Performance', priority: 'High', school: e.school, country: marketName(e.country), entity: a.ad, text: `Pause ${a.ad} (${a.verdict.replace(/^pause — /, '')}).`, dims: { channel: ['Meta'], ad: adVariants(s, a.ad) } }, `ad|${a.ad}|pause`);
++      else if (a.flag === 'green' && /more budget/.test(a.verdict)) push({ platform: 'Meta', kind: 'Scale', priority: 'Low', school: e.school, country: marketName(e.country), entity: a.ad, text: `Give ${a.ad} more budget — cheap good leads.`, dims: { channel: ['Meta'], ad: adVariants(s, a.ad) } }, `ad|${a.ad}|fund`);
+     }
+   }
+   if (plan) {
+@@ -50,7 +51,8 @@
+     const bm = budgetModel(s, bf, plan, today);
+     for (const r of paceByCountry(s, bf, bm, today)) {
+       const cut = r.target < r.r7 - 0.5;
+-      push({ platform: 'Budget', priority: r.st === 'No plan' || r.st === 'Over pace' || cut ? 'High' : 'Medium', school: r.school, country: r.market ? marketName(r.market) : '', entity: `${label(r.school)} · ${r.market ? `${marketName(r.market)} · ` : ''}${subName(r.sub)}${r.activity ? ` · ${r.activity}` : ''}`, text: r.action,
++      // no plan line / plan not launched = the budget is not set up right; under / over pace = pacing
++      push({ platform: 'Budget', kind: r.st === 'No plan' || r.st === 'Not started' ? 'Setup' : 'Budget pacing', priority: r.st === 'No plan' || r.st === 'Over pace' || cut ? 'High' : 'Medium', school: r.school, country: r.market ? marketName(r.market) : '', entity: `${label(r.school)} · ${r.market ? `${marketName(r.market)} · ` : ''}${subName(r.sub)}${r.activity ? ` · ${r.activity}` : ''}`, text: r.action,
+         dims: { school: [r.school], channel: [r.channel], ...(r.market ? { market: [r.market], subchannel: [r.sub] } : {}), ...(r.activity ? { activity: [r.activity] } : {}) } }, `${r.school}|${r.market}|${r.sub}|${r.activity}|${r.st}|${cut ? 'cut' : 'raise'}`);
+     }
+   }
+@@ -62,7 +64,7 @@
+       const x = bySchool.get(c.school) ?? { n: 0, cost: 0, cats: new Map() };
+       x.n++; x.cost += c.cost; x.cats.set(c.category, (x.cats.get(c.category) ?? 0) + 1); bySchool.set(c.school, x);
+     }
+-    for (const [school, x] of bySchool) push({ platform: 'Search keywords', priority: x.cost >= 100 ? 'High' : 'Low', school, country: '', entity: `${school} negative keywords (${from} → ${to})`,
++    for (const [school, x] of bySchool) push({ platform: 'Search keywords', kind: 'Keywords', priority: x.cost >= 100 ? 'High' : 'Low', school, country: '', entity: `${school} negative keywords (${from} → ${to})`,
+       text: `Review ${x.n} new negative keyword${x.n > 1 ? 's' : ''} (${[...x.cats].map(([k, n]) => `${k} ${n}`).join(', ')}; CHF ${x.cost.toFixed(0)} spent) on the Search Keywords page, apply, then add them to SEG_Negative_Keywords.`, dims: { channel: ['Google'], school: [school] } }, `neg|${school}|${to}`);
+   }
+   const order = { High: 0, Medium: 1, Low: 2 };
+@@ -114,6 +116,7 @@
+   const negBase = useNegBaseline();
+   const shared = useShared('/api/actions');
+   const [tab, setTab] = useState<Platform | 'All'>('All');
++  const [kindTab, setKindTab] = useState<Kind | 'All'>('All');
+   const [edit, setEdit] = useState<{ id: string; mode: 'done' | 'dismiss' } | null>(null);
+   const [f1, setF1] = useState(''), [f2, setF2] = useState('');
+   const today = todayHanoi();
+@@ -126,15 +129,18 @@
+   // Comments flagged "Needs action" in the 💬 Comments panel become actions.
+   const cm = useShared('/api/comments');
+   const feedback: Action[] = Object.entries(cm.data as Record<string, Comment>).filter(([, c]) => c.needsAction && !c.resolved && !c.deleted && (c.text ?? '').trim()).map(([id, c]) => ({
+-    id: hash(`comment|${id}`), commentId: id, source: `Comment · ${c.name}`, platform: (/meta/i.test(`${c.anchor} ${c.text}`) ? 'Meta' : /google|adwords|pmax|search/i.test(`${c.anchor} ${c.text}`) ? 'Google Ads' : /budget|pac/i.test(`${c.page} ${c.anchor}`) ? 'Budget' : 'Tracking') as Platform,
++    id: hash(`comment|${id}`), commentId: id, source: `Comment · ${c.name}`, kind: (SETUP_WORDS.test(String(c.text)) ? 'Setup' : 'Feedback') as Kind, platform: (/meta/i.test(`${c.anchor} ${c.text}`) ? 'Meta' : /google|adwords|pmax|search/i.test(`${c.anchor} ${c.text}`) ? 'Google Ads' : /budget|pac/i.test(`${c.page} ${c.anchor}`) ? 'Budget' : 'Tracking') as Platform,
+     priority: 'High' as const, school: ['CAAS', 'SHMS', 'HIM', 'CRCS'].find((x) => `${c.anchor} ${c.text}`.includes(x)) ?? 'All', country: '', entity: `${c.page} › ${c.anchor ?? ''}`, text: String(c.text), dims: {},
+   }));
+   const known = new Map([...actions, ...feedback].map((a) => [a.id, a]));
+   // done / dismissed actions that no longer fire still show (from storage)
+-  const stored: Action[] = Object.entries(st).filter(([id, e]) => !known.has(id) && (e.resolved || e.dismissed || (e.source === 'realloc' && e.approved))).map(([id, e]) => ({ id, platform: e.platform as Platform, priority: (e.priority as Action['priority']) ?? 'Medium', school: String(e.school ?? ''), country: e.country ? marketName(String(e.country)) : '', entity: String(e.entity ?? ''), text: String(e.actionText ?? ''), dims: (e.dims as Action['dims']) ?? {}, source: e.source === 'realloc' ? `Approved reallocation${e.note ? ` · "${String(e.note)}"` : ''}` : String(e.source ?? '') }));
+-  const all = [...actions.map((a) => ({ ...a, source: a.source ?? 'Rule' })), ...feedback, ...stored].filter((a) => (!filter.dims.school?.length || filter.dims.school.includes(a.school) || a.school === 'All'));
++  const stored: Action[] = Object.entries(st).filter(([id, e]) => !known.has(id) && (e.resolved || e.dismissed || (e.source === 'realloc' && e.approved))).map(([id, e]) => ({ id, platform: e.platform as Platform, kind: storedKind(e), priority: (e.priority as Action['priority']) ?? 'Medium', school: String(e.school ?? ''), country: e.country ? marketName(String(e.country)) : '', entity: String(e.entity ?? ''), text: String(e.actionText ?? ''), dims: (e.dims as Action['dims']) ?? {}, source: e.source === 'realloc' ? `Approved reallocation${e.note ? ` · "${String(e.note)}"` : ''}` : String(e.source ?? '') }));
++  const all = [...actions.map((a) => ({ ...a, source: a.source ?? 'Rule' })), ...feedback, ...stored].map(withPriority).filter((a) => (!filter.dims.school?.length || filter.dims.school.includes(a.school) || a.school === 'All'));
+   const isDone = (a: Action) => !!st[a.id]?.resolved, isDis = (a: Action) => !!st[a.id]?.dismissed;
+-  const shown = all.filter((a) => (tab === 'All' || a.platform === tab));
++  const isOpen = (a: Action) => !isDone(a) && !isDis(a);
++  // platform and type filters narrow each other, so the counts on one row follow the choice on the other
++  const kindOk = (a: Action) => kindTab === 'All' || a.kind === kindTab, platOk = (a: Action) => tab === 'All' || a.platform === tab;
++  const shown = all.filter((a) => platOk(a) && kindOk(a));
+   // money at stake = the entity's spend in the last 14 days; each owner gets the top 8 this week, the rest wait in the backlog
+   const stakeOf = useMemo(() => {
+     const y = refDate(store.lastDate), dates = Array.from({ length: 14 }, (_, i) => addD(y, -i));
+@@ -146,13 +152,15 @@
+     };
+   }, [store]);
+   const PR = { High: 0, Medium: 1, Low: 2 };
+-  const allOpen = all.filter((a) => !isDone(a) && !isDis(a)).sort((a, b) => PR[a.priority] - PR[b.priority] || stakeOf(b) - stakeOf(a));
++  // priority first; among equals set-up problems go first, then the most money at stake
++  const byUrgency = (a: Action, b: Action) => PR[a.priority] - PR[b.priority] || Number(b.kind === 'Setup') - Number(a.kind === 'Setup') || stakeOf(b) - stakeOf(a);
++  const allOpen = all.filter(isOpen).sort(byUrgency);
+   const TOP = 8;
+   const weekSet = new Set<string>();
+   for (const o of [OWNERS.google, OWNERS.meta]) allOpen.filter((a) => ownerOf(a) === o).slice(0, TOP).forEach((a) => weekSet.add(a.id));
+   const [showBacklog, setShowBacklog] = useState(false);
+-  const open = shown.filter((a) => !isDone(a) && !isDis(a) && weekSet.has(a.id)).sort((a, b) => PR[a.priority] - PR[b.priority] || stakeOf(b) - stakeOf(a));
+-  const backlog = shown.filter((a) => !isDone(a) && !isDis(a) && !weekSet.has(a.id)).sort((a, b) => PR[a.priority] - PR[b.priority] || stakeOf(b) - stakeOf(a));
++  const open = shown.filter((a) => isOpen(a) && weekSet.has(a.id)).sort(byUrgency);
++  const backlog = shown.filter((a) => isOpen(a) && !weekSet.has(a.id)).sort(byUrgency);
+   const done = shown.filter(isDone), dismissed = shown.filter((a) => isDis(a) && !isDone(a));
+   // approved budget moves: 2 weeks after approval, compare the forecast with what happened to the two options
+   const forecastCheck = (a: Action) => {
+@@ -165,7 +173,7 @@
+     const verdict = actual >= expected * 0.5 ? 'Better' : actual < 0 ? 'Worse' : 'Mixed';
+     return { verdict, text: `Forecast for 2 weeks: +${expected.toFixed(1)} GL · actual: ${actual >= 0 ? '+' : ''}${actual} GL (${before} → ${after}). ${verdict === 'Better' ? 'Forecast held.' : verdict === 'Worse' ? 'Went the wrong way — review the rule.' : 'Weaker than forecast.'}` };
+   };
+-  const meta = (a: Action) => ({ platform: a.platform, priority: a.priority, school: a.school, country: a.country, entity: a.entity, actionText: a.text, dims: a.dims });
++  const meta = (a: Action) => ({ platform: a.platform, kind: a.kind, priority: a.priority, school: a.school, country: a.country, entity: a.entity, actionText: a.text, dims: a.dims });
+   const save = (a: Action) => {
+     if (!edit || !f1.trim() || (edit.mode === 'done' && !f2.trim())) return;
+     if (edit.mode === 'done') {
+@@ -187,7 +195,7 @@
+     <Fragment key={a.id}>
+       <tr data-cmt={`${a.platform} · ${a.entity.slice(0, 40)}: ${a.text.slice(0, 50)}`}>
+         <td><span className={`prio p-${a.priority}`}>{a.priority}</span></td>
+-        <td><span className={`plat plat-${a.platform.replace(/\s/g, '')}`}>{a.platform}</span></td>
++        <td><span className={`plat plat-${a.platform.replace(/\s/g, '')}`}>{a.platform}</span><div className="kindrow"><span className={`kind k-${a.kind.replace(/\s/g, '')}`} title={KIND_HELP[a.kind]}>{a.kind}</span></div></td>
+         <td>{label(a.school)}{a.country && <div className="dim">{a.country}</div>}</td>
+         <td className="act-text"><b>{a.text}</b><div className="dim ent">{a.entity}</div><div className={`src ${a.source?.startsWith('Comment') ? 'boss' : a.source?.startsWith('Approved') ? 'appr' : ''}`}>{a.source}</div></td>
+         <td>{ownerOf(a).name}</td><td>{stakeOf(a) ? `CHF ${f0(stakeOf(a))}` : '–'}</td><td className={today > deadline ? 'bad' : ''}>{fmtDay(deadline)}</td>
+@@ -246,14 +254,17 @@
+   const MSGS: [string, string, string][] = [['tue-google', 'Tuesday · Google Ads (→ John)', ownerMsg('google')], ['tue-meta', 'Tuesday · Meta (→ Phoebe)', ownerMsg('meta')], ['thu-review', 'Thursday · review', thursday], ['mon-team', 'Monday · team review call', monday2]];
+   const [msgTab, setMsgTab] = useState('tue-google');
+ 
+-  const HEAD = <thead><tr><th>Priority</th><th>Platform</th><th>School · country</th><th style={{ textAlign: 'left' }}>Action</th><th>Owner</th><th>Spend 14d</th><th>Deadline</th><th>Done / dismiss</th></tr></thead>;
++  const HEAD = <thead><tr><th>Priority</th><th>Platform · type</th><th>School · country</th><th style={{ textAlign: 'left' }}>Action</th><th>Owner</th><th>Spend 14d</th><th>Deadline</th><th>Done / dismiss</th></tr></thead>;
+   return (
+     <>
+       <div className="pagehead"><div><h2 className="page">Actions</h2><p className="lede">This week's actions ({weekRange(week)}) per platform. Owners: Google Ads → John, Meta → Phoebe; deadline <b>{fmtDay(deadline)}</b>. <b>✓ Done</b> needs what changed and why; <b>✕ Dismiss</b> needs a reason. Next week each change is checked against its results. <a href="#/must-read">Rules</a></p></div></div>
+       {shared.error && <p className="warnbox">{shared.error}</p>}
+-      <Block tone="tables" n="To do" title={`This week · ${open.length} actions`} sub={`Top ${TOP} per owner, by priority and the spend behind each one (last 14 days). The rest waits in the backlog below.`} right={
+-        <div className="seg">{(['All', ...PLATFORMS] as const).map((p) => <button key={p} className={tab === p ? 'on' : ''} onClick={() => setTab(p)}>{p} <span className="count">{all.filter((a) => (p === 'All' || a.platform === p) && !isDone(a) && !isDis(a)).length}</span></button>)}</div>}>
+-        {!ref ? <p className="note">Loading…</p> : open.length === 0 ? <p className="good">Nothing open. 🎉</p> : (
++      <Block tone="tables" n="To do" title={`This week · ${open.length} actions`} sub={`Top ${TOP} per owner, by priority (set-up problems first) and the spend behind each one (last 14 days). The rest waits in the backlog below. The platform and type filters apply to every list on this page.`} right={
++        <div className="seg">{(['All', ...PLATFORMS] as const).map((p) => <button key={p} className={tab === p ? 'on' : ''} onClick={() => setTab(p)}>{p} <span className="count">{all.filter((a) => (p === 'All' || a.platform === p) && kindOk(a) && isOpen(a)).length}</span></button>)}</div>}>
++        <div className="kindbar"><span className="dim">Type</span>
++          <div className="seg">{(['All', ...KINDS] as const).map((k) => <button key={k} className={kindTab === k ? 'on' : ''} title={k === 'All' ? 'Every type of problem' : KIND_HELP[k]} onClick={() => setKindTab(k)}>{k} <span className="count">{all.filter((a) => (k === 'All' || a.kind === k) && platOk(a) && isOpen(a)).length}</span></button>)}</div>
++        </div>
++        {!ref ? <p className="note">Loading…</p> : open.length === 0 ? (tab !== 'All' || kindTab !== 'All') && allOpen.length ? <p className="dim">No actions this week with this filter ({allOpen.length} open in total).</p> : <p className="good">Nothing open. 🎉</p> : (
+           <div className="tablewrap"><table className="t actions-t">{HEAD}<tbody>{open.map(openRow)}</tbody></table></div>
+         )}
+       </Block>
+@@ -264,7 +275,7 @@
+         {done.length ? <div className="tablewrap"><table className="t actions-t">
+           <thead><tr><th style={{ textAlign: 'left' }}>Action</th><th style={{ textAlign: 'left' }}>What changed</th><th style={{ textAlign: 'left' }}>Why</th><th>Done</th><th style={{ textAlign: 'left' }}>Effect after the change</th><th style={{ textAlign: 'left' }}>Budget move: forecast vs actual</th><th /></tr></thead>
+           <tbody>{done.map((a) => { const e = st[a.id]; return (
+-            <tr key={a.id} data-cmt={`Done · ${a.entity.slice(0, 40)}: ${a.text.slice(0, 50)}`}><td className="act-text"><b>{a.text}</b><div className="dim ent">{a.platform} · {a.entity}</div></td><td className="act-text">{String(e?.note ?? '') || <span className="dim">—</span>}</td><td className="act-text">{String(e?.why ?? '') || <span className="dim">—</span>}</td>
++            <tr key={a.id} data-cmt={`Done · ${a.entity.slice(0, 40)}: ${a.text.slice(0, 50)}`}><td className="act-text"><b>{a.text}</b><div className="dim ent">{a.platform} · {a.kind} · {a.entity}</div></td><td className="act-text">{String(e?.note ?? '') || <span className="dim">—</span>}</td><td className="act-text">{String(e?.why ?? '') || <span className="dim">—</span>}</td>
+               <td>{String(e?.resolvedAt ?? '')}<div className="dim">by {String(e?.by ?? '')}</div></td>{resultCell(a, String(e?.resolvedAt))}
+               <td style={{ textAlign: 'left', whiteSpace: 'normal', minWidth: 220 }}>{(() => { const fc = forecastCheck(a); return fc ? <><span className={`chip ${fc.verdict.split(' ')[0]}`}>{fc.verdict === 'Better' ? 'Held' : fc.verdict === 'Worse' ? 'Wrong' : fc.verdict === 'Mixed' ? 'Weaker' : fc.verdict}</span><div className="dim">{fc.text}</div></> : <span className="dim">—</span>; })()}</td>
+               <td><button className="linkbtn" onClick={() => reopen(a)}>Reopen</button></td></tr>); })}</tbody>
+@@ -274,7 +285,7 @@
+         {dismissed.length ? <div className="tablewrap"><table className="t actions-t">
+           <thead><tr><th style={{ textAlign: 'left' }}>Action</th><th style={{ textAlign: 'left' }}>Reason</th><th>Dismissed</th><th style={{ textAlign: 'left' }}>Results since</th><th /></tr></thead>
+           <tbody>{dismissed.map((a) => { const e = st[a.id]; return (
+-            <tr key={a.id} data-cmt={`Dismissed · ${a.entity.slice(0, 40)}: ${a.text.slice(0, 50)}`}><td className="act-text"><b>{a.text}</b><div className="dim ent">{a.platform} · {a.entity}</div></td><td className="act-text">{String(e?.reason ?? '')}</td>
++            <tr key={a.id} data-cmt={`Dismissed · ${a.entity.slice(0, 40)}: ${a.text.slice(0, 50)}`}><td className="act-text"><b>{a.text}</b><div className="dim ent">{a.platform} · {a.kind} · {a.entity}</div></td><td className="act-text">{String(e?.reason ?? '')}</td>
+               <td>{String(e?.dismissedAt ?? '')}<div className="dim">by {String(e?.by ?? '')}</div></td>{resultCell(a, String(e?.dismissedAt))}<td><button className="linkbtn" onClick={() => reopen(a)}>Reopen</button></td></tr>); })}</tbody>
+         </table></div> : <p className="dim">Nothing dismissed.</p>}
+       </Block>
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -309,6 +309,11 @@
+ .plat { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--surface-2); }
+ .plat-GoogleAds { background: #e8f0fe; color: #1a56c4; } .plat-Meta { background: #eef0ff; color: #4a3aa7; }
+ .plat-Budget { background: #e8f6ee; color: #1a7f37; } .plat-Searchkeywords { background: #fff4de; color: #a86400; } .plat-Tracking { background: #f1f1ee; color: #52514e; }
++.kind { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); white-space: nowrap; }
++.k-Setup { background: #fde8e6; color: #b3261e; } .k-Performance { background: #e8f0fe; color: #1a56c4; } .k-Scale { background: #e8f6ee; color: #1a7f37; }
++.k-Budgetpacing { background: #fff4de; color: #a86400; } .k-Keywords { background: #f3e8fd; color: #7a3aa7; } .k-Feedback { background: #fdecc8; color: #8a5a00; } .k-Reallocation { background: #e3f4f7; color: #12707f; }
++.kindrow { margin-top: 4px; }
++.kindbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+ table.actions-t td { vertical-align: top; }
+ .act-text { text-align: left !important; white-space: normal !important; min-width: 300px; max-width: 520px; }
+ .act-text .ent { font-size: 11px; word-break: break-all; }
+--- a/src/lib/kinds.ts
++++ b/src/lib/kinds.ts
+@@ -0,0 +1,36 @@
++// What kind of problem an action is about (the platform says where it is). Used by the Actions page.
++import type { Entry } from './shared';
++
++export type Kind = 'Setup' | 'Performance' | 'Scale' | 'Budget pacing' | 'Keywords' | 'Feedback' | 'Reallocation';
++export type Priority = 'High' | 'Medium' | 'Low';
++
++export const KINDS: Kind[] = ['Setup', 'Performance', 'Scale', 'Budget pacing', 'Keywords', 'Feedback', 'Reallocation'];
++export const KIND_HELP: Record<Kind, string> = {
++  Setup: 'Something is not set up right: a budget line missing or not launched, tracking, URL, target location. Always High.',
++  Performance: 'Results are off: no leads, CPL / cost per good lead too high, ads to pause.',
++  Scale: 'Doing well: room to give more budget.',
++  'Budget pacing': 'Spend is ahead of or behind the plan.',
++  Keywords: 'New negative keywords to review.',
++  Feedback: 'Comments someone flagged "Needs action".',
++  Reallocation: 'Approved budget moves between campaigns or audiences.',
++};
++
++/** Anything about set-up is High, whatever priority the rule that raised it gave. */
++export const withPriority = <T extends { kind: Kind; priority: Priority }>(a: T): T => (a.kind === 'Setup' ? { ...a, priority: 'High' } : a);
++
++/** A comment (or saved action text) that talks about set-up or tracking. */
++export const SETUP_WORDS = /\bset ?-?up\b|tracking|\butm\b|pixel|final url|target location/i;
++
++/** Kind of an action that was saved as done / dismissed / approved: the stored kind if there is one, else worked out from what was saved. */
++export function storedKind(e: Entry): Kind {
++  if ((KINDS as string[]).includes(String(e.kind))) return e.kind as Kind;
++  if (e.source === 'realloc') return 'Reallocation';
++  const t = String(e.actionText ?? '');
++  switch (e.platform) {
++    // the action text of a "No plan" line / a "Not started" line (see paceByCountry in budget.tsx)
++    case 'Budget': return /without a plan line|launch it or confirm it starts later/i.test(t) ? 'Setup' : 'Budget pacing';
++    case 'Search keywords': return 'Keywords';
++    case 'Tracking': return SETUP_WORDS.test(t) ? 'Setup' : 'Feedback';
++    default: return /^(scale budget|increase budget|consider scaling|give .+ more budget)/i.test(t) ? 'Scale' : 'Performance';
++  }
++}
+--- a/src/lib/kinds.test.ts
++++ b/src/lib/kinds.test.ts
+@@ -0,0 +1,53 @@
++import { describe, expect, it } from 'vitest';
++import { KINDS, SETUP_WORDS, storedKind, withPriority, type Kind, type Priority } from './kinds';
++
++const act = (kind: Kind, priority: Priority) => ({ id: 'x', kind, priority });
++
++describe('withPriority: set-up is always High', () => {
++  it('raises Medium and Low set-up actions to High', () => {
++    expect(withPriority(act('Setup', 'Medium')).priority).toBe('High');
++    expect(withPriority(act('Setup', 'Low')).priority).toBe('High');
++    expect(withPriority(act('Setup', 'High')).priority).toBe('High');
++  });
++  it('leaves every other kind alone, in both directions', () => {
++    for (const k of KINDS.filter((k) => k !== 'Setup')) {
++      for (const p of ['High', 'Medium', 'Low'] as const) expect(withPriority(act(k, p)).priority).toBe(p);
++    }
++  });
++  it('keeps the other fields', () => {
++    expect(withPriority({ ...act('Setup', 'Low'), text: 'keep me' })).toMatchObject({ id: 'x', text: 'keep me', kind: 'Setup' });
++  });
++});
++
++describe('storedKind: actions saved as done / dismissed', () => {
++  it('uses the kind that was saved with the action', () => {
++    expect(storedKind({ kind: 'Setup', platform: 'Meta' })).toBe('Setup');
++    expect(storedKind({ kind: 'Keywords', platform: 'Google Ads' })).toBe('Keywords');
++  });
++  it('ignores a saved kind that is not one of ours', () => {
++    expect(storedKind({ kind: 'nonsense', platform: 'Search keywords' })).toBe('Keywords');
++  });
++  it('approved reallocations are Reallocation', () => {
++    expect(storedKind({ source: 'realloc', platform: 'Google Ads', actionText: 'Move CHF 50/week from A to B' })).toBe('Reallocation');
++  });
++  it('old Budget actions: no plan line / not launched are Setup, pacing is pacing', () => {
++    expect(storedKind({ platform: 'Budget', actionText: 'Spending without a plan line — add it to the budget sheet or stop.' })).toBe('Setup');
++    expect(storedKind({ platform: 'Budget', actionText: 'Launch it or confirm it starts later — the plan needs ≈CHF 40/day.' })).toBe('Setup');
++    expect(storedKind({ platform: 'Budget', actionText: 'Account is over pace: cut to ≈CHF 30/day.' })).toBe('Budget pacing');
++  });
++  it('old Google / Meta actions: scale wording is Scale, everything else Performance', () => {
++    expect(storedKind({ platform: 'Google Ads', actionText: 'Scale budget by 20–30% while monitoring CPL and good lead rate.' })).toBe('Scale');
++    expect(storedKind({ platform: 'Meta', actionText: 'Give Ad_X more budget — cheap good leads.' })).toBe('Scale');
++    expect(storedKind({ platform: 'Google Ads', actionText: 'Pause or reduce budget. Check landing page, keyword intent, and tracking immediately.' })).toBe('Performance');
++    expect(storedKind({ platform: 'Meta', actionText: 'Pause Ad_Y (CPGL 3× benchmark).' })).toBe('Performance');
++  });
++  it('old Tracking (comment) actions: set-up wording is Setup, else Feedback', () => {
++    expect(storedKind({ platform: 'Tracking', actionText: 'UTM missing on the India form' })).toBe('Setup');
++    expect(storedKind({ platform: 'Tracking', actionText: 'Please add a CVR column' })).toBe('Feedback');
++  });
++});
++
++describe('SETUP_WORDS', () => {
++  it.each(['check the set-up of this campaign', 'setup is wrong', 'Set up missing', 'need to check tracking', 'UTM is empty', 'pixel not firing', 'Final URL is wrong', 'target location is the US'])('matches %s', (t) => expect(SETUP_WORDS.test(t)).toBe(true));
++  it.each(['Look good, scale up', 'what?', 'add a CVR column', 'upsetting numbers', 'the utmost care'])('does not match %s', (t) => expect(SETUP_WORDS.test(t)).toBe(false));
++});

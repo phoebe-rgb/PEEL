@@ -5,7 +5,33 @@ Paste this whole file to the local Claude Code session that owns the dashboard p
 the live site is unchanged. The cloud session could not push to GitHub, so these
 changes travel as files.
 
-## 1. Apply the one code change already made (fix #2)
+## 1. Apply the code changes already made
+
+Apply in this order, from the project root (the folder with `src/`):
+
+```bash
+patch -p1 < fix2-market-filter.patch                       # 1a, src/App.tsx
+patch -p1 < actions-setup-high-and-type-filter.patch       # 1b, Actions page
+```
+Both were checked against the original uploaded zip: they apply cleanly, `tsc --strict` passes,
+42 tests pass, `vite build` is clean, and the Actions page was exercised in a browser.
+
+### 1b. Actions page: set-up is High + filter by type of problem
+
+- New `src/lib/kinds.ts` (+ `kinds.test.ts`): every action now has a type — Setup, Performance,
+  Scale, Budget pacing, Keywords, Feedback, Reallocation. `withPriority()` forces **Setup → High**.
+- `src/tracker.tsx`: a **Type** filter row (with counts) next to the platform tabs. The two filters
+  narrow each other and apply to To do, Backlog, Done and Dismissed. Type shows under the platform chip.
+  Within the same priority, Setup is sorted first. The type is saved with Done / Dismiss.
+- What counts as **Setup** today: Budget lines with **No plan** (spending without a plan line) or
+  **Not started** (plan not launched), and comments flagged "Needs action" that mention
+  set-up / tracking / UTM / pixel / final URL / target location. Older saved actions without a type
+  are classified from their text (`storedKind`).
+- The Alert Setup checks (URL, target location, daily budget set up) do not exist yet. When they
+  are built, give their actions `kind: 'Setup'` and they will be High and filterable with no
+  other change.
+
+### 1a. Market filter (fix #2)
 
 `fix2-market-filter.patch` (or the full `App.tsx` next to it) — `src/App.tsx` only.
 
