@@ -9,10 +9,9 @@
 > fails on `tracker.tsx` / `styles.css` means the local file changed: redo the change by hand from the
 > description). Nothing here has been deployed.
 
-Paste this whole file to the local Claude Code session that owns the dashboard project
-(the one that runs `npm run build` + `wrangler deploy`). Nothing here was deployed —
-the live site is unchanged. The cloud session could not push to GitHub, so these
-changes travel as files.
+This file is the full spec. For a ready-to-paste message use `LOCAL_PROMPT.md` (same folder).
+Everything is on branch `claude/hopeful-archimedes-7djwwm` of `phoebe-rgb/PEEL`. Nothing here was
+deployed — the live site is unchanged.
 
 ## 1. Apply the code changes already made
 
