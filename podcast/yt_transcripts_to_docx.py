@@ -5,8 +5,12 @@ Chỉ dùng cho mục đích học cá nhân.
 
 Cài đặt (1 lần):   pip install youtube-transcript-api python-docx
 Chạy:              python yt_transcripts_to_docx.py
+Mặc định: tự chọn K đoạn "hay nhất" của mỗi video (chấm điểm theo tiếng cười/vỗ tay, câu hỏi,
+tốc độ nói, từ thân mật; bỏ phần mở đầu, kết và đoạn quảng cáo).
 Tùy chọn:
-  --start 0 --end 10     chỉ lấy từ phút 0 đến phút 10 của mỗi video (mặc định 0-10)
+  --top 3 --minutes 3    số đoạn hay nhất và độ dài mỗi đoạn (phút). Mặc định 3 đoạn x 3 phút
+  --mode first           thay vì chọn đoạn hay, lấy từ phút --start đến --end
+  --start 0 --end 10     dùng cùng --mode first
   --full                 lấy cả video (rất dài với podcast 1 giờ+)
   --ids ID1 ID2 ...      dùng danh sách video riêng thay cho 24 tập có sẵn
   --out ten_file.docx    tên file xuất ra
@@ -71,12 +75,48 @@ def paragraphs(snips, start_s, end_s, gap=2.0, maxlen=450):
         paras.append((cur_t, " ".join(cur)))
     return paras
 
+INFORMAL = re.compile(r"\b(oh|wow|okay|honestly|literally|totally|actually|you know|i mean|kind of|sort of|"
+                      r"like|yeah|crazy|funny|love|hate|obsessed|amazing|insane|wild|weird|hilarious|dude|girl)\b", re.I)
+SPONSOR = re.compile(r"sponsor|promo code|discount|subscribe|brought to you|link in the description|use code|"
+                     r"patreon|download the app|free trial", re.I)
+
+def best_windows(raw, top=3, win=180, step=20):
+    """raw = [(start, text)]. Trả về [(t0, t1)] các cửa sổ điểm cao nhất, không chồng nhau."""
+    if not raw:
+        return []
+    end_t = raw[-1][0]
+    cands = []
+    t0 = 90.0                                   # bỏ ~1,5 phút mở đầu
+    while t0 + win <= end_t - 120:             # bỏ ~2 phút cuối
+        seg = [x for x in raw if t0 <= x[0] < t0 + win]
+        text = " ".join(x[1] for x in seg)
+        if seg and not SPONSOR.search(text):
+            words = len(text.split())
+            laugh = len(re.findall(r"\[(?:laughter|applause|laughs|cheering)", text, re.I))
+            ques = text.count("?")
+            inf = len(INFORMAL.findall(text))
+            rate = words / win                  # nói nhanh, sôi nổi
+            score = laugh * 4 + ques * 1.2 + inf * 0.15 + rate * 5
+            cands.append((score, t0))
+        t0 += step
+    cands.sort(reverse=True)
+    picked = []
+    for sc, t in cands:
+        if all(t + win <= p or t >= p + win for p in picked):
+            picked.append(t)
+        if len(picked) == top:
+            break
+    return [(t, t + win) for t in sorted(picked)]
+
 def mmss(s):
     return f"{int(s)//60:02d}:{int(s)%60:02d}"
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ids", nargs="*")
+    ap.add_argument("--mode", choices=["best", "first"], default="best")
+    ap.add_argument("--top", type=int, default=3)
+    ap.add_argument("--minutes", type=float, default=3)
     ap.add_argument("--start", type=float, default=0)
     ap.add_argument("--end", type=float, default=10)
     ap.add_argument("--full", action="store_true")
@@ -84,7 +124,7 @@ def main():
     ap.add_argument("--out", default="YouTube_transcripts.docx")
     a = ap.parse_args()
     eps = [(i, i) for i in a.ids] if a.ids else EPISODES
-    end_s = None if a.full else a.end * 60
+    end_s = None if (a.full or a.mode == "best") else a.end * 60
     doc = Document()
     for sec in doc.sections:
         sec.left_margin = sec.right_margin = Cm(2); sec.top_margin = sec.bottom_margin = Cm(2)
@@ -101,12 +141,20 @@ def main():
         if n > 1 or ok:
             doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
         doc.add_heading(f"Bài {n}: {title}", 1)
-        doc.add_paragraph(f"Link: https://youtu.be/{vid}   |   Đoạn: " +
-                          ("cả video" if a.full else f"phút {a.start:g}–{a.end:g}"))
-        for t, text in paragraphs(snips, a.start * 60, end_s):
-            p = doc.add_paragraph(); p.paragraph_format.line_spacing = 1.5
-            r = p.add_run(f"[{mmss(t)}] "); r.bold = True; r.font.color.rgb = RGBColor(0x1F, 0x38, 0x64)
-            p.add_run(text)
+        if a.full or a.mode == "first":
+            spans = [(a.start * 60, end_s)]
+            desc = "cả video" if a.full else f"phút {a.start:g}–{a.end:g}"
+        else:
+            spans = best_windows(snips, a.top, a.minutes * 60) or [(0, a.minutes * 60 * a.top)]
+            desc = f"{len(spans)} đoạn hay nhất"
+        doc.add_paragraph(f"Link: https://youtu.be/{vid}   |   {desc}")
+        for k, (s0, s1) in enumerate(spans, 1):
+            if len(spans) > 1:
+                doc.add_heading(f"Đoạn {k}: {mmss(s0)} – {mmss(s1)}", 2)
+            for t, text in paragraphs(snips, s0, s1):
+                p = doc.add_paragraph(); p.paragraph_format.line_spacing = 1.5
+                r = p.add_run(f"[{mmss(t)}] "); r.bold = True; r.font.color.rgb = RGBColor(0x1F, 0x38, 0x64)
+                p.add_run(text)
         ok += 1
     doc.save(a.out)
     print(f"Xong: {ok}/{len(eps)} video -> {a.out}")
