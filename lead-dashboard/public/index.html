@@ -71,7 +71,7 @@ th{color:var(--mut);position:sticky;top:0;background:var(--pan)}
 <div class="card" style="margin-bottom:12px">
   <div class="sec-t">Leads per day — in CRM vs unqualified vs lost</div>
   <div class="days" id="cDays"></div>
-  <div class="lg"><span><span class="dot" style="background:var(--incrm)"></span>In CRM</span><span><span class="dot" style="background:var(--gold)"></span>Unqualified (filtered)</span><span><span class="dot" style="background:var(--lost)"></span>Lost (to investigate)</span></div>
+  <div class="lg"><span><span class="dot" style="background:var(--incrm)"></span>In CRM</span><span><span class="dot" style="background:var(--gold)"></span>Unqualified (filtered)</span><span><span class="dot" style="background:var(--lost)"></span>Lost (to investigate)</span><span><span class="dot" style="background:var(--pend)"></span>Pending (&lt;24h, syncing)</span></div>
   <div class="hint" id="daysHint"></div>
 </div>
 <div class="card" style="margin-bottom:12px">
@@ -108,6 +108,10 @@ const BRANDVAR={CAAS:'--caas',SHMS:'--shms',HIM:'--him',CRCS:'--crcs'};
 const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v)||'#888';
 const v=id=>document.getElementById(id).value;
 const ageDays=iso=>(Date.now()-new Date(iso).getTime())/86400000;
+const ageHrs=iso=>(Date.now()-new Date(iso).getTime())/3600000;
+// A lead younger than this that isn't in the CRM export yet is "pending" (still syncing),
+// not "lost" — covers the Funnel→Sheet export lag (export runs ~2×/day). Matches the alert.
+const LOST_GRACE_HRS=24;
 
 fetch('/.netlify/functions/leads').then(r=>r.json()).then(d=>{
   M=d;
@@ -128,7 +132,7 @@ function init(){
   ['hideTest','brandF','countryF','chanF','from','to'].forEach(id=>document.getElementById(id).addEventListener('change',render));
   document.getElementById('reset').onclick=()=>{['brandF','countryF','chanF'].forEach(i=>document.getElementById(i).value='');document.getElementById('from').value=M.nl_from;document.getElementById('to').value=M.nl_to;document.getElementById('hideTest').checked=true;render();};
   document.getElementById('sub').textContent=LEADS.length+' Netlify leads ('+M.nl_from+' → '+M.nl_to+') · '+(M.crm_connected?('CRM connected — '+(M.crm_count||0).toLocaleString()+' emails'):'⚠️ CRM not connected')+' · refreshed '+new Date(M.generated_at).toLocaleString();
-  document.getElementById('method').innerHTML='<b>In CRM</b> = email found in the all-time Salesforce export. <b>Unqualified</b> = not in CRM but intentionally filtered out (English: Beginner, or Finance: “Will work while studying” / “Need a full scholarship”) — not a loss. <b>Lost</b> = not in CRM and not unqualified — the real leads to investigate. Returning applicants count as reached; test leads hidden by default.';
+  document.getElementById('method').innerHTML='<b>In CRM</b> = email found in the all-time Salesforce export. <b>Unqualified</b> = not in CRM but intentionally filtered out (English: Beginner, or Finance: “Will work while studying” / “Need a full scholarship”) — not a loss. <b>Lost</b> = not in CRM and not unqualified — the real leads to investigate. <b>Pending</b> = submitted in the last 24h and not yet in the CRM export — still syncing, held back so it is not called lost prematurely (it clears automatically once it syncs). Returning applicants count as reached; test leads hidden by default.';
 }
 function rows(){
   const b=v('brandF'),c=v('countryF'),ch=v('chanF'),ht=document.getElementById('hideTest').checked,f=v('from'),t=v('to');
@@ -146,7 +150,10 @@ const DISQ_FIN=new Set(['will work while studying','need a full scholarship']);
 function reasonsOf(l){const r=[];if((l.english_level||'').trim().toLowerCase()==='beginner')r.push('English: Beginner');const f=(l.financing||'').trim();if(DISQ_FIN.has(f.toLowerCase()))r.push('Finance: '+f);return r;}
 function render(){
   const r=rows().filter(l=>l.status!=='test');
-  const matched=r.filter(l=>l.status==='matched'),unq=r.filter(l=>l.status==='unqualified'),lost=r.filter(l=>l.status==='lost');
+  // Hold back very-recent not-yet-matched leads as "pending" — they're usually just waiting
+  // for the next CRM export, not truly lost. They clear automatically once they sync.
+  r.forEach(l=>{ if(l.status==='lost' && ageHrs(l.created_at)<LOST_GRACE_HRS) l.status='pending'; });
+  const matched=r.filter(l=>l.status==='matched'),unq=r.filter(l=>l.status==='unqualified'),lost=r.filter(l=>l.status==='lost'),pending=r.filter(l=>l.status==='pending');
   const den=matched.length+lost.length, rate=den?(lost.length/den*100):0;
   document.getElementById('kpis').innerHTML=[
     kpi(r.length.toLocaleString(),'Netlify leads',''),
@@ -156,7 +163,7 @@ function render(){
     kpi(rate.toFixed(0)+'%','Lost rate','of CRM-eligible','var(--lost)')
   ].join('');
   dayChart(r);rateChart(r);brandChart(r);barChart('cChan',tally(lost,l=>l.source||'—'),'--lost');barChart('cCountry',tally(lost,ctryOf),'--lost');
-  document.getElementById('tblTitle').textContent='Lost leads — to investigate ('+lost.length+')';
+  document.getElementById('tblTitle').textContent='Lost leads — to investigate ('+lost.length+')'+(pending.length?'  ·  '+pending.length+' recent (<24h) still syncing, not counted yet':'');
   document.getElementById('tblArea').innerHTML=lost.length?tbl(lost):'<div class="muted" style="padding:16px">No lost leads in this filter.</div>';
   document.getElementById('dlLost').style.display=lost.length?'':'none';
   document.getElementById('dlLost').onclick=e=>{e.preventDefault();csv(lost,'lost_leads.csv');};
@@ -168,15 +175,15 @@ function render(){
 function kpi(n,l,s,c){return `<div class="card kpi"><div class="n" style="${c?'color:'+c:''}">${n}</div><div class="l">${l}</div><div class="s">${s||''}</div></div>`;}
 function tally(arr,fn){const m={};arr.forEach(x=>{const k=fn(x)||'—';m[k]=(m[k]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
 function dayChart(r){
-  const by={};r.forEach(l=>{const o=(by[l.created_at.slice(0,10)]=by[l.created_at.slice(0,10)]||{m:0,u:0,l:0});o[l.status==='matched'?'m':l.status==='unqualified'?'u':'l']++;});
-  const days=Object.keys(by).sort(),mx=Math.max(1,...days.map(d=>by[d].m+by[d].u+by[d].l));
+  const by={};r.forEach(l=>{const o=(by[l.created_at.slice(0,10)]=by[l.created_at.slice(0,10)]||{m:0,u:0,l:0,p:0});o[l.status==='matched'?'m':l.status==='unqualified'?'u':l.status==='pending'?'p':'l']++;});
+  const days=Object.keys(by).sort(),mx=Math.max(1,...days.map(d=>by[d].m+by[d].u+by[d].l+by[d].p));
   document.getElementById('cDays').innerHTML=days.map(d=>{const o=by[d],h=x=>x/mx*150,lr=(o.m+o.l)?(o.l/(o.m+o.l)*100):0;
-    return `<div class="dcol" title="${d}  in CRM ${o.m} · unqualified ${o.u} · lost ${o.l} · lost rate ${lr.toFixed(0)}%"><div class="seg m" style="height:${h(o.m)}px"></div><div class="seg u" style="height:${h(o.u)}px"></div><div class="seg l" style="height:${h(o.l)}px"></div></div>`;}).join('');
+    return `<div class="dcol" title="${d}  in CRM ${o.m} · unqualified ${o.u} · lost ${o.l} · pending ${o.p} · lost rate ${lr.toFixed(0)}%"><div class="seg m" style="height:${h(o.m)}px"></div><div class="seg u" style="height:${h(o.u)}px"></div><div class="seg l" style="height:${h(o.l)}px"></div><div class="seg p" style="height:${h(o.p)}px"></div></div>`;}).join('');
   document.getElementById('daysHint').textContent=days.length?(days[0]+' → '+days[days.length-1]):'';
 }
 // Daily lost rate = lost ÷ CRM-eligible (matched + lost) per day; unqualified excluded (not a loss).
 function rateChart(r){
-  const by={};r.forEach(l=>{if(l.status==='unqualified')return;const k=l.created_at.slice(0,10);const o=by[k]=by[k]||{el:0,l:0};o.el++;if(l.status==='lost')o.l++;});
+  const by={};r.forEach(l=>{if(l.status==='unqualified'||l.status==='pending')return;const k=l.created_at.slice(0,10);const o=by[k]=by[k]||{el:0,l:0};o.el++;if(l.status==='lost')o.l++;});
   const days=Object.keys(by).sort(),host=document.getElementById('cRate'),hint=document.getElementById('rateHint');
   if(!days.length){host.innerHTML='<span class="muted">—</span>';hint.textContent='';return;}
   const pctOf=d=>by[d].el?by[d].l/by[d].el*100:0,vals=days.map(pctOf);
