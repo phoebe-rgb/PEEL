@@ -25,7 +25,7 @@ Gồm 3 phần: skill, kết nối Google Sheet, và lịch nhắc hằng ngày.
 
 ## Cách dùng hằng ngày
 
-- Ngày học mới: gửi danh sách từ. Claude sửa chính tả, chọn nhóm, điền Google Sheet, rồi gửi bài tập.
+- Ngày học mới: gửi danh sách từ. Claude sửa chính tả, chọn nhóm, điền Google Sheet, rồi gửi cả bộ bài tập trong một tin nhắn để bạn trả lời một lượt (ví dụ `A1b A2a B1c C1: ...`). Muốn bản in Word thì nói rõ.
 - Cuối ngày: báo kết quả hai bài kiểm tra ("thuộc: …; chưa thuộc: …") để Claude điền cột F.
 - Mỗi sáng: routine gửi bài ôn 1 ngày, 3 ngày, 7 ngày. Làm xong thì báo kết quả để Claude điền cột G, H, I.
 

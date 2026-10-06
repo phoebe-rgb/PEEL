@@ -42,7 +42,7 @@ Do not change the existing header names, order, or other people's rows. Never cl
 3. Fill the rows. Find the next empty row by reading `A:A`. Order: model sentences first, then Tier 1, then Tier 2. Use `update_values` for A:E only. Leave F to I empty.
 4. Do not put Vietnamese in column B. Vietnamese is only for instructions in chat and in the exercise files. Pronunciation must be checked item by item. If you are unsure of an IPA symbol, say so instead of guessing.
 5. Read the rows back and confirm date format, line breaks, and that nothing else changed.
-6. Produce today's exercise sheet (see "Exercises"). Prefer a printable Word file (.docx) with an answer key on the last page. If a file cannot be made, put the exercises in the chat.
+6. Run today's exercises in the chat (see "Exercises"). Make a printable Word file (.docx) only if the user asks for one.
 
 ## Flow 2: daily review (run each morning, or when the user asks)
 
@@ -56,7 +56,7 @@ Read `A:I`. Convert column A to dates. Let T = today.
 
 - If a review set is empty, say so in one line and skip that exercise.
 - Items that were `Thuộc` in F and G are not part of the 3-day review. Leave H blank for them.
-- Build one combined review sheet for the day: three clearly labelled parts, shortest first. Keep it short enough for about 15 to 20 minutes.
+- Build one combined review for the day in the chat format above: three clearly labelled parts (1-day, 3-day, 7-day), shortest first, about 15 to 20 minutes in total.
 - Do not write to the sheet until the user reports results. Then write only the correct cell (G, H or I) for each item.
 - If an item is still `Chưa thuộc` after the 7-day check, tell the user and ask whether to add it again as a new row in a future batch.
 - If the user missed days, do not skip: run every review whose due date has passed and mention they are late.
@@ -70,16 +70,18 @@ Read `A:I`. Convert column A to dates. Let T = today.
 
 ## Exercises (day 0)
 
-Keep this order, all with an answer key at the end:
+Delivery format (the user's preference): do the exercises directly in the chat. Send the WHOLE set in ONE message, not in batches: numbered questions with lettered options (a to d) for recognition items, plus a few typed items (translation, finish the pattern). Name questions by part and number (A1, B3, C2) so the user can reply once, for example `A1b A2a B1c C1: ...`. Do not show answers in that message. After the user replies, grade everything at once: list each mistake with the correct answer and a one-line reason, give the score, and then ask the user to confirm the Thuộc / Chưa thuộc list before writing column F. If an interactive question tool is available but limited in questions per call, still prefer the single numbered message when the user asks for "one round".
+
+Keep this order of parts:
 1. Pronunciation drill: listen and repeat the American pronunciation using a dictionary site.
 2. Matching words with short English definitions.
 3. Gap-fill sentences with a word bank.
 4. Word families and multi-sense words (for example bill, reliable and reliably).
 5. US pronunciation: read the IPA in column C aloud, then mark the three hardest words and the sound that trips the user.
 6. Sentence patterns: the user writes two sentences about their own life for each pattern.
-7. Test 1 and Test 2 as above, then a self-scoring table that maps to column F.
+7. Test 1 and Test 2 as above. In chat mode, grade them yourself and map the results to column F.
 
-Review sheets (day 1, 3, 7) are shorter: quick recall, two or three gap-fills, one translation per pattern.
+Reviews (day 1, 3, 7) are shorter: quick recall, two or three gap-fills, one translation per pattern.
 
 ## Content rules
 
