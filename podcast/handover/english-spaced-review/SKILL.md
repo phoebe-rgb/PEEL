@@ -63,10 +63,11 @@ Read `A:I`. Convert column A to dates. Let T = today.
 
 ## Same-day tests and column F
 
-- Test 1: right after studying, Vietnamese to English recall with the sheet covered.
-- Test 2: in the evening, at least 4 hours after Test 1, translate whole sentences that use the words and patterns.
-- F = `Thuộc` only if the item was right in both tests. Otherwise `Chưa thuộc`.
-- The user reports results in chat (for example "thuộc: bill, precisely; chưa thuộc: ontology"). Write F for every item of that day, not only the ones mentioned. Items not mentioned: ask once before assuming.
+- The user does the day-0 tests at any time on the same day. Do not make them wait until evening.
+- Recognition part (choose the meaning) and production part (finish the pattern, translate into English) both count.
+- F = `Thuộc` if the item was right in both the recognition and the production questions. If it was wrong in either, F = `Chưa thuộc`. If an item only appeared in one kind of question, judge by that one.
+- Borderline cases (right word form but a wrong sentence around it): propose `Chưa thuộc` and ask the user once to confirm.
+- After grading, show the proposed Thuộc / Chưa thuộc list. When the user confirms (or says to write it), write F for every item of that day in one update, in sheet order. Read column B first and match by text, not by guessing row numbers, because the user may edit cells.
 
 ## Exercises (day 0)
 
@@ -79,7 +80,7 @@ Keep this order of parts:
 4. Word families and multi-sense words (for example bill, reliable and reliably).
 5. US pronunciation: read the IPA in column C aloud, then mark the three hardest words and the sound that trips the user.
 6. Sentence patterns: the user writes two sentences about their own life for each pattern.
-7. Test 1 and Test 2 as above. In chat mode, grade them yourself and map the results to column F.
+7. A final test with recognition and production questions. In chat mode, grade it yourself and map the results to column F.
 
 Reviews (day 1, 3, 7) are shorter: quick recall, two or three gap-fills, one translation per pattern.
 

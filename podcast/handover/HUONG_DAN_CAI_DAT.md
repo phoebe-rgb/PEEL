@@ -26,14 +26,14 @@ Gồm 3 phần: skill, kết nối Google Sheet, và lịch nhắc hằng ngày.
 ## Cách dùng hằng ngày
 
 - Ngày học mới: gửi danh sách từ. Claude sửa chính tả, chọn nhóm, điền Google Sheet, rồi gửi cả bộ bài tập trong một tin nhắn để bạn trả lời một lượt (ví dụ `A1b A2a B1c C1: ...`). Muốn bản in Word thì nói rõ.
-- Cuối ngày: báo kết quả hai bài kiểm tra ("thuộc: …; chưa thuộc: …") để Claude điền cột F.
+- Ngay sau khi làm bài: Claude chấm, đề xuất danh sách Thuộc / Chưa thuộc, bạn xác nhận thì Claude điền cột F.
 - Mỗi sáng: routine gửi bài ôn 1 ngày, 3 ngày, 7 ngày. Làm xong thì báo kết quả để Claude điền cột G, H, I.
 
 ## Quy tắc ôn (tóm tắt)
 
 | Ôn | Gồm những dòng nào |
 |---|---|
-| Cùng ngày | 2 bài kiểm tra. Cột F là "Thuộc" chỉ khi đúng cả hai |
+| Cùng ngày | Bài kiểm tra làm lúc nào trong ngày cũng được. Cột F là "Thuộc" khi đúng cả câu nhận biết nghĩa lẫn câu tự đặt/dịch |
 | 1 ngày | Tất cả từ học hôm qua |
 | 3 ngày | Từ học 3 ngày trước mà cột F hoặc G là "Chưa thuộc" |
 | 7 ngày | Tất cả từ học 7 ngày trước |
