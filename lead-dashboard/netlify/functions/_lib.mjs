@@ -122,9 +122,12 @@ const EMAIL = /[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/gi;
 //  2) "SEG_CRM_baseline_alltime" — all-time historical lead emails (returning-applicant memory)
 // Both sheets must be shared "Anyone with the link (Viewer)" so the function can read them.
 // Override by setting SALESFORCE_CSV_URL (comma-separated) in Netlify env.
+//  3) "SEG_CRM_baseline_2018_2023" — historical SEG leads 2018→2022 (~312k emails), so
+//     returning applicants who first registered years ago are recognised (not false "lost").
 const DEFAULT_CRM_CSV = [
   "https://docs.google.com/spreadsheets/d/1bAvxn13rUsclKOEKe_B0gRVWXbdQDn5vymPba0sBmtM/export?format=csv&gid=1301696085",
   "https://docs.google.com/spreadsheets/d/1vU6ETa6cmWLXP3XnF7epGL2wG3be2RItQCDJSZQ9CfU/export?format=csv&gid=285924473",
+  "https://docs.google.com/spreadsheets/d/1kZJmISQIrngOsNvP7rRltQC1nSy4S_WwI_-n5Fc72Q4/export?format=csv&gid=1970374001",
 ].join(",");
 
 export async function getCrmKeys() {
