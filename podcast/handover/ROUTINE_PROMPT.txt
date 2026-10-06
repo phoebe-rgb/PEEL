@@ -1,0 +1,10 @@
+Chạy bài ôn từ vựng hôm nay theo skill english-spaced-review.
+
+1. Đọc Google Sheet (SHEET_ID trong skill, tab Sheet1, cột A đến I).
+2. Tính ngày hôm nay theo giờ Asia/Saigon. Lập danh sách:
+   - ôn 1 ngày: các dòng có Date = hôm nay trừ 1 ngày;
+   - ôn 3 ngày: các dòng có Date = hôm nay trừ 3 ngày mà cột F hoặc cột G là "Chưa thuộc";
+   - ôn 7 ngày: tất cả các dòng có Date = hôm nay trừ 7 ngày.
+3. Nếu có bài ôn: tạo một bài ôn ngắn (khoảng 15 đến 20 phút), chia 3 phần có nhãn rõ, kèm đáp án ở cuối, rồi gửi cho tôi.
+4. Nếu cả ba danh sách đều trống: chỉ trả lời "Hôm nay không có bài ôn".
+5. KHÔNG sửa Google Sheet cho đến khi tôi báo kết quả. Khi tôi báo, chỉ ghi vào đúng cột G, H hoặc I của các dòng liên quan.
