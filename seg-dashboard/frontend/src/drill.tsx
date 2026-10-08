@@ -82,11 +82,13 @@ export function Drill({ pair, dims, metrics = DRILL_METRICS, brief = false, minS
   const [closed, setClosed] = useState<Set<string>>(new Set());
   const [result, setResult] = useState<'All' | Verdict>('All');
   const [small, setSmall] = useState(false);
+  // Insights follow the activity filter at the top (ACT / Paid / All): the same activities as the table, null = all.
+  const activities = pair.cur.dims.activity?.length ? pair.cur.dims.activity : null;
   const specialist = useMemo(() => {
     if (!ref) return { google: [], meta: [] };
-    const g = googleReview(store, ref.bench, ref.setup);
-    return { google: [...g.critical, ...g.scale], meta: metaReview(store, ref.bench).markets };
-  }, [store, ref]);
+    const g = googleReview(store, ref.bench, ref.setup, undefined, activities);
+    return { google: [...g.critical, ...g.scale], meta: metaReview(store, ref.bench, undefined, activities).markets };
+  }, [store, ref, activities?.join()]);
   const kids = useMemo(() => buildKids(store, pair.cur, pair.prev, dims), [store, pair, dims.join()]);
   const tree = useMemo(() => {
     const ctx: DeepCtx = { s: store, hierarchy: dims, p1Label: labels[1], kids, ...specialist };
@@ -180,11 +182,13 @@ export function BossPivot({ pair, dims }: { pair: Pair; dims: Dim[] }) {
   const { store } = useCtx();
   const ref = useRefData();
   const { labels } = useSides(pair, [dims]);
+  // Insights follow the activity filter at the top (ACT / Paid / All): the same activities as the table, null = all.
+  const activities = pair.cur.dims.activity?.length ? pair.cur.dims.activity : null;
   const specialist = useMemo(() => {
     if (!ref) return { google: [], meta: [] };
-    const g = googleReview(store, ref.bench, ref.setup);
-    return { google: [...g.critical, ...g.scale], meta: metaReview(store, ref.bench).markets };
-  }, [store, ref]);
+    const g = googleReview(store, ref.bench, ref.setup, undefined, activities);
+    return { google: [...g.critical, ...g.scale], meta: metaReview(store, ref.bench, undefined, activities).markets };
+  }, [store, ref, activities?.join()]);
   const kids = useMemo(() => buildKids(store, pair.cur, pair.prev, dims), [store, pair, dims.join()]);
   const ctx: DeepCtx = useMemo(() => ({ s: store, hierarchy: dims, p1Label: labels[1], kids, ...specialist }), [store, dims.join(), labels[1], kids, specialist]);
   return (

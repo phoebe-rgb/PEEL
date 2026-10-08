@@ -1,9 +1,9 @@
-// ACT-only action rules, ported from the team's two existing routines:
+// Action rules, ported from the team's two existing routines (ACT campaigns by default; pass `activities` to widen):
 //  - Google: "Campaign Daily Review" Apps Script (PPC) — benchmark + trend rules per campaign.
 //  - Meta: "SEG Meta weekly report" — per market (school × country from campaign name), L7/P7 CPL and L14/P14 CPGL.
 // Both run on rolling windows ending at the latest data date ("yesterday"), independent of the cycle/week filter.
 import { countryOfAdSet, type Store } from './data';
-import { segmentOf } from './names';
+import { activityOf, segmentOf } from './names';
 
 export type Bench = { cpc: number | null; cpl: number | null; cpgl: number | null; glr: number | null };
 export type Benchmarks = { google: Record<string, Bench>; meta: Record<string, Bench> };
@@ -33,8 +33,14 @@ export function parseCampaign(c: string) {
 /** Ad-name variants of the same creative (_1, _3, – Copy) are merged before judging an ad. */
 export const baseAd = (a: string) => a.replace(/(\s*[–-]\s*Copy(\s*\d+)?)+$/i, '').replace(/_\d+$/, '').trim();
 
-/** Daily series per key for rows of one channel whose campaign contains `tag`, over `days` ending at `end`. */
-function series(s: Store, channel: string, tag: string, end: string, days: number, keyOf: (campaign: string, ad: string, adSet: string) => string | null, school?: string) {
+/** Activity types to review (from the campaign name token); null = every activity. */
+export type Activities = string[] | null;
+const inScope = (activities: Activities) => (campaign: string) => !activities || activities.includes(activityOf(campaign, ''));
+/** Benchmarks are ACT benchmarks: only ACT campaigns are judged against them. */
+const isAct = (campaign: string) => activityOf(campaign, '') === 'ACT';
+
+/** Daily series per key for rows of one channel whose campaign passes `keep`, over `days` ending at `end`. */
+function series(s: Store, channel: string, keep: (campaign: string) => boolean, end: string, days: number, keyOf: (campaign: string, ad: string, adSet: string) => string | null, school?: string) {
   const want = new Set(range(end, days));
   const ch = s.dicts.channel.indexOf(channel);
   const sc = school ? s.dicts.school.indexOf(school) : -1;
@@ -45,7 +51,7 @@ function series(s: Store, channel: string, tag: string, end: string, days: numbe
     const d = s.dates[s.date[i]];
     if (!d || !want.has(d)) continue;
     const camp = s.dicts.campaign[s.dim.campaign[i]];
-    if (!camp.includes(tag)) continue;
+    if (!keep(camp)) continue;
     const key = keyOf(camp, s.dicts.ad[s.dim.ad[i]], s.dicts.ad_group[s.dim.ad_group[i]]);
     if (key === null) continue;
     let m = out.get(key); if (!m) { m = new Map(); out.set(key, m); }
@@ -88,16 +94,16 @@ function googleStats(m: Map<string, Day>, y: string, short: number) {
 const f1 = (n: number | null) => (n === null || !Number.isFinite(n) ? '—' : n.toFixed(1));
 const pc = (n: number | null) => (n === null || !Number.isFinite(n) ? '—' : `${(n * 100).toFixed(1)}%`);
 
-export function googleReview(s: Store, bench: Benchmarks, setup: Setup, school?: string) {
+export function googleReview(s: Store, bench: Benchmarks, setup: Setup, school?: string, activities: Activities = ['ACT']) {
   const y = refDate(s.lastDate);
   const staleCut = addDays(y, -3);
   let skippedRecent = 0, skippedPaused = 0;
-  const by = series(s, 'Google', '_ACT_', y, 30, (c) => c, school);
+  const by = series(s, 'Google', inScope(activities), y, 30, (c) => c, school);
   const results: GoogleResult[] = [];
   for (const [campaign, m] of by) {
     if (!m.has(y)) continue; // active yesterday
     const { school: sc, country } = parseCampaign(campaign);
-    const bm = bench.google[`${sc}|${country}`] ?? null;
+    const bm = isAct(campaign) ? bench.google[`${sc}|${country}`] ?? null : null;
     // Setup tabs (Google Ads export): skip paused campaigns and ones changed in the last 3 days (give changes time).
     const su = setup[campaign];
     if (su && !su.enabled) { skippedPaused++; continue; }
@@ -183,21 +189,24 @@ export function metaWindows(y: string) {
 
 const sgn = (v: number | null) => (v === null ? '—' : `${v >= 0 ? '+' : '−'}${Math.abs(v * 100).toFixed(0)}%`);
 
-export function metaReview(s: Store, bench: Benchmarks, school?: string) {
+export function metaReview(s: Store, bench: Benchmarks, school?: string, activities: Activities = ['ACT']) {
   const y = refDate(s.lastDate);
   // region-wide campaigns (country ALL) take the country from the ad set name (Region_COUNTRY_…)
-  const key = (c: string, adSet = '') => { const p = parseCampaign(c); const cc = p.country === 'ALL' ? countryOfAdSet(adSet) || 'ALL' : p.country; return `${p.school}|${cc}|${segmentOf(c)}`; };
+  // non-ACT campaigns get their activity in front of the segment ("NURT · Parents") so they never merge with ACT
+  const seg = (c: string) => { const g = segmentOf(c), a = activityOf(c, ''); return a === 'ACT' || g === 'Retargeting' || g === 'Social Boosting' ? g : `${a} · ${g}`; };
+  const key = (c: string, adSet = '') => { const p = parseCampaign(c); const cc = p.country === 'ALL' ? countryOfAdSet(adSet) || 'ALL' : p.country; return `${p.school}|${cc}|${seg(c)}`; };
+  const keep = inScope(activities);
   const campsBy = new Map<string, Set<string>>();
   const keyC = (c: string, _a: string, as: string) => { const k = key(c, as); (campsBy.get(k) ?? campsBy.set(k, new Set()).get(k)!).add(c); return k; };
-  const markets = series(s, 'Meta', '_FB_ACT_', y, 28, keyC, school);
-  const ads = series(s, 'Meta', '_FB_ACT_', y, 28, (c, a, as) => (a ? `${key(c, as)}\u0001${baseAd(a)}` : null), school);
+  const markets = series(s, 'Meta', keep, y, 28, keyC, school);
+  const ads = series(s, 'Meta', keep, y, 28, (c, a, as) => (a ? `${key(c, as)}\u0001${baseAd(a)}` : null), school);
   const setMap = new Map<string, Map<string, Map<string, Day>>>();
   { // ad set split: campaign → ad set (from the ad_group dimension)
     const ch = s.dicts.channel.indexOf('Meta'), want = new Set(range(y, 28));
     for (let i = 0; i < s.n; i++) {
       if (s.dim.channel[i] !== ch) continue;
       const d = s.dates[s.date[i]]; if (!d || !want.has(d)) continue;
-      const camp = s.dicts.campaign[s.dim.campaign[i]]; if (!camp.includes('_FB_ACT_')) continue;
+      const camp = s.dicts.campaign[s.dim.campaign[i]]; if (!keep(camp)) continue;
       if (school && s.dicts.school[s.dim.school[i]] !== school) continue;
       const as = s.dicts.ad_group[s.dim.ad_group[i]] || '(no ad set)';
       const k = key(camp, as);
@@ -212,7 +221,7 @@ export function metaReview(s: Store, bench: Benchmarks, school?: string) {
   for (const [k, m] of markets) {
     const [sc, cc, segment] = k.split('|');
     const l7 = sum(m, L7), p7 = sum(m, P7), l14 = sum(m, L14), p14 = sum(m, P14);
-    const bm = bench.meta[`${sc}|${cc}`] ?? null;
+    const bm = [...(campsBy.get(k) ?? [])].some(isAct) ? bench.meta[`${sc}|${cc}`] ?? null : null;
     const cplChange = chg(l7.cpl, p7.cpl), cpglChange = chg(l14.cpgl, p14.cpgl);
     const pooled = segment === 'Retargeting' || segment === 'Social Boosting';
     let flag: Flag = 'green', story = '', action = '';
@@ -290,7 +299,7 @@ export function metaReview(s: Store, bench: Benchmarks, school?: string) {
   }
   const order: Record<Flag, number> = { red: 0, amber: 1, green: 2, none: 3 };
   out.sort((a, b) => order[a.flag] - order[b.flag] || b.l7.cost - a.l7.cost);
-  const other = (tag: string) => { const m = series(s, 'Meta', tag, y, 14, () => 'x', school).get('x'); return sum(m, L14); };
+  const other = (tag: string) => { const m = series(s, 'Meta', (c) => c.includes(tag), y, 14, () => 'x', school).get('x'); return sum(m, L14); };
   const allM = new Map<string, Day>(); for (const m of markets.values()) for (const [d, x] of m) { const t = allM.get(d) ?? allM.set(d, zero()).get(d)!; (Object.keys(x) as (keyof Day)[]).forEach((f) => { t[f] += x[f]; }); }
   const tot = { l7: sum(allM, L7), p7: sum(allM, P7), l14: sum(allM, L14), p14: sum(allM, P14) };
   return { asOf: y, windows: metaWindows(y), markets: out, conv: other('_FB_CONV_'), nurt: other('_FB_NURT_'), tot };
