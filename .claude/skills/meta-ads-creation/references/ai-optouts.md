@@ -12,12 +12,9 @@ block below, explicitly.
 ```json
 {
   "degrees_of_freedom_spec": {
-    "creative_features_spec": {
-      "video_auto_crop": { "enroll_status": "OPT_OUT" },
-      "video_uncrop":    { "enroll_status": "OPT_OUT" },
-      "video_filtering": { "enroll_status": "OPT_OUT" }
-    }
+    "creative_features_spec": { "...": "ALL 82 keys from creative-features-optout.json, each {\"enroll_status\":\"OPT_OUT\"}" }
   },
+  "biz_ai": { "capabilities": { "prompts": { "enroll_status": "OPT_OUT" } } },
   "contextual_multi_ads": { "enroll_status": "OPT_OUT" },
   "creative_sourcing_spec": {
     "website_media_spec":   { "enroll_status": "OPT_OUT" },
@@ -27,6 +24,16 @@ block below, explicitly.
   "media_sourcing_spec": []
 }
 ```
+
+`creative_features_spec` must be the **full list** in
+[`creative-features-optout.json`](creative-features-optout.json). It holds 82
+features, copied from a creative that Ads Manager published successfully with
+everything off. Load it and paste it in. **Three video keys are not enough**:
+
+- With only 3 keys, Meta leaves biz_ai / "Chat with business" style features on.
+- Once the ad set is live, publish then fails with **error 2446880 "WhatsApp
+  number required"**.
+- `biz_ai.capabilities.prompts` OPT_OUT is also required for the same reason.
 
 What each line kills:
 
@@ -40,6 +47,32 @@ What each line kills:
 
 Do **not** send `standard_enhancements` (the API rejects it even as OPT_OUT) or
 `cv_transformation`.
+
+## NEVER click the trash icon on "Related media" in Ads Manager
+
+If Related media shows up, the creative is missing the opt-out block. Fix it
+via the API (create a new ad with the block, delete the old one).
+
+Do **not** remove the media one by one in the UI:
+
+- Each click writes a per-item list into
+  `media_sourcing_spec.related_media.images[] = {opt_in_status: "opt_out", ...}`.
+  There are usually 33–49 items.
+- Meta allows at most 30, so publish fails with **error 105:
+  "media_sourcing_spec['related_media']['images'] must have at most 30
+  elements"**.
+- The ad is then unpublishable and must be recreated.
+
+The only correct value is `"media_sourcing_spec": []`.
+
+## Cleaning up broken drafts
+
+- `ads_update_entity {"status":"DELETED"}` on a never-published (`action:"add"`)
+  draft ad drops it from publish. The validator may still show a stale error,
+  or 1487839 "must specify ACTIVE or PAUSED", until it re-runs.
+- If Ads Manager still lists those rows as errors at "Review and publish", the
+  user should select them and **Discard**.
+- Never let a PAUSED, errored draft sit in the campaign. It blocks "Publish all".
 
 ## Never reuse an old `creative_id` to "copy" a creative
 
@@ -69,7 +102,9 @@ the source had them, because the ad sets deliver on Threads.
    - `creative_sourcing_spec.website_media_spec.enroll_status == OPT_OUT`
    - `creative_sourcing_spec.website_summary_spec.enroll_status == OPT_OUT`
    - `media_sourcing_spec == []`
-   - every `degrees_of_freedom_spec.creative_features_spec.*.enroll_status == OPT_OUT`
+   - every `degrees_of_freedom_spec.creative_features_spec.*.enroll_status == OPT_OUT`, with all 82 keys present
+   - `biz_ai.capabilities.prompts.enroll_status == OPT_OUT`
+   - no draft ad in the campaign, ACTIVE **or PAUSED**, has `active_errors`. Any errored draft blocks publish
    - no `call_to_action.value.link_title` / `link_description`
    - `validation_status == VALIDATED` and `active_errors` empty
    - no duplicate ad names within an ad set
