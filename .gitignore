@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+
+# Regenerable verification screenshots (rendered from the LP HTML)
+seg-lp/*.png
