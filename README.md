@@ -25,3 +25,24 @@ descriptions) and flags anything that will be truncated.
 
 See the skill's [`SKILL.md`](.claude/skills/preview-ads/SKILL.md) for the full workflow
 and [`examples/`](.claude/skills/preview-ads/examples/) for rendered samples.
+
+## `campaign-request` skill
+
+A Claude skill that turns a colleague's email brief into a **reviewable Klaviyo
+draft** — template cloned or built, copy applied, preview rendered, test sent,
+campaign draft created against a resolved audience. Nothing is ever sent or
+scheduled; the send button stays human.
+
+It lives in [`.claude/skills/campaign-request/`](.claude/skills/campaign-request/)
+and triggers on `/campaign-request` or any pasted campaign brief.
+
+The requester needs **no Klaviyo login and no Claude account** — they fill in the
+[request form](.claude/skills/campaign-request/references/request-form.md) anywhere
+(Slack, email, a Google Form) and the operator runs the skill against it.
+
+- [`SKILL.md`](.claude/skills/campaign-request/SKILL.md) — workflow, hard rules,
+  naming convention, and the connected account's real list/segment IDs.
+- [`references/klaviyo-build-notes.md`](.claude/skills/campaign-request/references/klaviyo-build-notes.md)
+  — verified tool shapes and the traps that cost a run (drag-and-drop `definition`
+  is fully-replacing, only two `send_strategy` values are writable, `render` is rate
+  limited to 3/s).
