@@ -28,8 +28,9 @@ human.
 ## Trigger
 
 User runs `/campaign-request`, or pastes/forwards a campaign brief and wants it set
-up in Klaviyo. Also fires when a filled-in
-[request form](references/request-form.md) arrives.
+up in Klaviyo. Also fires when a brief arrives as a Slack message in a client channel
+— see [slack-intake.md](references/slack-intake.md) for who briefs what, how to read
+it, and how the reply must be shaped.
 
 ## Hard rules
 
@@ -161,6 +162,13 @@ Check the rendered output against this list and report the result:
 `create_template_preview_send_job` to the operator's own address, or the addresses
 they name. Say who it went to.
 
+**One test per revision, not one per tweak.** Tag the test's subject with the version
+(`[v3 — for forwarding] <real subject>`) so the recipient's inbox is unambiguous, and
+when a version is final send exactly one clean test with the real subject. The
+requester forwards that email to the client, so a pile of near-identical tests is a
+real cost — see the test-send discipline in
+[slack-intake.md](references/slack-intake.md).
+
 ### Phase 5 — Create the campaign draft
 
 `create_campaign` — build the structure inline in one call: the audience with a
@@ -194,6 +202,11 @@ Report, in this shape:
 
 **Needs a human** — every open decision: approve the copy, confirm the audience,
 schedule, hit send. Say plainly that nothing has been scheduled or sent.
+
+**Client must confirm** — kept as its own short list, because the requester forwards
+this part onward. One line per item, no internal jargon.
+
+When the handover goes to Slack, post it in the brief's thread and tag the requester.
 
 ## Naming convention
 
