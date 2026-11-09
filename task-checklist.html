@@ -109,6 +109,7 @@
   .tag.p-low{background:var(--line2);color:var(--ink3)}
   .tag.m-tag{background:var(--tagd-soft);color:var(--tagd)}
   .tag.m-team,.tag.m-fyi,.tag.m-self,.tag.m-bot{background:var(--line2);color:var(--ink3)}
+  .tag.fin{background:var(--ok-soft);color:var(--ok)}
   .t-meta .src{color:var(--ink3)}
   .t-meta a{color:var(--ink3);text-decoration:underline;text-underline-offset:2px}
   .t-meta a:hover{color:var(--accent)}
@@ -275,11 +276,12 @@ const TASKS = [
  d:"Copy ghi “application fee waived or one-way flight, if application is successful” — bot yêu cầu check lại điều kiện trước khi launch. Ngoài ra field Budget vẫn trống trên cả 3 request India (#8, #9, #10) và deck cũng không có budget.",
  s:"Slack #seg-review-copy-and-assets · 06/11 09:14–09:15"},
 
-{g:"SEG", p:"mid", m:"bot", who:"Bot Airtable",
- t:"Quyết định DISPLAY COPY rows 129–133 (SHMS) có theo copy mới rows 172–173 không",
- ask:"“Display copy rows 129–133 still carry the old AI wording: say if they should follow rows 172–173 too.”",
- d:"Meta copy SHMS đã được team viết lại (rows 172–173) nhưng Display copy vẫn là bản AI cũ (ghi 11am–4pm và “registration required”) → đang không đồng bộ.",
- s:"Slack #seg-review-copy-and-assets · 06/11 09:14"},
+{g:"SEG", p:"mid", m:"tag", who:"Phoebe (đã chốt)",
+ t:"Chạy lại Display copy SHMS (rows 129–133) theo copy mới rows 172–173",
+ ask:"Phoebe chốt 09/11: “có theo copy mới, chạy lại display copy.”",
+ d:"Đã quyết: Display copy phải đồng bộ với Meta copy team viết lại (rows 172–173), bỏ wording AI cũ ở rows 129–133 (đang ghi “11 am–4 pm” và “registration required”). Chạy lại Display copy giữ đúng format: 5 headlines (≤30 ký tự), 2 long headlines (≤90), 3 descriptions (≤90), Final URL lp.shms.com/india/meetusinyourcity/. Angle theo copy mới: “Meet SHMS in India” và “An Exclusive Event with SHMS”, fee waiver hoặc one-way flight ghi rõ điều kiện application thành công, “Places are limited”, “Register now”. Xong copy thì asset Display DAHZ0rCgXHU và deck review phải refresh theo (chạy Create Slides).",
+ s:"Chốt trong comment trang này · 09/11 — gốc: Slack #seg-review-copy-and-assets 06/11 09:14",
+ u:"https://docs.google.com/spreadsheets/d/15kXVWZ_sITHEDHCOy-KXvi9FFtM3EZQA_LyN2sgjmVc/edit#gid=274226811&range=A129:J133", ul:"rows 129–133"},
 
 {g:"SEG", p:"hi", m:"team", who:"Piers / John",
  t:"Đóng gap pacing tháng 11 — gap lớn nhất là Meta retargeting",
@@ -303,13 +305,15 @@ const TASKS = [
  t:"Copy retargeting Tier 2 (rows 96–99): chọn asset khớp từng variation",
  ask:"DM riêng: “The Canva pages you picked were chosen for the previous themes, so they may not fit the new angles. I’ve marked them as ‘to confirm’. So please feel free to pick the assets that best fit each copy variation, rather than using the same two creatives for both.”",
  d:"Lucie đã sửa copy rows 96–99: bỏ cách chia theo theme (Safety / Global / Heritage) vì spend giữa các theme lệch nhau nên không so được, và Safety không phải pain point của phần lớn market này. Mỗi school giờ có 2 variation: 1 nói USP chính, 1 chạm vào lo lắng thật của audience (“can a love of food become a real career?”, “will this lead to a job?”). Copy chuyển sang cấp school, bỏ list program vì đang retarget toàn bộ website visitor. Asset cũ vẫn còn trong version history nếu cái nào còn dùng được.",
- s:"Slack DM Lucie · 06/11 04:51"},
+ s:"Slack DM Lucie · 06/11 04:51",
+ fin:"Xong 09/11 · đã gửi Lucie"},
 
 {g:"SEG", p:"mid", m:"tag", who:"Lucie",
  t:"Làm slides review + link sheet copy client-facing cho Tier 2 retargeting",
  ask:"“Client review: We might need to run this by the client. Once the assets are ready, could you please prepare simple slides for review, with a link to the ad copy in a client-facing sheet?”",
- d:"Làm sau khi chọn asset xong. Lucie cũng đang check lại danh sách target country với Piers vì Tier 2 (non-pilot) markets đã thay đổi — sẽ follow up lại sau.",
- s:"Slack DM Lucie · 06/11 04:51"},
+ d:"Lucie cũng đang check lại danh sách target country với Piers vì Tier 2 (non-pilot) markets đã thay đổi — sẽ follow up lại sau, nên phần country có thể còn phải sửa.",
+ s:"Slack DM Lucie · 06/11 04:51",
+ fin:"Xong 09/11"},
 
 {g:"SEG", p:"mid", m:"bot", who:"Mail tự động",
  t:"Fix Google Apps Script “SEG Meta tracking set up” đang fail",
@@ -403,30 +407,38 @@ const id = i => "t" + i;
 const GROUPS = [...new Set(TASKS.map(t => t.g))];
 let filter = "todo";
 
+/* done: true = đã tick, "off" = bỏ tick tay; chưa có gì thì theo cờ fin trong data */
+function done(i){
+  const v = state[id(i)];
+  if (v === true) return true;
+  if (v === "off") return false;
+  return !!TASKS[i].fin;
+}
+
 const listEl = document.getElementById("list");
 const filtersEl = document.getElementById("filters");
 
 function visible(t, i){
   if (filter === "all")  return true;
-  if (filter === "todo") return !state[id(i)];
-  if (filter === "done") return !!state[id(i)];
-  if (filter === "hi")   return t.p === "hi" && !state[id(i)];
-  if (filter === "tag")  return t.m === "tag" && !state[id(i)];
+  if (filter === "todo") return !done(i);
+  if (filter === "done") return done(i);
+  if (filter === "hi")   return t.p === "hi" && !done(i);
+  if (filter === "tag")  return t.m === "tag" && !done(i);
   return t.g === filter;
 }
 
 function renderFilters(){
-  const todo = TASKS.filter((t,i)=>!state[id(i)]).length;
-  const done = TASKS.length - todo;
-  const hi   = TASKS.filter((t,i)=>t.p==="hi" && !state[id(i)]).length;
-  const tg   = TASKS.filter((t,i)=>t.m==="tag" && !state[id(i)]).length;
+  const todo = TASKS.filter((t,i)=>!done(i)).length;
+  const doneN = TASKS.length - todo;
+  const hi   = TASKS.filter((t,i)=>t.p==="hi" && !done(i)).length;
+  const tg   = TASKS.filter((t,i)=>t.m==="tag" && !done(i)).length;
   const defs = [
     ["todo","Chưa xong",todo],
     ["hi","Gấp",hi],
     ["tag","Tag trực tiếp",tg],
     ["all","Tất cả",TASKS.length],
-    ["done","Đã xong",done],
-    ...GROUPS.map(g => [g, g, TASKS.filter((t,i)=>t.g===g && !state[id(i)]).length])
+    ["done","Đã xong",doneN],
+    ...GROUPS.map(g => [g, g, TASKS.filter((t,i)=>t.g===g && !done(i)).length])
   ];
   filtersEl.innerHTML = "";
   defs.forEach(([k,label,n])=>{
@@ -441,19 +453,18 @@ function renderFilters(){
 }
 
 function taskNode(t, i){
-  const key = id(i), done = !!state[key];
+  const key = id(i), isDone = done(i);
   const li = document.createElement("li");
-  li.className = "task" + (done ? " done" : "") + (t.m === "tag" ? " direct" : "");
+  li.className = "task" + (isDone ? " done" : "") + (t.m === "tag" ? " direct" : "");
 
   const btn = document.createElement("button");
   btn.className = "tick";
   btn.type = "button";
-  btn.setAttribute("aria-pressed", String(done));
-  btn.setAttribute("aria-label", (done ? "Bỏ tick: " : "Tick xong: ") + t.t);
+  btn.setAttribute("aria-pressed", String(isDone));
+  btn.setAttribute("aria-label", (isDone ? "Bỏ tick: " : "Tick xong: ") + t.t);
   btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="4 12.5 9.5 18 20 6.5"/></svg>';
   btn.addEventListener("click", ()=>{
-    state[key] = !state[key];
-    if (!state[key]) delete state[key];
+    state[key] = isDone ? "off" : true;
     save(); render();
   });
 
@@ -482,6 +493,7 @@ function taskNode(t, i){
   const meta = document.createElement("div");
   meta.className = "t-meta";
   meta.innerHTML =
+    (t.fin ? '<span class="tag fin">'+t.fin+'</span>' : '') +
     '<span class="tag p-'+t.p+'">'+P_LABEL[t.p]+'</span>' +
     '<span class="tag m-'+t.m+'">'+M_LABEL[t.m]+'</span>' +
     '<span class="src">'+t.who+' · '+t.s+'</span>';
@@ -559,7 +571,7 @@ function render(){
     const sec = document.createElement("section");
     sec.className = "group";
     const total = TASKS.filter(t=>t.g===g).length;
-    const gdone = TASKS.filter((t,i)=>t.g===g && state[id(i)]).length;
+    const gdone = TASKS.filter((t,i)=>t.g===g && done(i)).length;
     sec.innerHTML = '<div class="group-head"><h2>'+g+'</h2>' +
       '<span class="gcount">'+gdone+'/'+total+'</span><span class="rule"></span></div>';
     const ul = document.createElement("ul");
@@ -575,12 +587,12 @@ function render(){
     listEl.appendChild(p);
   }
 
-  const done = TASKS.filter((t,i)=>state[id(i)]).length;
-  document.getElementById("doneN").textContent = done;
+  const doneN = TASKS.filter((t,i)=>done(i)).length;
+  document.getElementById("doneN").textContent = doneN;
   document.getElementById("allN").textContent = TASKS.length;
-  document.getElementById("barFill").style.width = (done/TASKS.length*100) + "%";
-  const left = TASKS.length - done;
-  const hiLeft = TASKS.filter((t,i)=>t.p==="hi" && !state[id(i)]).length;
+  document.getElementById("barFill").style.width = (doneN/TASKS.length*100) + "%";
+  const left = TASKS.length - doneN;
+  const hiLeft = TASKS.filter((t,i)=>t.p==="hi" && !done(i)).length;
   document.getElementById("leftLbl").textContent =
     left ? ("còn " + left + " task" + (hiLeft ? " · " + hiLeft + " gấp" : "")) : "xong hết";
 }
