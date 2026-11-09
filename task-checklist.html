@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task tracker · 6–9 Nov 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f6f4; --surface:#fff; --line:#e4e3de; --line2:#efeeea;
+    --ink:#1b1b19; --ink2:#5f5e58; --ink3:#8e8d85;
+    --accent:#a8561f; --accent-soft:#f6ece3;
+    --ok:#2f7a4f; --ok-soft:#eaf4ee;
+    --hi:#b3261e; --hi-soft:#fbeceb;
+    --mid:#8a6d1f; --mid-soft:#f8f2e0;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(24,24,20,.05), 0 8px 24px -16px rgba(24,24,20,.18);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#14140f; --surface:#1d1d18; --line:#32322b; --line2:#272722;
+      --ink:#f2f1ec; --ink2:#b0afa7; --ink3:#81807a;
+      --accent:#e39b64; --accent-soft:#2e2318;
+      --ok:#7cc79b; --ok-soft:#1b2a21;
+      --hi:#f08b84; --hi-soft:#2e1d1b;
+      --mid:#ddc075; --mid-soft:#2a2516;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.6);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    font-size:15px; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:32px 20px 96px}
+
+  header h1{font-size:25px;line-height:1.2;margin:0 0 6px;letter-spacing:-.02em;font-weight:700}
+  header .sub{color:var(--ink2);font-size:13.5px;margin:0}
+
+  /* progress */
+  .board{
+    margin:22px 0 18px;padding:18px 20px;background:var(--surface);
+    border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
+  }
+  .board-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .count{font-size:22px;font-weight:700;letter-spacing:-.02em}
+  .count small{font-size:13px;font-weight:500;color:var(--ink3)}
+  .bar{height:8px;border-radius:99px;background:var(--line2);overflow:hidden;margin-top:12px}
+  .bar span{display:block;height:100%;width:0;background:var(--ok);border-radius:99px;transition:width .35s cubic-bezier(.4,0,.2,1)}
+  .board-note{font-size:12.5px;color:var(--ink3);margin-top:10px}
+
+  /* filters */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+  .chip{
+    font:inherit;font-size:13px;font-weight:500;cursor:pointer;
+    padding:6px 13px;border-radius:99px;border:1px solid var(--line);
+    background:var(--surface);color:var(--ink2);transition:.15s;
+  }
+  .chip:hover{border-color:var(--ink3);color:var(--ink)}
+  .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+  .chip .n{opacity:.55;margin-left:5px;font-variant-numeric:tabular-nums}
+
+  /* groups */
+  .group{margin:0 0 26px}
+  .group-head{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:0 2px}
+  .group-head h2{font-size:12px;letter-spacing:.09em;text-transform:uppercase;margin:0;color:var(--ink3);font-weight:600}
+  .group-head .gcount{font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}
+  .group-head .rule{flex:1;height:1px;background:var(--line)}
+
+  ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+
+  .task{
+    display:flex;gap:13px;align-items:flex-start;
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 15px;box-shadow:var(--shadow);transition:.2s;
+  }
+  .task.done{opacity:.52}
+  .task.done .t-title{text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:var(--ink3)}
+
+  /* the tick button */
+  .tick{
+    flex:0 0 auto;margin-top:1px;width:24px;height:24px;padding:0;cursor:pointer;
+    border-radius:7px;border:1.5px solid var(--line);background:transparent;
+    display:grid;place-items:center;transition:.15s;
+  }
+  .tick:hover{border-color:var(--ok);background:var(--ok-soft)}
+  .tick:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .tick svg{width:14px;height:14px;stroke:var(--ok);stroke-width:2.6;fill:none;
+    stroke-linecap:round;stroke-linejoin:round;
+    opacity:0;transform:scale(.6);transition:.18s cubic-bezier(.4,0,.2,1)}
+  .tick[aria-pressed="true"]{background:var(--ok);border-color:var(--ok)}
+  .tick[aria-pressed="true"] svg{opacity:1;transform:scale(1);stroke:var(--surface)}
+
+  .t-body{flex:1;min-width:0}
+  .t-title{font-size:14.5px;font-weight:600;line-height:1.4;margin:0;letter-spacing:-.005em}
+  .t-detail{font-size:13px;color:var(--ink2);margin:5px 0 0}
+  .t-meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:9px;font-size:11.5px}
+  .tag{padding:2.5px 8px;border-radius:99px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
+  .tag.p-hi{background:var(--hi-soft);color:var(--hi)}
+  .tag.p-mid{background:var(--mid-soft);color:var(--mid)}
+  .tag.p-low{background:var(--line2);color:var(--ink3)}
+  .tag.who{background:var(--accent-soft);color:var(--accent)}
+  .t-meta .src{color:var(--ink3)}
+  .t-meta a{color:var(--ink3);text-decoration:underline;text-underline-offset:2px}
+  .t-meta a:hover{color:var(--accent)}
+
+  .empty{color:var(--ink3);font-size:13.5px;padding:8px 2px}
+
+  footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);
+    font-size:12.5px;color:var(--ink3);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .ghost{font:inherit;font-size:12.5px;cursor:pointer;background:none;border:none;
+    color:var(--ink3);text-decoration:underline;text-underline-offset:2px;padding:0}
+  .ghost:hover{color:var(--hi)}
+
+  @media (max-width:560px){
+    .wrap{padding:22px 14px 80px}
+    header h1{font-size:21px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Task từ Slack &amp; mail · T6 06/11 → T2 09/11</h1>
+    <p class="sub">Bấm ô vuông để tick task đã xong. Trạng thái lưu trong trình duyệt này.</p>
+  </header>
+
+  <div class="board">
+    <div class="board-top">
+      <div class="count"><span id="doneN">0</span><small> / <span id="allN">0</span> xong</small></div>
+      <div class="count" style="font-size:13px;font-weight:500;color:var(--ink3)" id="leftLbl"></div>
+    </div>
+    <div class="bar"><span id="barFill"></span></div>
+    <p class="board-note">Deadline chung: MYAMIA live trong tuần này · Lucie nghỉ T5 &amp; T6 — cần gì phải gửi trước T4.</p>
+  </div>
+
+  <div class="filters" id="filters"></div>
+  <div id="list"></div>
+
+  <footer>
+    <span id="stamp"></span>
+    <button class="ghost" id="reset">Bỏ tick toàn bộ</button>
+  </footer>
+</div>
+
+<script>
+const TASKS = [
+/* ---------- MYAMIA ---------- */
+{g:"MYAMIA", p:"hi", who:"Lucie",
+ t:"Làm lại deck Black Friday / 14k theo doc tổng hợp của Lucie",
+ d:"Wording đơn giản hơn, bỏ slide email + appendix (giờ chỉ Meta), ad preview vuông cho Feed và dọc cho Stories, bỏ hết ngang. Có outline từng slide để copy vào.",
+ s:"Slack #peel-myamia · 09/11 03:34", u:"https://claude.ai/artifact/UBq6H7FzoHJDbxnq17pgqH", ul:"mở doc"},
+
+{g:"MYAMIA", p:"hi", who:"Lucie",
+ t:"Update copy ads cho khớp bộ audience mới",
+ d:"Copy hiện tại vẫn viết theo kiểu chia retargeting cũ (viewers / ATC / past customers tách riêng). Audience mới gộp website visitors + past customers + email subs, loại engagers.",
+ s:"Slack #peel-myamia · 09/11 03:34"},
+
+{g:"MYAMIA", p:"hi", who:"Lucie",
+ t:"Slide 9: xin Maria confirm BF preview, copy, % discount và ngày sale",
+ d:"Ưu tiên số 1 — Maria nói sale có thể bắt đầu ngay đầu tuần. Phần còn lại của deck có thể theo sau.",
+ s:"Slack #peel-myamia · 09/11 03:34"},
+
+{g:"MYAMIA", p:"hi", who:"Lucie",
+ t:"Claim lời mời Shopify + share login cho team",
+ d:"Lucie chưa claim, muốn Phoebe nhận trực tiếp vì Phoebe làm phần automation/hậu trường. Share credentials để team vào được khi Phoebe nghỉ.",
+ s:"Slack group DM · 09/11 05:27"},
+
+{g:"MYAMIA", p:"hi", who:"Maria",
+ t:"Trả lời email “MYAMIA / Ads Nov” — timeline ads",
+ d:"Maria hỏi: bao giờ có bản draft đầu của copy + creative, và bao giờ ads live. Chị ấy muốn live ASAP vì Nov/Dec là 2 tháng quan trọng, và sẵn sàng tự làm creative vài tháng đầu.",
+ s:"Gmail · 09/11 01:06"},
+
+{g:"MYAMIA", p:"mid", who:"Phoebe",
+ t:"Check email VIP 14k đã gửi 6:30pm ET (08/11) chạy ổn chưa",
+ d:"Lucie đã schedule bản “all white”. Cần xem kết quả gửi: open/click, có bị Klaviyo flag gì không, mã EARLYACCESS150 copy đúng chưa.",
+ s:"Gmail · Lucie → Maria 08/11 21:36"},
+
+{g:"MYAMIA", p:"mid", who:"Phoebe",
+ t:"Chase invite Business Manager (Meta) — vẫn đang block",
+ d:"Chưa có BM nên không tạo/kiểm tra được product set (14k Gold và Vermeil đã tồn tại nhưng không xem được bên trong) và không build campaign được.",
+ s:"Slack #peel-myamia · 06/11 11:38"},
+
+{g:"MYAMIA", p:"low", who:"Phoebe",
+ t:"Xin Maria thêm ảnh model đang mặc/đeo vermeil",
+ d:"Hiện chỉ có 1 ảnh worn (pearl earrings), 2 hero còn lại là packshot. Có thêm ảnh thì thêm được 1–2 ad prospecting và hero mạnh hơn (đang 3 ad, muốn 4–5).",
+ s:"Slack #peel-myamia · 06/11 11:38"},
+
+{g:"MYAMIA", p:"low", who:"Phoebe",
+ t:"Theo dõi 4 câu còn chờ Maria confirm",
+ d:"% discount + ngày sale BF · cả Vermeil Archive sale hay chỉ một phần · free US shipping có/không · recycled sterling silver cho mọi món vermeil. Đã để ở tab “Before launch” của sheet.",
+ s:"Slack #peel-myamia · 06/11 11:38"},
+
+{g:"MYAMIA", p:"low", who:"Phoebe",
+ t:"Các lỗi website cần raise với Maria",
+ d:"Chỉ 3 collection tìm được (earrings/bracelets/necklaces), ~40 sản phẩm nằm ngoài cả 14k và Vermeil · Shop → All lại về collection 14k · Vermeil không có compare-at price nên ads không hiện giá gạch · 14k đã live trên site ($950–$4,200) trước email VIP.",
+ s:"Slack #peel-myamia · 06/11 11:38"},
+
+/* ---------- SEG ---------- */
+{g:"SEG", p:"hi", who:"Lucie",
+ t:"Prep slides client approval cho Meet Us in India",
+ d:"Lucie đã update copy (META COPY rows 169–176) và nói “ready to go live”, nhưng client chưa xem — cần slides để approve trước khi activate.",
+ s:"Slack #seg-campaign-requests · 06/11 13:58",
+ u:"https://docs.google.com/spreadsheets/d/15kXVWZ_sITHEDHCOy-KXvi9FFtM3EZQA_LyN2sgjmVc/edit?gid=0#gid=0&range=169:176", ul:"rows 169–176"},
+
+{g:"SEG", p:"hi", who:"Airtable AI",
+ t:"Refresh deck preview cho CAAS / SHMS / HIM India (Create Slides)",
+ d:"Cả 3 request (#8, #9, #10) đều báo “Deck not updated” — asset Canva đã sửa text mới nhưng deck vẫn hiện image text cũ. Phải chạy Create Slides lại.",
+ s:"Slack #seg-review-copy-and-assets · 06/11 09:15"},
+
+{g:"SEG", p:"hi", who:"Airtable AI",
+ t:"Xác nhận giờ sự kiện India: 11am–4pm hay 18:00–20:30?",
+ d:"Body copy HIM ghi “11 am to 4 pm” còn landing page ghi buổi tối 18:00–20:30. Phải chốt trước khi launch.",
+ s:"Slack #seg-review-copy-and-assets · 06/11 09:15"},
+
+{g:"SEG", p:"mid", who:"Airtable AI",
+ t:"Verify wording fee waiver / one-way flight + điền budget còn trống",
+ d:"Copy ghi “application fee waived or one-way flight, if application is successful” — cần check điều kiện. Field Budget vẫn trống trên cả 3 request India.",
+ s:"Slack #seg-review-copy-and-assets · 06/11 09:15"},
+
+{g:"SEG", p:"mid", who:"Airtable AI",
+ t:"Quyết định DISPLAY COPY rows 129–133 (SHMS) có theo copy mới rows 172–173 không",
+ d:"Display copy vẫn mang wording AI cũ trong khi Meta copy đã được team viết lại.",
+ s:"Slack #seg-review-copy-and-assets · 06/11 09:15"},
+
+{g:"SEG", p:"hi", who:"Piers / John",
+ t:"Đóng gap pacing tháng 11 — ưu tiên Meta retargeting",
+ d:"Trên dashboard: CAAS mới spend 44/1.746 (set 7/ngày, cần 71), SHMS 14/454 (set 2/ngày, cần 18). Gap lớn nhất: Indonesia −2,6k, Global −2,1k, Jordan −1,5k. Tổng tháng 11 đang về ~83,8k/96,3k (87%).",
+ s:"Slack #seg-paid-media · 05–06/11"},
+
+{g:"SEG", p:"mid", who:"Piers",
+ t:"Trim budget Switzerland (đang 121% over) + push Vietnam, Norway, Singapore, UAE, Greece",
+ d:"Switzerland chạy vượt 21%, cần giảm daily để không ăn vào tháng 12. 5 market kia đang thiếu tổng 2,6k — push chỗ nào chạy được, flag chỗ nào không.",
+ s:"Slack #seg-paid-media · 05/11 23:12"},
+
+{g:"SEG", p:"hi", who:"Lucie",
+ t:"Activate campaign đã có budget nhưng chưa chạy + optimise performance",
+ d:"Lucie giao trực tiếp cho Phoebe trong priorities tuần: giữ pacing, launch campaign được request hoặc đã có budget mà chưa live, và theo sát optimise.",
+ s:"Slack group DM · 09/11 05:27"},
+
+{g:"SEG", p:"mid", who:"Lucie",
+ t:"Copy retargeting Tier 2 (rows 96–99): chọn asset khớp từng variation",
+ d:"Asset Canva trước đây chọn theo theme cũ (Safety/Global/Heritage) nên có thể không fit angle mới — Lucie đã mark “to confirm”. Copy và asset phải đi cùng nhau, không ghép bừa.",
+ s:"Slack DM Lucie · 06/11 04:51"},
+
+{g:"SEG", p:"mid", who:"Lucie",
+ t:"Làm slides review + link sheet copy client-facing cho Tier 2 retargeting",
+ d:"Sau khi asset xong thì prep slides đơn giản để client review. Lucie cũng đang check lại danh sách target country Tier 2 với Piers.",
+ s:"Slack DM Lucie · 06/11 04:51"},
+
+{g:"SEG", p:"mid", who:"Hệ thống",
+ t:"Fix Google Apps Script “SEG Meta tracking set up” đang fail",
+ d:"Có mail báo fail cả 07/11 03:09 và 08/11 18:03 — script chạy không xong.",
+ s:"Gmail · 07–08/11"},
+
+{g:"SEG", p:"mid", who:"Hệ thống",
+ t:"Fix SEG dashboard sync failed (Cloudflare KV)",
+ d:"Lỗi: “Address unavailable: api.cloudflare.com/.../storage/kv/namespaces/.../values/live at kvPut (Code:605)”.",
+ s:"Gmail · 06/11 02:39"},
+
+{g:"SEG", p:"low", who:"Elena",
+ t:"Chốt lại với Elena: budget Global còn cho CRCS + danh sách market",
+ d:"Elena lo Global campaign không còn budget cho CRCS (Phoebe đã check dashboard: đúng, không có CRCS). Và list country gửi John — 13 market Lucie đưa trước đó.",
+ s:"Slack DM Elena · 06/11"},
+
+/* ---------- PENSION REFUND ---------- */
+{g:"Pension Refund", p:"hi", who:"Lucie / Chris",
+ t:"Trả lời câu hỏi của Chris về WhatsApp automation",
+ d:"4 điểm: (1) vì sao bot không trả lời câu hỏi của anh ấy (có screenshot); (2) phần intro có nên hỏi luôn câu 1 thay vì chờ “YES”; (3) Chris muốn đẩy lead qua Zapier vào CRM của họ — confirm làm được không, anh ấy đề nghị call T2 để set cùng; (4) giải thích rõ bước 3 (gắn link/QR lên website + email).",
+ s:"Slack #client-pension-refund 09/11 03:38 + Gmail fwd"},
+
+/* ---------- MYTH STUDIO ---------- */
+{g:"Myth Studio", p:"mid", who:"Lucie",
+ t:"Bổ sung slide timeline campaign — phần trước khi Long join",
+ d:"Lucie muốn slide 6 bỏ kiểu day-by-day, thay bằng tất cả thay đổi đã làm xuyên suốt (negative keyword, xử lý traffic jobseeker, keyword analysis, restructure, update conversion event, thêm tracking…). Phoebe thêm phần giai đoạn đầu hoặc giúp finalise slide.",
+ s:"Slack #client-myth-studio · 09/11 04:56"},
+
+/* ---------- ADMIN ---------- */
+{g:"Admin & lịch", p:"mid", who:"Lucie",
+ t:"Gửi Lucie mọi thứ cần trước thứ Tư",
+ d:"Lucie nghỉ T5 + T6. T5 vẫn trả lời ban ngày nhưng không làm buổi tối, T6 off hoàn toàn. Gì cần chị ấy follow up thì phải có trước tối T4.",
+ s:"Slack group DM · 09/11 05:27"},
+
+{g:"Admin & lịch", p:"mid", who:"Maria",
+ t:"Họp MYAMIA – Ads / Social Meet Up: T4 11/11, 23:00–23:45 (GMT+7)",
+ d:"Có Maria, Lucie, Piers, Elena và team Tonic Comms (Lauren, Rafaella, Liv). Google Meet.",
+ s:"Gmail invite · 06/11 20:01"},
+];
+
+const P_LABEL = {hi:"Gấp", mid:"Trung bình", low:"Khi có thời gian"};
+const KEY = "peel-tasks-06-09nov-v1";
+
+let state = {};
+try { state = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch(e){ state = {}; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} };
+
+const id = i => "t" + i;
+const GROUPS = [...new Set(TASKS.map(t => t.g))];
+let filter = "todo";
+
+const listEl = document.getElementById("list");
+const filtersEl = document.getElementById("filters");
+
+function visible(t, i){
+  if (filter === "all") return true;
+  if (filter === "todo") return !state[id(i)];
+  if (filter === "done") return !!state[id(i)];
+  if (filter === "hi")   return t.p === "hi" && !state[id(i)];
+  return t.g === filter;
+}
+
+function renderFilters(){
+  const todo = TASKS.filter((t,i)=>!state[id(i)]).length;
+  const done = TASKS.length - todo;
+  const hi   = TASKS.filter((t,i)=>t.p==="hi" && !state[id(i)]).length;
+  const defs = [
+    ["todo","Chưa xong",todo],
+    ["hi","Gấp",hi],
+    ["all","Tất cả",TASKS.length],
+    ["done","Đã xong",done],
+    ...GROUPS.map(g => [g, g, TASKS.filter((t,i)=>t.g===g && !state[id(i)]).length])
+  ];
+  filtersEl.innerHTML = "";
+  defs.forEach(([k,label,n])=>{
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.type = "button";
+    b.setAttribute("aria-pressed", String(filter===k));
+    b.innerHTML = label + '<span class="n">' + n + '</span>';
+    b.addEventListener("click", ()=>{ filter = k; render(); });
+    filtersEl.appendChild(b);
+  });
+}
+
+function taskNode(t, i){
+  const key = id(i), done = !!state[key];
+  const li = document.createElement("li");
+  li.className = "task" + (done ? " done" : "");
+
+  const btn = document.createElement("button");
+  btn.className = "tick";
+  btn.type = "button";
+  btn.setAttribute("aria-pressed", String(done));
+  btn.setAttribute("aria-label", (done ? "Bỏ tick: " : "Tick xong: ") + t.t);
+  btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="4 12.5 9.5 18 20 6.5"/></svg>';
+  btn.addEventListener("click", ()=>{
+    state[key] = !state[key];
+    if (!state[key]) delete state[key];
+    save(); render();
+  });
+
+  const body = document.createElement("div");
+  body.className = "t-body";
+
+  const h = document.createElement("p");
+  h.className = "t-title";
+  h.textContent = t.t;
+  body.appendChild(h);
+
+  if (t.d){
+    const d = document.createElement("p");
+    d.className = "t-detail";
+    d.textContent = t.d;
+    body.appendChild(d);
+  }
+
+  const meta = document.createElement("div");
+  meta.className = "t-meta";
+  meta.innerHTML =
+    '<span class="tag p-'+t.p+'">'+P_LABEL[t.p]+'</span>' +
+    '<span class="tag who">'+t.who+'</span>' +
+    '<span class="src">'+t.s+'</span>';
+  if (t.u){
+    const a = document.createElement("a");
+    a.href = t.u; a.target = "_blank"; a.rel = "noopener";
+    a.textContent = t.ul || "mở";
+    meta.appendChild(a);
+  }
+  body.appendChild(meta);
+
+  li.appendChild(btn);
+  li.appendChild(body);
+  return li;
+}
+
+function render(){
+  renderFilters();
+  listEl.innerHTML = "";
+  let shown = 0;
+
+  GROUPS.forEach(g => {
+    const items = TASKS.map((t,i)=>[t,i]).filter(([t,i]) => t.g===g && visible(t,i));
+    if (!items.length) return;
+    shown += items.length;
+
+    const sec = document.createElement("section");
+    sec.className = "group";
+    const total = TASKS.filter(t=>t.g===g).length;
+    const gdone = TASKS.filter((t,i)=>t.g===g && state[id(i)]).length;
+    sec.innerHTML = '<div class="group-head"><h2>'+g+'</h2>' +
+      '<span class="gcount">'+gdone+'/'+total+'</span><span class="rule"></span></div>';
+    const ul = document.createElement("ul");
+    items.forEach(([t,i]) => ul.appendChild(taskNode(t,i)));
+    sec.appendChild(ul);
+    listEl.appendChild(sec);
+  });
+
+  if (!shown){
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = filter === "todo" ? "Hết task rồi 🎉" : "Không có task nào ở mục này.";
+    listEl.appendChild(p);
+  }
+
+  const done = TASKS.filter((t,i)=>state[id(i)]).length;
+  document.getElementById("doneN").textContent = done;
+  document.getElementById("allN").textContent = TASKS.length;
+  document.getElementById("barFill").style.width = (done/TASKS.length*100) + "%";
+  const left = TASKS.length - done;
+  const hiLeft = TASKS.filter((t,i)=>t.p==="hi" && !state[id(i)]).length;
+  document.getElementById("leftLbl").textContent =
+    left ? ("còn " + left + " task" + (hiLeft ? " · " + hiLeft + " gấp" : "")) : "xong hết";
+}
+
+document.getElementById("reset").addEventListener("click", ()=>{
+  state = {}; save(); render();
+});
+
+document.getElementById("stamp").textContent =
+  "Nguồn: Slack (#peel-myamia, #seg-campaign-requests, #seg-review-copy-and-assets, #seg-paid-media, #client-pension-refund, #client-myth-studio, DM) + Gmail · 06–09/11/2026";
+
+render();
+</script>
+</body>
+</html>
