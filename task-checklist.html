@@ -15,6 +15,7 @@
     --ok:#2f7a4f; --ok-soft:#eaf4ee;
     --hi:#b3261e; --hi-soft:#fbeceb;
     --mid:#8a6d1f; --mid-soft:#f8f2e0;
+    --tagd:#1d5b8f; --tagd-soft:#e8f0f8;
     --radius:14px;
     --shadow:0 1px 2px rgba(24,24,20,.05), 0 8px 24px -16px rgba(24,24,20,.18);
   }
@@ -26,6 +27,7 @@
       --ok:#7cc79b; --ok-soft:#1b2a21;
       --hi:#f08b84; --hi-soft:#2e1d1b;
       --mid:#ddc075; --mid-soft:#2a2516;
+      --tagd:#8dbbe4; --tagd-soft:#17222d;
       --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.6);
     }
   }
@@ -37,12 +39,11 @@
     font-size:15px; line-height:1.55;
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:860px;margin:0 auto;padding:32px 20px 96px}
+  .wrap{max-width:880px;margin:0 auto;padding:32px 20px 96px}
 
   header h1{font-size:25px;line-height:1.2;margin:0 0 6px;letter-spacing:-.02em;font-weight:700}
   header .sub{color:var(--ink2);font-size:13.5px;margin:0}
 
-  /* progress */
   .board{
     margin:22px 0 18px;padding:18px 20px;background:var(--surface);
     border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
@@ -54,7 +55,8 @@
   .bar span{display:block;height:100%;width:0;background:var(--ok);border-radius:99px;transition:width .35s cubic-bezier(.4,0,.2,1)}
   .board-note{font-size:12.5px;color:var(--ink3);margin-top:10px}
 
-  /* filters */
+  .lead{margin:0 0 18px;display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+
   .filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
   .chip{
     font:inherit;font-size:13px;font-weight:500;cursor:pointer;
@@ -65,7 +67,6 @@
   .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
   .chip .n{opacity:.55;margin-left:5px;font-variant-numeric:tabular-nums}
 
-  /* groups */
   .group{margin:0 0 26px}
   .group-head{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:0 2px}
   .group-head h2{font-size:12px;letter-spacing:.09em;text-transform:uppercase;margin:0;color:var(--ink3);font-weight:600}
@@ -79,10 +80,10 @@
     background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
     padding:14px 15px;box-shadow:var(--shadow);transition:.2s;
   }
+  .task.direct{border-left:3px solid var(--tagd)}
   .task.done{opacity:.52}
   .task.done .t-title{text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:var(--ink3)}
 
-  /* the tick button */
   .tick{
     flex:0 0 auto;margin-top:1px;width:24px;height:24px;padding:0;cursor:pointer;
     border-radius:7px;border:1.5px solid var(--line);background:transparent;
@@ -98,16 +99,44 @@
 
   .t-body{flex:1;min-width:0}
   .t-title{font-size:14.5px;font-weight:600;line-height:1.4;margin:0;letter-spacing:-.005em}
-  .t-detail{font-size:13px;color:var(--ink2);margin:5px 0 0}
+  .t-ask{font-size:13px;color:var(--ink);margin:6px 0 0;padding-left:10px;
+    border-left:2px solid var(--line);font-style:italic}
+  .t-detail{font-size:13px;color:var(--ink2);margin:6px 0 0}
   .t-meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:9px;font-size:11.5px}
   .tag{padding:2.5px 8px;border-radius:99px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
   .tag.p-hi{background:var(--hi-soft);color:var(--hi)}
   .tag.p-mid{background:var(--mid-soft);color:var(--mid)}
   .tag.p-low{background:var(--line2);color:var(--ink3)}
-  .tag.who{background:var(--accent-soft);color:var(--accent)}
+  .tag.m-tag{background:var(--tagd-soft);color:var(--tagd)}
+  .tag.m-team,.tag.m-fyi,.tag.m-self,.tag.m-bot{background:var(--line2);color:var(--ink3)}
   .t-meta .src{color:var(--ink3)}
   .t-meta a{color:var(--ink3);text-decoration:underline;text-underline-offset:2px}
   .t-meta a:hover{color:var(--accent)}
+
+  .t-actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+  .fb-btn{
+    font:inherit;font-size:12px;font-weight:600;cursor:pointer;
+    padding:5px 11px;border-radius:99px;border:1px solid var(--line);
+    background:transparent;color:var(--ink2);transition:.15s;
+    display:inline-flex;align-items:center;gap:5px;
+  }
+  .fb-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+  .fb-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .fb-btn.has{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+  .fb-btn svg{width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;
+    stroke-linecap:round;stroke-linejoin:round}
+
+  .note{margin-top:10px;border:1px solid var(--line);border-radius:10px;
+    background:var(--bg);padding:10px}
+  .note[hidden]{display:none}
+  .note textarea{
+    width:100%;min-height:72px;resize:vertical;font:inherit;font-size:13px;
+    color:var(--ink);background:var(--surface);border:1px solid var(--line);
+    border-radius:8px;padding:8px 10px;line-height:1.5;
+  }
+  .note textarea:focus{outline:none;border-color:var(--accent)}
+  .note-row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+  .note-hint{font-size:11.5px;color:var(--ink3);flex:1;min-width:150px}
 
   .empty{color:var(--ink3);font-size:13.5px;padding:8px 2px}
 
@@ -127,7 +156,7 @@
 <div class="wrap">
   <header>
     <h1>Task từ Slack &amp; mail · T6 06/11 → T2 09/11</h1>
-    <p class="sub">Bấm ô vuông để tick task đã xong. Trạng thái lưu trong trình duyệt này.</p>
+    <p class="sub">Bấm ô vuông để tick xong. Nút <strong>Feedback</strong> ở mỗi task để gửi yêu cầu cho Claude.</p>
   </header>
 
   <div class="board">
@@ -136,7 +165,15 @@
       <div class="count" style="font-size:13px;font-weight:500;color:var(--ink3)" id="leftLbl"></div>
     </div>
     <div class="bar"><span id="barFill"></span></div>
-    <p class="board-note">Deadline chung: MYAMIA live trong tuần này · Lucie nghỉ T5 &amp; T6 — cần gì phải gửi trước T4.</p>
+    <p class="board-note">Deadline chung: MYAMIA live trong tuần này · Lucie nghỉ T5 &amp; T6 — cần gì từ chị ấy phải gửi trước tối T4.</p>
+  </div>
+
+  <div class="lead">
+    <button class="fb-btn" id="globalFb" type="button">
+      <svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-2.8-.4L3 21l1.6-4.4A8.3 8.3 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/></svg>
+      Gửi request chung cho Claude
+    </button>
+    <span class="note-hint" id="fbMode">Mỗi task có nút Feedback để gửi yêu cầu cho Claude.</span>
   </div>
 
   <div class="filters" id="filters"></div>
@@ -149,155 +186,218 @@
 </div>
 
 <script>
+/* m = ai giao:
+   tag  → tag trực tiếp @Phoebe
+   team → nói chung cả team / @here / @channel
+   fyi  → người khác làm, Phoebe chỉ cần nắm
+   self → Phoebe tự raise, tự theo
+   bot  → bot Airtable / mail tự động, không tag ai  */
 const TASKS = [
-/* ---------- MYAMIA ---------- */
-{g:"MYAMIA", p:"hi", who:"Lucie",
+/* ================= MYAMIA ================= */
+{g:"MYAMIA", p:"hi", m:"tag", who:"Lucie",
  t:"Làm lại deck Black Friday / 14k theo doc tổng hợp của Lucie",
- d:"Wording đơn giản hơn, bỏ slide email + appendix (giờ chỉ Meta), ad preview vuông cho Feed và dọc cho Stories, bỏ hết ngang. Có outline từng slide để copy vào.",
- s:"Slack #peel-myamia · 09/11 03:34", u:"https://claude.ai/artifact/UBq6H7FzoHJDbxnq17pgqH", ul:"mở doc"},
+ ask:"“Hi @Phoebe Giang! I’ve been through the deck properly and put everything into one doc so you can implement it quickly.”",
+ d:"Doc có: overall notes (wording, cái gì cắt, format ảnh) · audience set-up mới cho cả 2 campaign · outline từng slide kèm nội dung sẵn để copy vào · 1 prompt ở cuối nếu muốn Claude rework slides. Thay đổi chính: wording đơn giản + plain hơn để Maria tự hiểu không cần context của team; bỏ slide email và appendix (giờ chỉ còn Meta); ad preview vuông cho Feed, dọc cho Stories, bỏ hết ngang.",
+ s:"Slack #peel-myamia · 09/11 03:34 (CC @Elena)",
+ u:"https://claude.ai/artifact/UBq6H7FzoHJDbxnq17pgqH", ul:"mở doc"},
 
-{g:"MYAMIA", p:"hi", who:"Lucie",
+{g:"MYAMIA", p:"hi", m:"tag", who:"Lucie",
  t:"Update copy ads cho khớp bộ audience mới",
- d:"Copy hiện tại vẫn viết theo kiểu chia retargeting cũ (viewers / ATC / past customers tách riêng). Audience mới gộp website visitors + past customers + email subs, loại engagers.",
+ ask:"“The copy needs a small update to match the new audiences, as it’s still based on the original retargeting split.”",
+ d:"Audience cũ chia theo đã-xem-sản-phẩm hay chưa (set 1 viewers+ATC / set 2 past customers+subs+engagers). Lucie đổi: gộp website visitors + past customers + email subscribers vào chung vì cùng mức intent, và loại engagers ra (có thể chưa từng vào web, intent thấp, làm loãng audience). Lý do: audience và budget còn nhỏ, không nên chia mỏng ra nhiều ad set.",
  s:"Slack #peel-myamia · 09/11 03:34"},
 
-{g:"MYAMIA", p:"hi", who:"Lucie",
+{g:"MYAMIA", p:"hi", m:"tag", who:"Lucie",
  t:"Slide 9: xin Maria confirm BF preview, copy, % discount và ngày sale",
- d:"Ưu tiên số 1 — Maria nói sale có thể bắt đầu ngay đầu tuần. Phần còn lại của deck có thể theo sau.",
+ ask:"“Priority is Black Friday. Maria mentioned the sale could start as early as Monday, so slide 9 asks her to confirm the BF previews, copy, discount % and dates first, and the rest can follow.”",
+ d:"Đây là việc gấp nhất trong cả deck — 4 thứ này chốt xong mới set được campaign trên Meta. Phần còn lại của deck đi sau cũng được.",
  s:"Slack #peel-myamia · 09/11 03:34"},
 
-{g:"MYAMIA", p:"hi", who:"Lucie",
+{g:"MYAMIA", p:"hi", m:"tag", who:"Lucie",
  t:"Claim lời mời Shopify + share login cho team",
- d:"Lucie chưa claim, muốn Phoebe nhận trực tiếp vì Phoebe làm phần automation/hậu trường. Share credentials để team vào được khi Phoebe nghỉ.",
- s:"Slack group DM · 09/11 05:27"},
+ ask:"“As Phoebe handles most of the automations and background work, I think it’s best for her to have direct access. Phoebe, could you claim it and share the login details with the team in case we ever need to go in while you’re away?”",
+ d:"Lucie chưa claim (thử rồi nhưng nó bắt tạo account mới). Piers và Elena cũng chưa nhận. Lời mời chỉ dùng được 1 lần nên đừng để người khác bấm trùng.",
+ s:"Slack group DM (Lucie–Piers–Phoebe–Elena) · 09/11 05:27"},
 
-{g:"MYAMIA", p:"hi", who:"Maria",
- t:"Trả lời email “MYAMIA / Ads Nov” — timeline ads",
- d:"Maria hỏi: bao giờ có bản draft đầu của copy + creative, và bao giờ ads live. Chị ấy muốn live ASAP vì Nov/Dec là 2 tháng quan trọng, và sẵn sàng tự làm creative vài tháng đầu.",
- s:"Gmail · 09/11 01:06"},
+{g:"MYAMIA", p:"hi", m:"team", who:"Maria (client)",
+ t:"Timeline ads — Maria hỏi bao giờ có draft và bao giờ live",
+ ask:"“When do you expect to share the first drafts of the copy and creatives, and when are you aiming to have the ads live? Nov/Dec are two months that are pretty key so I would like to get this live asap.”",
+ d:"Mail gửi Lucie, Phoebe + Elena + Piers trong cùng người nhận — Lucie chủ trì trả lời client, Phoebe cần đưa timeline thật từ phía mình. Maria cũng nói sẵn sàng tự làm creative vài tháng đầu như đã làm với email, và chấp nhận sẽ phải qua lại nhiều lần lúc đầu để giữ đúng aesthetic của brand.",
+ s:"Gmail “MYAMIA / Ads Nov” · 09/11 01:06"},
 
-{g:"MYAMIA", p:"mid", who:"Phoebe",
- t:"Check email VIP 14k đã gửi 6:30pm ET (08/11) chạy ổn chưa",
- d:"Lucie đã schedule bản “all white”. Cần xem kết quả gửi: open/click, có bị Klaviyo flag gì không, mã EARLYACCESS150 copy đúng chưa.",
- s:"Gmail · Lucie → Maria 08/11 21:36"},
+{g:"MYAMIA", p:"mid", m:"self", who:"Phoebe",
+ t:"Check email VIP 14k đã gửi 6:30pm ET (08/11) có chạy ổn",
+ d:"Lucie đã schedule bản “all white” lúc 18:30 ET. Cần xem lại: open/click rate, Klaviyo có flag gì khi send không, mã EARLYACCESS150 copy ra có đúng 14 ký tự (đã bỏ ký tự ẩn), và 3 GIF có load đồng bộ như đã fix.",
+ s:"Gmail Lucie → Maria · 08/11 21:36"},
 
-{g:"MYAMIA", p:"mid", who:"Phoebe",
+{g:"MYAMIA", p:"mid", m:"self", who:"Phoebe",
  t:"Chase invite Business Manager (Meta) — vẫn đang block",
- d:"Chưa có BM nên không tạo/kiểm tra được product set (14k Gold và Vermeil đã tồn tại nhưng không xem được bên trong) và không build campaign được.",
+ ask:"Phoebe tự flag: “I still haven’t received the BM or Shopify invites. Without them we can’t create or check product sets or build the campaign.”",
+ d:"Từ màn hình audience chỉ thấy product set “14k Gold” và “Vermeil” đã tồn tại nhưng không xem được bên trong có gì. Chưa có BM thì không build campaign được.",
  s:"Slack #peel-myamia · 06/11 11:38"},
 
-{g:"MYAMIA", p:"low", who:"Phoebe",
- t:"Xin Maria thêm ảnh model đang mặc/đeo vermeil",
- d:"Hiện chỉ có 1 ảnh worn (pearl earrings), 2 hero còn lại là packshot. Có thêm ảnh thì thêm được 1–2 ad prospecting và hero mạnh hơn (đang 3 ad, muốn 4–5).",
+{g:"MYAMIA", p:"low", m:"self", who:"Phoebe",
+ t:"Xin Maria thêm ảnh model đang đeo vermeil",
+ d:"Hiện chỉ tìm được 1 ảnh worn (pearl earrings), 2 hero còn lại là packshot. Prospecting mới có 3 ad thay vì 4–5 như kế hoạch. Có thêm ảnh worn thì thêm được 1–2 ad và hero mạnh hơn.",
  s:"Slack #peel-myamia · 06/11 11:38"},
 
-{g:"MYAMIA", p:"low", who:"Phoebe",
+{g:"MYAMIA", p:"low", m:"self", who:"Phoebe",
  t:"Theo dõi 4 câu còn chờ Maria confirm",
- d:"% discount + ngày sale BF · cả Vermeil Archive sale hay chỉ một phần · free US shipping có/không · recycled sterling silver cho mọi món vermeil. Đã để ở tab “Before launch” của sheet.",
+ d:"① % discount + ngày bắt đầu/kết thúc sale BF (copy đang để [X]% và [date]) · ② cả Vermeil Archive sale hay chỉ một số món · ③ free US shipping trong BF: có/không · ④ recycled sterling silver cho mọi món vermeil. Đã để sẵn ở tab “Before launch” của sheet để Maria tự tick.",
  s:"Slack #peel-myamia · 06/11 11:38"},
 
-{g:"MYAMIA", p:"low", who:"Phoebe",
+{g:"MYAMIA", p:"low", m:"self", who:"Phoebe",
  t:"Các lỗi website cần raise với Maria",
- d:"Chỉ 3 collection tìm được (earrings/bracelets/necklaces), ~40 sản phẩm nằm ngoài cả 14k và Vermeil · Shop → All lại về collection 14k · Vermeil không có compare-at price nên ads không hiện giá gạch · 14k đã live trên site ($950–$4,200) trước email VIP.",
+ d:"① Chỉ 3 collection tìm được (earrings / bracelets / necklaces), khoảng 40 sản phẩm nằm ngoài cả 14k và Vermeil · ② Shop → All lại nhảy về collection 14k · ③ Vermeil không có compare-at price nên ads không hiện giá gạch (cần set sale price với giá gốc làm compare-at) · ④ 14k đã live trên site ($950–$4,200) trước email VIP — hỏi xem có cố ý vậy không.",
  s:"Slack #peel-myamia · 06/11 11:38"},
 
-/* ---------- SEG ---------- */
-{g:"SEG", p:"hi", who:"Lucie",
+/* ================= SEG ================= */
+{g:"SEG", p:"hi", m:"tag", who:"Lucie",
  t:"Prep slides client approval cho Meet Us in India",
- d:"Lucie đã update copy (META COPY rows 169–176) và nói “ready to go live”, nhưng client chưa xem — cần slides để approve trước khi activate.",
+ ask:"“Hi @Phoebe Giang, yes, I meant the copy. 🤭 We’ll also need to prep the slides for client approval, as they haven’t seen this yet.”",
+ d:"Phoebe hỏi: Lucie nói copy “ready to go live” thì activate luôn với copy + asset mới, hay phải update slides và chờ client approve? → Lucie trả lời là phải làm slides vì client chưa xem. Copy đã được Lucie sửa ở META COPY rows 169–176 (mở đầu bằng lý do tham dự thay vì list city; offer ghi rõ phụ thuộc application thành công; bỏ “special scholarship” và “Bring your parents”; “one-to-one” → “one-on-one” cho thị trường India).",
  s:"Slack #seg-campaign-requests · 06/11 13:58",
  u:"https://docs.google.com/spreadsheets/d/15kXVWZ_sITHEDHCOy-KXvi9FFtM3EZQA_LyN2sgjmVc/edit?gid=0#gid=0&range=169:176", ul:"rows 169–176"},
 
-{g:"SEG", p:"hi", who:"Airtable AI",
- t:"Refresh deck preview cho CAAS / SHMS / HIM India (Create Slides)",
- d:"Cả 3 request (#8, #9, #10) đều báo “Deck not updated” — asset Canva đã sửa text mới nhưng deck vẫn hiện image text cũ. Phải chạy Create Slides lại.",
+{g:"SEG", p:"hi", m:"bot", who:"Bot Airtable",
+ t:"Refresh deck preview cho CAAS / SHMS / HIM India (chạy Create Slides)",
+ d:"Cả 3 request #8 (CAAS), #9 (SHMS), #10 (HIM) đều báo “Deck not updated: pick Create Slides to refresh it” — asset Canva đã sửa image text theo copy mới nhưng deck review vẫn hiển thị text cũ. Bot post vào channel, không tag ai cụ thể.",
+ s:"Slack #seg-review-copy-and-assets · 06/11 09:14–09:15"},
+
+{g:"SEG", p:"hi", m:"bot", who:"Bot Airtable",
+ t:"Chốt giờ sự kiện India: 11am–4pm hay 18:00–20:30?",
+ ask:"Bot flag ở request #10 (HIM): “body text says ‘11 am to 4 pm’ while the LP reference says evening 18:00–20:30, please confirm the time.”",
+ d:"Hai nguồn đang lệch nhau, phải chốt trước khi launch vì cả copy, asset và landing page đều dùng giờ này.",
  s:"Slack #seg-review-copy-and-assets · 06/11 09:15"},
 
-{g:"SEG", p:"hi", who:"Airtable AI",
- t:"Xác nhận giờ sự kiện India: 11am–4pm hay 18:00–20:30?",
- d:"Body copy HIM ghi “11 am to 4 pm” còn landing page ghi buổi tối 18:00–20:30. Phải chốt trước khi launch.",
- s:"Slack #seg-review-copy-and-assets · 06/11 09:15"},
-
-{g:"SEG", p:"mid", who:"Airtable AI",
+{g:"SEG", p:"mid", m:"bot", who:"Bot Airtable",
  t:"Verify wording fee waiver / one-way flight + điền budget còn trống",
- d:"Copy ghi “application fee waived or one-way flight, if application is successful” — cần check điều kiện. Field Budget vẫn trống trên cả 3 request India.",
- s:"Slack #seg-review-copy-and-assets · 06/11 09:15"},
+ d:"Copy ghi “application fee waived or one-way flight, if application is successful” — bot yêu cầu check lại điều kiện trước khi launch. Ngoài ra field Budget vẫn trống trên cả 3 request India (#8, #9, #10) và deck cũng không có budget.",
+ s:"Slack #seg-review-copy-and-assets · 06/11 09:14–09:15"},
 
-{g:"SEG", p:"mid", who:"Airtable AI",
+{g:"SEG", p:"mid", m:"bot", who:"Bot Airtable",
  t:"Quyết định DISPLAY COPY rows 129–133 (SHMS) có theo copy mới rows 172–173 không",
- d:"Display copy vẫn mang wording AI cũ trong khi Meta copy đã được team viết lại.",
- s:"Slack #seg-review-copy-and-assets · 06/11 09:15"},
+ ask:"“Display copy rows 129–133 still carry the old AI wording: say if they should follow rows 172–173 too.”",
+ d:"Meta copy SHMS đã được team viết lại (rows 172–173) nhưng Display copy vẫn là bản AI cũ (ghi 11am–4pm và “registration required”) → đang không đồng bộ.",
+ s:"Slack #seg-review-copy-and-assets · 06/11 09:14"},
 
-{g:"SEG", p:"hi", who:"Piers / John",
- t:"Đóng gap pacing tháng 11 — ưu tiên Meta retargeting",
- d:"Trên dashboard: CAAS mới spend 44/1.746 (set 7/ngày, cần 71), SHMS 14/454 (set 2/ngày, cần 18). Gap lớn nhất: Indonesia −2,6k, Global −2,1k, Jordan −1,5k. Tổng tháng 11 đang về ~83,8k/96,3k (87%).",
- s:"Slack #seg-paid-media · 05–06/11"},
+{g:"SEG", p:"hi", m:"team", who:"Piers / John",
+ t:"Đóng gap pacing tháng 11 — gap lớn nhất là Meta retargeting",
+ ask:"John báo @Piers: “The gap looks like Meta retargeting: on the dashboard CAAS has spent 44 of 1,746 (7 a day set up, 71 needed) and SHMS 14 of 454 (2 a day set up, 18 needed).”",
+ d:"Piers drop pacing update cho @here: tháng 11 đang về ~83,8k / 96,3k central budget (87%), thiếu ~12,5k. Gap lớn nhất: Indonesia −2,6k, Global −2,1k, Jordan −1,5k — Meta Indonesia, PMax mới và global retargeting trông như chưa live hẳn. Piers: “Please check and push.”",
+ s:"Slack #seg-paid-media · 05/11 23:12 + 06/11 21:00"},
 
-{g:"SEG", p:"mid", who:"Piers",
- t:"Trim budget Switzerland (đang 121% over) + push Vietnam, Norway, Singapore, UAE, Greece",
- d:"Switzerland chạy vượt 21%, cần giảm daily để không ăn vào tháng 12. 5 market kia đang thiếu tổng 2,6k — push chỗ nào chạy được, flag chỗ nào không.",
- s:"Slack #seg-paid-media · 05/11 23:12"},
+{g:"SEG", p:"mid", m:"team", who:"Piers",
+ t:"Trim Switzerland (đang 121% over) + push Vietnam, Norway, Singapore, UAE, Greece",
+ ask:"“Switzerland is running 21% over. Please trim its daily budgets so it doesn’t eat into December. Vietnam, Norway, Singapore, the UAE and Greece are 2.6k short between them. Push where the campaigns can take it, and flag anywhere that can’t spend.”",
+ d:"Lưu ý Piers nói thêm: market nào spend nhanh mà perf tốt (Swiss, Myanmar) thì đừng kéo xuống nếu đang hài lòng. Vietnam mới 15% budget, Norway 2%. Thứ Hai sẽ có sense check các market đã scale.",
+ s:"Slack #seg-paid-media · 05/11 23:12–23:22"},
 
-{g:"SEG", p:"hi", who:"Lucie",
+{g:"SEG", p:"hi", m:"tag", who:"Lucie",
  t:"Activate campaign đã có budget nhưng chưa chạy + optimise performance",
- d:"Lucie giao trực tiếp cho Phoebe trong priorities tuần: giữ pacing, launch campaign được request hoặc đã có budget mà chưa live, và theo sát optimise.",
+ ask:"“Priorities stay the same: stay on top of pacing and get live any requested campaigns, or campaigns that have budget but aren’t running yet. Alongside this, let’s keep a close eye on performance and make sure we’re optimizing the campaigns effectively. @Phoebe Giang”",
+ d:"Trong list priorities tuần của Lucie, phần SEG được tag trực tiếp cho Phoebe. Elena phụ trách riêng các ad hoc campaign. Lucie tự làm: update budget T2 theo pacing (còn Middle East incremental chưa add), và clear budget Convert theo region để dồn về Convert global.",
  s:"Slack group DM · 09/11 05:27"},
 
-{g:"SEG", p:"mid", who:"Lucie",
+{g:"SEG", p:"mid", m:"tag", who:"Lucie",
  t:"Copy retargeting Tier 2 (rows 96–99): chọn asset khớp từng variation",
- d:"Asset Canva trước đây chọn theo theme cũ (Safety/Global/Heritage) nên có thể không fit angle mới — Lucie đã mark “to confirm”. Copy và asset phải đi cùng nhau, không ghép bừa.",
+ ask:"DM riêng: “The Canva pages you picked were chosen for the previous themes, so they may not fit the new angles. I’ve marked them as ‘to confirm’. So please feel free to pick the assets that best fit each copy variation, rather than using the same two creatives for both.”",
+ d:"Lucie đã sửa copy rows 96–99: bỏ cách chia theo theme (Safety / Global / Heritage) vì spend giữa các theme lệch nhau nên không so được, và Safety không phải pain point của phần lớn market này. Mỗi school giờ có 2 variation: 1 nói USP chính, 1 chạm vào lo lắng thật của audience (“can a love of food become a real career?”, “will this lead to a job?”). Copy chuyển sang cấp school, bỏ list program vì đang retarget toàn bộ website visitor. Asset cũ vẫn còn trong version history nếu cái nào còn dùng được.",
  s:"Slack DM Lucie · 06/11 04:51"},
 
-{g:"SEG", p:"mid", who:"Lucie",
+{g:"SEG", p:"mid", m:"tag", who:"Lucie",
  t:"Làm slides review + link sheet copy client-facing cho Tier 2 retargeting",
- d:"Sau khi asset xong thì prep slides đơn giản để client review. Lucie cũng đang check lại danh sách target country Tier 2 với Piers.",
+ ask:"“Client review: We might need to run this by the client. Once the assets are ready, could you please prepare simple slides for review, with a link to the ad copy in a client-facing sheet?”",
+ d:"Làm sau khi chọn asset xong. Lucie cũng đang check lại danh sách target country với Piers vì Tier 2 (non-pilot) markets đã thay đổi — sẽ follow up lại sau.",
  s:"Slack DM Lucie · 06/11 04:51"},
 
-{g:"SEG", p:"mid", who:"Hệ thống",
+{g:"SEG", p:"mid", m:"bot", who:"Mail tự động",
  t:"Fix Google Apps Script “SEG Meta tracking set up” đang fail",
- d:"Có mail báo fail cả 07/11 03:09 và 08/11 18:03 — script chạy không xong.",
- s:"Gmail · 07–08/11"},
+ d:"Nhận mail “Summary of failures” 2 lần: 07/11 03:09 và 08/11 18:03 — script chạy không hoàn thành. Mail chỉ gửi riêng phoebe@, không ai khác biết.",
+ s:"Gmail · 07/11 + 08/11"},
 
-{g:"SEG", p:"mid", who:"Hệ thống",
+{g:"SEG", p:"mid", m:"bot", who:"Mail tự động",
  t:"Fix SEG dashboard sync failed (Cloudflare KV)",
- d:"Lỗi: “Address unavailable: api.cloudflare.com/.../storage/kv/namespaces/.../values/live at kvPut (Code:605)”.",
+ d:"Lỗi nguyên văn: “Exception: Address unavailable: api.cloudflare.com/client/v4/accounts/…/storage/kv/namespaces/…/values/live at kvPut (Code:605:23)”. Script tự gửi mail về chính hộp của Phoebe.",
  s:"Gmail · 06/11 02:39"},
 
-{g:"SEG", p:"low", who:"Elena",
- t:"Chốt lại với Elena: budget Global còn cho CRCS + danh sách market",
- d:"Elena lo Global campaign không còn budget cho CRCS (Phoebe đã check dashboard: đúng, không có CRCS). Và list country gửi John — 13 market Lucie đưa trước đó.",
- s:"Slack DM Elena · 06/11"},
+{g:"SEG", p:"low", m:"tag", who:"Elena",
+ t:"Chốt lại với Elena: budget Global cho CRCS + list market",
+ ask:"Elena DM: “b ơi, b check budget giúp t đc ko ạ. T sợ t check sai, theo như t check thì Global camp sẽ ko còn budget chạy cho CRCS nữa.”",
+ d:"Phoebe đã check dashboard: đúng, không có CRCS. Việc còn lại là list danh sách country gửi John — 13 market Lucie đưa trước đó (Sweden, Switzerland, France, Norway, Cyprus, Italy, UK, Spain, Netherlands, Romania, Greece, Portugal, Germany). Elena đang lúng túng chỗ mỗi school chạy market khác nhau hay dùng chung 13 market này.",
+ s:"Slack DM Elena · 06/11 13:23–15:51"},
 
-/* ---------- PENSION REFUND ---------- */
-{g:"Pension Refund", p:"hi", who:"Lucie / Chris",
- t:"Trả lời câu hỏi của Chris về WhatsApp automation",
- d:"4 điểm: (1) vì sao bot không trả lời câu hỏi của anh ấy (có screenshot); (2) phần intro có nên hỏi luôn câu 1 thay vì chờ “YES”; (3) Chris muốn đẩy lead qua Zapier vào CRM của họ — confirm làm được không, anh ấy đề nghị call T2 để set cùng; (4) giải thích rõ bước 3 (gắn link/QR lên website + email).",
- s:"Slack #client-pension-refund 09/11 03:38 + Gmail fwd"},
+/* ================= PENSION REFUND ================= */
+{g:"Pension Refund", p:"hi", m:"tag", who:"Lucie / Chris",
+ t:"Trả lời 4 câu hỏi của Chris về WhatsApp automation",
+ ask:"“Hey @Elena G @Phoebe Giang, I’ve forwarded you the latest email from Chris. Could you please have a look and let me know your thoughts on his question, and whether the CRM can be connected the way he’s suggesting?” — và trong mail: “Could you please let me know next steps and answer to his question re the bot not responding to his question?”",
+ d:"Nguyên văn Chris (06/11 22:33): ① “wouldn’t it make sense to directly ask the first question or you need the YES from the customer after this first intro?” — bàn về câu mở đầu “…Shall we start?” · ② “Dont know why we have trained the bot so much if it does not answer to my question (see screenshot)” — đây là câu Lucie muốn ưu tiên trả lời · ③ “let run them directly via Zapier in our CRM, you can give me the zapper account if you want and I connect it or lets do a quick call on monday so we set this up together” → Chris chọn phương án Zapier, đề nghị call thứ Hai · ④ “On 3) dont quite understand what is needed here” — bước gắn link/QR lên website + email để kích hoạt automation, cần giải thích lại.",
+ s:"Slack #client-pension-refund 09/11 03:38 + Gmail fwd 08/11 20:36"},
 
-/* ---------- MYTH STUDIO ---------- */
-{g:"Myth Studio", p:"mid", who:"Lucie",
+{g:"Pension Refund", p:"low", m:"fyi", who:"Lucie → Elena",
+ t:"[Elena làm] Monthly slides — draft trước thứ Tư",
+ ask:"“Hey @Elena G, could you please work on the monthly slides so we can schedule a call with Chris to go through them? Ideally it would be great to have the first draft ready by Wednesday, as I’m off Thursday and Friday.”",
+ d:"Không phải task của Phoebe — Lucie giao Elena, chỉ cần nắm vì bi-weekly và monthly slides đều due tuần này và liên quan tới cùng client.",
+ s:"Slack #client-pension-refund · 09/11 03:41"},
+
+/* ================= MYTH STUDIO ================= */
+{g:"Myth Studio", p:"mid", m:"tag", who:"Lucie",
  t:"Bổ sung slide timeline campaign — phần trước khi Long join",
- d:"Lucie muốn slide 6 bỏ kiểu day-by-day, thay bằng tất cả thay đổi đã làm xuyên suốt (negative keyword, xử lý traffic jobseeker, keyword analysis, restructure, update conversion event, thêm tracking…). Phoebe thêm phần giai đoạn đầu hoặc giúp finalise slide.",
- s:"Slack #client-myth-studio · 09/11 04:56"},
+ ask:"“@Phoebe, could you add anything else worth mentioning from before Long joined? Or if it’s easier, feel free to help finalise the slide.”",
+ d:"Lucie góp ý slide 6 (campaign timeline): hiện đang kiểu day-by-day nên đọc ra như team không làm gì lúc đầu, mọi thay đổi dồn vào tháng 10 — “this doesn’t show us in the best light”. Muốn đổi sang liệt kê tất cả thay đổi đã làm xuyên suốt, không gắn vào tháng cụ thể: negative keyword liên tục, xử lý traffic jobseeker bằng nhiều cách, keyword analysis, restructure campaign, update conversion event, thêm tracking… Phoebe trước đó đã đề xuất kết thúc ở slide Key Learning và ẩn slide Next Steps (vì có thể không tiếp tục client này) — Lucie đồng ý bỏ Next Steps.",
+ s:"Slack #client-myth-studio · 09/11 04:56 (thread của Piers)"},
 
-/* ---------- ADMIN ---------- */
-{g:"Admin & lịch", p:"mid", who:"Lucie",
- t:"Gửi Lucie mọi thứ cần trước thứ Tư",
- d:"Lucie nghỉ T5 + T6. T5 vẫn trả lời ban ngày nhưng không làm buổi tối, T6 off hoàn toàn. Gì cần chị ấy follow up thì phải có trước tối T4.",
+/* ================= ADMIN ================= */
+{g:"Admin & lịch", p:"mid", m:"team", who:"Lucie",
+ t:"Gửi Lucie mọi thứ cần trước tối thứ Tư",
+ ask:"“I’ll be off on Thursday and Friday. On Thursday I’ll still be fairly responsive during the day, but I won’t be working my usual evening hours. On Friday I won’t be working or checking messages. If you need anything from me, please make sure it’s with me by Wednesday so I can follow up on everything that evening.”",
+ d:"Lucie cũng không join call thứ Hai, sẽ đọc call notes sau.",
  s:"Slack group DM · 09/11 05:27"},
 
-{g:"Admin & lịch", p:"mid", who:"Maria",
+{g:"Admin & lịch", p:"mid", m:"team", who:"Maria (client)",
  t:"Họp MYAMIA – Ads / Social Meet Up: T4 11/11, 23:00–23:45 (GMT+7)",
- d:"Có Maria, Lucie, Piers, Elena và team Tonic Comms (Lauren, Rafaella, Liv). Google Meet.",
- s:"Gmail invite · 06/11 20:01"},
+ d:"Google Meet, Maria tạo invite. Người tham dự: Maria, Lucie, Piers, Elena, Phoebe + team Tonic Comms (Lauren, Rafaella, Liv). Giờ gốc: 11:00–11:45 ET.",
+ s:"Gmail calendar invite · 06/11 20:01"},
 ];
 
 const P_LABEL = {hi:"Gấp", mid:"Trung bình", low:"Khi có thời gian"};
-const KEY = "peel-tasks-06-09nov-v1";
+const M_LABEL = {
+  tag:"Tag trực tiếp @Phoebe",
+  team:"Nói chung cả team",
+  fyi:"Người khác làm · để nắm",
+  self:"Phoebe tự raise",
+  bot:"Bot / mail tự động"
+};
+const KEY  = "peel-tasks-06-09nov-v1";
+const NKEY = "peel-tasks-06-09nov-notes-v1";
 
 let state = {};
 try { state = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch(e){ state = {}; }
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} };
+
+let notes = {};
+try { notes = JSON.parse(localStorage.getItem(NKEY) || "{}"); } catch(e){ notes = {}; }
+const saveNotes = () => { try { localStorage.setItem(NKEY, JSON.stringify(notes)); } catch(e){} };
+
+/* ---- kênh feedback: dùng composer comment của Claude khi có ---- */
+let commentsApi = null;
+const fbMode = document.getElementById("fbMode");
+
+if (window.claude && typeof window.claude.use === "function"){
+  window.claude.use("comments").then(api => {
+    commentsApi = api || null;
+    fbMode.textContent = commentsApi
+      ? "Bấm Feedback ở task nào để mở ô comment ngay tại task đó, rồi gửi cho Claude."
+      : "Ô comment không mở được ở đây — bấm Feedback để ghi vào trang, rồi Copy và paste vào chat.";
+    render();
+  }).catch(() => { commentsApi = null; });
+}
+
+function tryComposer(el){
+  if (!commentsApi) return false;
+  try { commentsApi.openComposer({element: el}); return true; }
+  catch(e){ return false; }
+}
 
 const id = i => "t" + i;
 const GROUPS = [...new Set(TASKS.map(t => t.g))];
@@ -307,10 +407,11 @@ const listEl = document.getElementById("list");
 const filtersEl = document.getElementById("filters");
 
 function visible(t, i){
-  if (filter === "all") return true;
+  if (filter === "all")  return true;
   if (filter === "todo") return !state[id(i)];
   if (filter === "done") return !!state[id(i)];
   if (filter === "hi")   return t.p === "hi" && !state[id(i)];
+  if (filter === "tag")  return t.m === "tag" && !state[id(i)];
   return t.g === filter;
 }
 
@@ -318,9 +419,11 @@ function renderFilters(){
   const todo = TASKS.filter((t,i)=>!state[id(i)]).length;
   const done = TASKS.length - todo;
   const hi   = TASKS.filter((t,i)=>t.p==="hi" && !state[id(i)]).length;
+  const tg   = TASKS.filter((t,i)=>t.m==="tag" && !state[id(i)]).length;
   const defs = [
     ["todo","Chưa xong",todo],
     ["hi","Gấp",hi],
+    ["tag","Tag trực tiếp",tg],
     ["all","Tất cả",TASKS.length],
     ["done","Đã xong",done],
     ...GROUPS.map(g => [g, g, TASKS.filter((t,i)=>t.g===g && !state[id(i)]).length])
@@ -340,7 +443,7 @@ function renderFilters(){
 function taskNode(t, i){
   const key = id(i), done = !!state[key];
   const li = document.createElement("li");
-  li.className = "task" + (done ? " done" : "");
+  li.className = "task" + (done ? " done" : "") + (t.m === "tag" ? " direct" : "");
 
   const btn = document.createElement("button");
   btn.className = "tick";
@@ -362,6 +465,13 @@ function taskNode(t, i){
   h.textContent = t.t;
   body.appendChild(h);
 
+  if (t.ask){
+    const q = document.createElement("p");
+    q.className = "t-ask";
+    q.textContent = t.ask;
+    body.appendChild(q);
+  }
+
   if (t.d){
     const d = document.createElement("p");
     d.className = "t-detail";
@@ -373,8 +483,8 @@ function taskNode(t, i){
   meta.className = "t-meta";
   meta.innerHTML =
     '<span class="tag p-'+t.p+'">'+P_LABEL[t.p]+'</span>' +
-    '<span class="tag who">'+t.who+'</span>' +
-    '<span class="src">'+t.s+'</span>';
+    '<span class="tag m-'+t.m+'">'+M_LABEL[t.m]+'</span>' +
+    '<span class="src">'+t.who+' · '+t.s+'</span>';
   if (t.u){
     const a = document.createElement("a");
     a.href = t.u; a.target = "_blank"; a.rel = "noopener";
@@ -382,6 +492,54 @@ function taskNode(t, i){
     meta.appendChild(a);
   }
   body.appendChild(meta);
+
+  /* --- feedback --- */
+  const actions = document.createElement("div");
+  actions.className = "t-actions";
+  const fb = document.createElement("button");
+  fb.type = "button";
+  fb.className = "fb-btn" + (notes[key] ? " has" : "");
+  fb.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-2.8-.4L3 21l1.6-4.4A8.3 8.3 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/></svg>' +
+    (notes[key] ? "Feedback đã ghi" : "Feedback / yêu cầu");
+  actions.appendChild(fb);
+  body.appendChild(actions);
+
+  const note = document.createElement("div");
+  note.className = "note";
+  note.hidden = true;
+  const ta = document.createElement("textarea");
+  ta.placeholder = "Viết yêu cầu của bạn cho task này — ví dụ: “làm hộ slide này”, “đổi angle”, “bỏ task này đi”…";
+  ta.value = notes[key] || "";
+  const row = document.createElement("div");
+  row.className = "note-row";
+  const hint = document.createElement("span");
+  hint.className = "note-hint";
+  hint.textContent = "Lưu trong trình duyệt này. Copy rồi paste vào chat để Claude làm.";
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button"; copyBtn.className = "fb-btn";
+  copyBtn.textContent = "Copy cho Claude";
+  copyBtn.addEventListener("click", ()=>{
+    const text = "Task: " + t.t + " (" + t.g + ")\nYêu cầu: " + ta.value.trim();
+    navigator.clipboard.writeText(text).then(
+      ()=>{ copyBtn.textContent = "Đã copy ✓"; setTimeout(()=>copyBtn.textContent="Copy cho Claude",1600); },
+      ()=>{ copyBtn.textContent = "Copy không được"; setTimeout(()=>copyBtn.textContent="Copy cho Claude",1600); }
+    );
+  });
+  ta.addEventListener("input", ()=>{
+    const v = ta.value.trim();
+    if (v) notes[key] = ta.value; else delete notes[key];
+    saveNotes();
+    fb.classList.toggle("has", !!v);
+  });
+  row.appendChild(hint); row.appendChild(copyBtn);
+  note.appendChild(ta); note.appendChild(row);
+  body.appendChild(note);
+
+  fb.addEventListener("click", ()=>{
+    if (tryComposer(li)) return;
+    note.hidden = !note.hidden;
+    if (!note.hidden) ta.focus();
+  });
 
   li.appendChild(btn);
   li.appendChild(body);
@@ -427,12 +585,17 @@ function render(){
     left ? ("còn " + left + " task" + (hiLeft ? " · " + hiLeft + " gấp" : "")) : "xong hết";
 }
 
+document.getElementById("globalFb").addEventListener("click", (e)=>{
+  if (tryComposer(e.currentTarget)) return;
+  fbMode.textContent = "Ô comment chưa sẵn — gõ request trực tiếp vào chat với Claude nhé.";
+});
+
 document.getElementById("reset").addEventListener("click", ()=>{
   state = {}; save(); render();
 });
 
 document.getElementById("stamp").textContent =
-  "Nguồn: Slack (#peel-myamia, #seg-campaign-requests, #seg-review-copy-and-assets, #seg-paid-media, #client-pension-refund, #client-myth-studio, DM) + Gmail · 06–09/11/2026";
+  "Nguồn: Slack (#peel-myamia, #seg-campaign-requests, #seg-review-copy-and-assets, #seg-paid-media, #client-pension-refund, #client-myth-studio, group DM, DM Lucie/Elena) + Gmail · 06–09/11/2026";
 
 render();
 </script>
