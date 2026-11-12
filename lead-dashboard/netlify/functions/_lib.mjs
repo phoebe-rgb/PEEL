@@ -79,24 +79,39 @@ export function isUnqualified(l) {
   return unqualifiedReasons(l).length > 0;
 }
 
+// Run async jobs with a concurrency cap (keeps us well under Netlify's API rate limit).
+async function pool(items, limit, fn) {
+  const out = new Array(items.length);
+  let i = 0;
+  const worker = async () => { while (i < items.length) { const k = i++; out[k] = await fn(items[k]); } };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return out;
+}
+
 // Pull every admissions-form submission across the four sites.
+// All pages are fetched IN PARALLEL: each form reports its submission_count, so we know the
+// page count up front. Sequential paging took ~155s for ~5k leads (> 30s function limit).
 export async function getLeads() {
-  const sites = siteMap();
-  const out = [];
-  for (const [siteId, brand] of Object.entries(sites)) {
-    const forms = await nf(`/sites/${siteId}/forms`);
-    for (const form of forms) {
-      // only real admissions forms (skip webinar / empty test forms if desired)
-      let page = 1;
-      while (true) {
-        const subs = await nf(`/forms/${form.id}/submissions?per_page=100&page=${page}`);
-        if (!subs.length) break;
-        for (const s of subs) out.push(slim(s, brand));
-        if (subs.length < 100) break;
-        page++;
-      }
+  const sites = Object.entries(siteMap());
+  const formLists = await Promise.all(sites.map(([siteId]) => nf(`/sites/${siteId}/forms`)));
+  const jobs = [];
+  sites.forEach(([, brand], i) => {
+    for (const form of formLists[i]) {
+      // +1 spare page in case submissions arrived after the count was read
+      const pages = Math.ceil((form.submission_count || 0) / 100) + 1;
+      for (let page = 1; page <= pages; page++) jobs.push({ form, brand, page });
     }
-  }
+  });
+  const results = await pool(jobs, 16, ({ form, page }) =>
+    nf(`/forms/${form.id}/submissions?per_page=100&page=${page}`));
+  const out = [], seen = new Set();
+  results.forEach((subs, k) => {
+    for (const s of subs || []) {
+      if (s.id && seen.has(s.id)) continue; // a page boundary can shift while paging
+      if (s.id) seen.add(s.id);
+      out.push(slim(s, jobs[k].brand));
+    }
+  });
   out.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
   return out;
 }
@@ -135,10 +150,12 @@ export async function getCrmKeys() {
   const urls = raw.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
   if (!urls.length) return null;
   const emails = new Set(), ids = new Set();
-  for (const url of urls) {
+  const texts = await Promise.all(urls.map(async (url) => {
     const r = await fetch(url);
     if (!r.ok) throw new Error("SALESFORCE_CSV_URL (" + url.slice(0, 60) + "…) -> " + r.status);
-    const text = await r.text();
+    return r.text();
+  }));
+  for (const text of texts) {
     for (const e of text.match(EMAIL) || []) emails.add(e.toLowerCase());
     for (const u of text.match(UUID) || []) ids.add(u.toLowerCase());
   }
@@ -160,3 +177,23 @@ export function classify(leads, keys) {
   }
   return { matched, unqualified, lost };
 }
+
+// Full dashboard payload (leads + CRM match), computed live. Netlify + CRM fetched in parallel.
+export async function buildPayload() {
+  const [leads, keys] = await Promise.all([getLeads(), getCrmKeys()]);
+  let summary = null, crm_count = 0;
+  if (keys) {
+    crm_count = keys.emails.size;
+    const real = leads.filter((l) => !l.is_test);
+    const { matched, unqualified, lost } = classify(real, keys);
+    summary = { total: real.length, matched: matched.length, unqualified: unqualified.length, lost: lost.length };
+    for (const l of leads)
+      l.in_crm = keys.emails.has((l.email || "").trim().toLowerCase()) || keys.ids.has((l.event_id || "").toLowerCase());
+  }
+  return { payload: { generated_at: new Date().toISOString(), crm_connected: !!keys, crm_count, summary, leads }, leads, keys };
+}
+
+// Cached payload in Netlify Blobs, so the dashboard opens instantly and never hits the
+// function time limit. Refreshed every 15 min by refresh-leads.mjs.
+export const STORE = "seg-lead-tracking";
+export const CACHE_KEY = "leads_payload";

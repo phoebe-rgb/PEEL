@@ -13,6 +13,11 @@
 [functions."lost-lead-alert"]
   schedule = "45 1 * * *"
 
+# Dashboard cache — rebuilds the leads payload every 15 min into Netlify Blobs so the page
+# loads instantly (a live build pulls ~5k leads and can approach the function time limit).
+[functions."refresh-leads"]
+  schedule = "*/15 * * * *"
+
 # Protect the dashboard: it shows real lead PII, so it must NOT be public.
 # Set a site password in Netlify UI (Site settings → Access & security → Visitor access → Password protection)
 # OR restrict to your Netlify team via SSO. This file cannot set the password; do it in the UI.

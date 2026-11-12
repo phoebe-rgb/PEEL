@@ -113,7 +113,11 @@ const ageHrs=iso=>(Date.now()-new Date(iso).getTime())/3600000;
 // not "lost" — covers the Funnel→Sheet export lag (export runs ~2×/day). Matches the alert.
 const LOST_GRACE_HRS=24;
 
-fetch('/.netlify/functions/leads').then(r=>r.json()).then(d=>{
+fetch('/.netlify/functions/leads').then(async r=>{
+  const t=await r.text();
+  try{return JSON.parse(t);}catch(_){throw new Error('HTTP '+r.status+(r.status===504?' (timed out, please reload in a minute)':''));}
+}).then(d=>{
+  if(d.error){document.getElementById('sub').textContent='Error loading data: '+d.error;return;}
   M=d;
   LEADS=(d.leads||[]).map(l=>({...l, status: l.is_test?'test':(l.in_crm?'matched':(l.unqualified?'unqualified':'lost'))}));
   if(!LEADS.length){document.getElementById('sub').textContent='No leads returned. Check function config (NETLIFY_API_TOKEN / SALESFORCE_CSV_URL).';return;}

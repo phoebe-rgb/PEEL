@@ -12,7 +12,7 @@
 //                         CRM export lag so a just-submitted lead isn't a false alarm)
 
 import { getStore } from "@netlify/blobs";
-import { getLeads, getCrmKeys, classify } from "./_lib.mjs";
+import { buildPayload, classify, STORE as CACHE_STORE, CACHE_KEY } from "./_lib.mjs";
 
 const STORE = "seg-lead-tracking";
 const KEY = "alerted_event_ids";
@@ -20,12 +20,14 @@ const KEY = "alerted_event_ids";
 export default async () => {
   const minAgeH = Number(process.env.ALERT_MIN_AGE_HOURS || 24);
 
-  const keys = await getCrmKeys();
+  // Netlify leads + CRM pulled in parallel (sequential paging used to exceed the time limit).
+  const { payload, leads, keys } = await buildPayload();
   if (!keys) {
     await slack("⚠️ SEG Lead Tracking: no CRM source configured — cannot reconcile leads.");
     return json({ error: "no crm source" });
   }
-  const leads = await getLeads();
+  // Fresh data — refresh the dashboard cache too.
+  try { await getStore(CACHE_STORE).setJSON(CACHE_KEY, payload); } catch (e) { console.error("Blobs cache write:", e?.message); }
   const real = leads.filter((l) => !l.is_test);
   const { lost } = classify(real, keys);
 

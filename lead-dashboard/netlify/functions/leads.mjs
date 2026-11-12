@@ -1,20 +1,37 @@
-// On-demand JSON API: current Netlify leads + (if configured) their CRM match status.
-// Used by the optional dashboard page. The auto-tracking/alert lives in lost-lead-alert.mjs.
-import { getLeads, getCrmKeys, classify } from "./_lib.mjs";
+// On-demand JSON API for the dashboard page: current Netlify leads + their CRM match status.
+// Serves the cached payload from Netlify Blobs (refreshed every 15 min by refresh-leads.mjs)
+// so it answers instantly. Falls back to a live build if the cache is missing or stale,
+// or when called with ?refresh=1.
+import { getStore } from "@netlify/blobs";
+import { buildPayload, STORE, CACHE_KEY } from "./_lib.mjs";
 
-export default async () => {
-  const leads = await getLeads();
-  const keys = await getCrmKeys();
-  let summary = null, crm_count = 0;
-  if (keys) {
-    crm_count = keys.emails.size;
-    const real = leads.filter((l) => !l.is_test);
-    const { matched, unqualified, lost } = classify(real, keys);
-    summary = { total: real.length, matched: matched.length, unqualified: unqualified.length, lost: lost.length };
-    for (const l of leads)
-      l.in_crm = keys.emails.has((l.email || "").trim().toLowerCase()) || keys.ids.has((l.event_id || "").toLowerCase());
+const MAX_AGE_MIN = 60;
+
+export default async (req) => {
+  const force = new URL(req.url).searchParams.get("refresh") === "1";
+  let store = null;
+  try { store = getStore(STORE); } catch (e) { console.error("Blobs unavailable:", e?.message); }
+
+  if (store && !force) {
+    try {
+      const cached = await store.get(CACHE_KEY, { type: "json" });
+      if (cached && (Date.now() - new Date(cached.generated_at).getTime()) / 60000 < MAX_AGE_MIN)
+        return json(cached, "hit");
+    } catch (e) { console.error("Blobs read:", e?.message); }
   }
-  return new Response(JSON.stringify({ generated_at: new Date().toISOString(), crm_connected: !!keys, crm_count, summary, leads }), {
-    headers: { "content-type": "application/json", "cache-control": "no-store" },
-  });
+
+  try {
+    const { payload } = await buildPayload();
+    if (store) { try { await store.setJSON(CACHE_KEY, payload); } catch (e) { console.error("Blobs write:", e?.message); } }
+    return json(payload, "miss");
+  } catch (e) {
+    console.error("leads build failed:", e?.message);
+    return new Response(JSON.stringify({ error: e?.message || String(e) }), {
+      status: 502, headers: { "content-type": "application/json", "cache-control": "no-store" },
+    });
+  }
 };
+
+const json = (o, cache) => new Response(JSON.stringify(o), {
+  headers: { "content-type": "application/json", "cache-control": "no-store", "x-leads-cache": cache },
+});
